@@ -86,23 +86,35 @@ class GameDataService {
    */
   private parseGameDataFile(fileContent: string): GameData[] {
     try {
-      // Remove 'var gameData = ' and the trailing ';'
+      // First try JSON conversion approach
       const jsonStart = fileContent.indexOf('[');
-      const jsonEnd = fileContent.lastIndexOf(']') + 1;
+      const jsonEnd = fileContent.lastIndexOf('];');
 
-      if (jsonStart === -1 || jsonEnd === 0) {
-        throw new Error('Invalid game data format');
+      if (jsonStart !== -1 && jsonEnd !== -1) {
+        try {
+          const arrayContent = fileContent.slice(jsonStart, jsonEnd + 1);
+
+          // Convert JS object notation to JSON
+          let validJson = arrayContent
+              .replace(/\t/g, ' ')
+              .replace(/\n\s+/g, '\n  ')
+              .replace(/^\s*(\w+):/gm, '  "$1":')
+              .replace(/,\s*\n/g, ',\n')
+              .replace(/"([^"]+)":/g, '"$1":');
+
+          const gameData = JSON.parse(validJson);
+
+          if (Array.isArray(gameData) && gameData.length > 0) {
+            return gameData;
+          }
+        } catch (jsonError) {
+          console.log('JSON parsing failed, trying eval method...');
+        }
       }
 
-      const jsonContent = fileContent.slice(jsonStart, jsonEnd);
-
-      // Convert JavaScript object notation to valid JSON
-      // Replace unquoted keys with quoted keys
-      const validJson = jsonContent
-          .replace(/(\w+):/g, '"$1":')  // Quote property names
-          .replace(/'/g, '"');          // Replace single quotes with double quotes
-
-      const gameData = JSON.parse(validJson);
+      // Fallback to eval method (safe for trusted source)
+      const evalContent = fileContent.replace('var gameData = ', '').replace(/;\s*$/, '');
+      const gameData = eval('(' + evalContent + ')');
 
       // Validate data structure
       if (!Array.isArray(gameData) || gameData.length === 0) {

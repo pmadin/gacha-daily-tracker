@@ -81,7 +81,7 @@ https.get(sourceUrl, (response) => {
             console.error('\n🔍 Raw content preview:');
             console.error(data.slice(0, 500));
 
-            // Let's try a different approach - use eval in a safe way
+            // Use eval in a safe way
             console.log('\n🔄 Trying alternative parsing method...');
             try {
                 // Create a safe evaluation context
