@@ -36,7 +36,7 @@ CREATE TABLE user_games (
 );
 
 -- Daily completion tracking
-CREATE TABLE daily_completions (
+CREATE TABLE daily_completions (s
                                    id SERIAL PRIMARY KEY,
                                    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
                                    game_id INTEGER REFERENCES games(id) ON DELETE CASCADE,
