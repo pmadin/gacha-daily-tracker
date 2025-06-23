@@ -60,29 +60,29 @@ const options = {
                         name: {
                             type: 'string',
                             description: 'Game name',
-                            example: 'Azur Lane',
+                            example: 'Genshin Impact',
                         },
                         server: {
                             type: 'string',
                             description: 'Server region',
-                            example: 'EN',
-                            enum: ['Global', 'NA', 'JP', 'KR', 'CN', 'SEA', 'LATAM', 'EU', 'EN'],
+                            example: 'Global',
+                            enum: ['Global', 'JP', 'KR', 'CN', 'SEA', 'LATAM', 'EU'],
                         },
                         timezone: {
                             type: 'string',
                             description: 'Server timezone',
-                            example: 'Etc/GMT+7',
+                            example: 'Etc/GMT+8',
                         },
                         daily_reset: {
                             type: 'string',
                             format: 'time',
                             description: 'Daily reset time (24h format)',
-                            example: '00:00',
+                            example: '04:00',
                         },
                         icon_name: {
                             type: 'string',
                             description: 'Icon identifier for the game',
-                            example: 'azur-lane-en',
+                            example: 'genshin-impact',
                         },
                         last_verified: {
                             type: 'string',
@@ -134,7 +134,15 @@ const options = {
         tags: [
             {
                 name: 'Games',
-                description: '🎮 Game management and data retrieval',
+                description: '🎮 Game management and data retrieval (Open Access)',
+            },
+            {
+                name: 'Authentication',
+                description: '🔐 User registration and login',
+            },
+            {
+                name: 'Game Management',
+                description: '🔒 Game data editing (Premium - Auth Required)',
             },
             {
                 name: 'Health',
@@ -142,11 +150,11 @@ const options = {
             },
             {
                 name: 'Data Management',
-                description: '🔄 Import and sync game data',
+                description: '🔄 Import and sync game data (Admin)',
             },
         ],
     },
-    apis: ['./src/routes/*.ts', './src/index.ts'], // paths to files containing OpenAPI definitions
+    apis: ['./src/routes/*.ts', './src/routes/**/*.ts', './src/index.ts'], // paths to files containing OpenAPI definitions
 };
 
 const specs = swaggerJsdoc(options);

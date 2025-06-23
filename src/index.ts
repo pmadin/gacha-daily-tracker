@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import database from './config/database';
 import gameRoutes from './routes/games';
+import { authRoutes } from './routes/auth'; // Add this import
 import autoImportService from './services/autoImportService';
 import { specs, swaggerUi, swaggerOptions } from './config/swagger';
 
@@ -25,6 +26,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions));
 
 // Routes
 app.use('/api/games', gameRoutes);
+app.use('/api/auth', authRoutes); // Add this line
 
 /**
  * @swagger
@@ -70,6 +72,7 @@ app.get('/', (req, res) => {
         status: 'running',
         endpoints: {
             games: '/api/games',
+            auth: '/api/auth',
             health: '/health',
             import: '/api/games/import',
             docs: '/api-docs'
@@ -148,6 +151,7 @@ async function initializeApp() {
             console.log(`🚀 Server running on port ${PORT}`);
             console.log(`📍 Local: http://localhost:${PORT}`);
             console.log(`🎮 Games API: http://localhost:${PORT}/api/games`);
+            console.log(`🔐 Auth API: http://localhost:${PORT}/api/auth`);
             console.log(`💚 Health check: http://localhost:${PORT}/health`);
             console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
         });

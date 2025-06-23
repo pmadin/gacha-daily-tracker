@@ -1,3 +1,9 @@
+import express from 'express';
+import database from '../config/database';
+import gameDataService from '../services/gameDataService';
+
+const router = express.Router();
+
 /**
  * @swagger
  * /api/games/servers/list:
@@ -18,12 +24,17 @@
  *                 servers:
  *                   type: array
  *                   items:
+ *                     type: object
+ *                     properties:
+ *                       server:
+ *                         type: string
+ *                         description: Server region name
+ *                         example: "Global"
+ *                       game_count:
+ *                         type: string
+ *                         description: Number of games in this region
+ *                         example: "156"
  */
-import express from 'express';
-import database from '../config/database';
-import gameDataService from '../services/gameDataService';
-
-const router = express.Router();
 
 /**
  * @swagger
@@ -33,21 +44,47 @@ const router = express.Router();
  *     tags: [Games]
  *     description: |
  *       Retrieve all available gacha games with their daily reset times and server information.
- *       Supports filtering by game name and server region, with pagination for large datasets.
+ *       Supports filtering by multiple attributes with optional parameters, similar to a book search.
+ *       No authentication required - open for everyone to use.
  *     parameters:
+ *       - in: query
+ *         name: name
+ *         schema:
+ *           type: string
+ *         description: Search games by exact or partial name match
+ *         example: "Wuthering Waves"
  *       - in: query
  *         name: search
  *         schema:
  *           type: string
- *         description: Search games by name (case-insensitive)
- *         example: "wuthering waves"
+ *         description: General search across game names (case-insensitive)
+ *         example: ""
  *       - in: query
  *         name: server
  *         schema:
  *           type: string
- *           enum: [America, Global, NA, JP, KR, CN, SEA, LATAM, EU]
- *         description: Filter by server region
- *         example: "NA"
+ *           enum: [Global, JP, KR, CN, SEA, LATAM, EU, America, NA, EN]
+ *         description: Filter by exact server region
+ *         example: ""
+ *       - in: query
+ *         name: timezone
+ *         schema:
+ *           type: string
+ *         description: Filter by timezone (exact match)
+ *         example: "Etc/GMT+5"
+ *       - in: query
+ *         name: reset_time
+ *         schema:
+ *           type: string
+ *           pattern: "^([01]?[0-9]|2[0-3]):[0-5][0-9]$"
+ *         description: Filter by daily reset time (HH:MM format)
+ *         example: "04:00"
+ *       - in: query
+ *         name: icon
+ *         schema:
+ *           type: string
+ *         description: Filter by icon name
+ *         example: ""
  *       - in: query
  *         name: limit
  *         schema:
@@ -56,7 +93,7 @@ const router = express.Router();
  *           maximum: 100
  *           default: 50
  *         description: Number of games to return (max 100)
- *         example: 20
+ *         example: 50
  *       - in: query
  *         name: offset
  *         schema:
@@ -65,6 +102,22 @@ const router = express.Router();
  *           default: 0
  *         description: Number of games to skip for pagination
  *         example: 0
+ *       - in: query
+ *         name: sort_by
+ *         schema:
+ *           type: string
+ *           enum: [name, server, reset_time, timezone]
+ *           default: name
+ *         description: Sort results by field
+ *         example: "name"
+ *       - in: query
+ *         name: order
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: asc
+ *         description: Sort order
+ *         example: "asc"
  *     responses:
  *       200:
  *         description: Successfully retrieved games
@@ -72,38 +125,35 @@ const router = express.Router();
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/GameList'
- *             examples:
- *               success:
- *                 summary: Successful response
- *                 value:
- *                   games:
- *                     - id: 1
- *                       name: "Wuthering Waves"
- *                       server: "America"
- *                       timezone: "Etc/GMT+5"
- *                       daily_reset: "04:00"
- *                       icon_name: "wuthering-waves"
- *                       last_verified: "2025-01-20T10:30:00.000Z"
- *                     - id: 2
- *                       name: "Honkai Star Rail"
- *                       server: "Global"
- *                       timezone: "Etc/GMT+8"
- *                       daily_reset: "04:00"
- *                       icon_name: "honkai-star-rail"
- *                       last_verified: "2025-01-20T10:30:00.000Z"
- *                   total: 303
- *                   limit: 50
- *                   offset: 0
+ *       400:
+ *         description: Invalid query parameters
  *       500:
  *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
  */
 router.get('/', async (req, res) => {
     try {
-        const { search, server, limit = 50, offset = 0 } = req.query;
+        const {
+            name,
+            search,
+            server,
+            timezone,
+            reset_time,
+            icon,
+            limit = 50,
+            offset = 0,
+            sort_by = 'name',
+            order = 'asc'
+        } = req.query;
+
+        // Validate sort parameters
+        const validSortFields = ['name', 'server', 'reset_time', 'timezone', 'daily_reset'];
+        const validOrders = ['asc', 'desc'];
+
+        const sortField = validSortFields.includes(sort_by as string) ? sort_by : 'name';
+        const sortOrder = validOrders.includes(order as string) ? order : 'asc';
+
+        // Replace sort_by aliases
+        const actualSortField = sortField === 'reset_time' ? 'daily_reset' : sortField;
 
         let query = `
             SELECT id, name, server, timezone, daily_reset, icon_name, last_verified
@@ -113,8 +163,15 @@ router.get('/', async (req, res) => {
         const params: any[] = [];
         let paramIndex = 1;
 
-        // Add search filter
-        if (search) {
+        // Add exact name filter
+        if (name) {
+            query += ` AND name ILIKE $${paramIndex}`;
+            params.push(`%${name}%`);
+            paramIndex++;
+        }
+
+        // Add general search filter (different from name for flexibility)
+        if (search && search !== name) {
             query += ` AND name ILIKE $${paramIndex}`;
             params.push(`%${search}%`);
             paramIndex++;
@@ -127,18 +184,46 @@ router.get('/', async (req, res) => {
             paramIndex++;
         }
 
+        // Add timezone filter
+        if (timezone) {
+            query += ` AND timezone = $${paramIndex}`;
+            params.push(timezone);
+            paramIndex++;
+        }
+
+        // Add reset time filter
+        if (reset_time) {
+            query += ` AND daily_reset = $${paramIndex}`;
+            params.push(reset_time);
+            paramIndex++;
+        }
+
+        // Add icon filter
+        if (icon) {
+            query += ` AND icon_name ILIKE $${paramIndex}`;
+            params.push(`%${icon}%`);
+            paramIndex++;
+        }
+
         // Add ordering and pagination
-        query += ` ORDER BY name, server LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+        query += ` ORDER BY ${actualSortField} ${(sortOrder as string).toUpperCase()}, id ASC`;
+        query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
         params.push(parseInt(limit as string), parseInt(offset as string));
 
         const result = await database.query(query, params);
 
-        // Get total count for pagination
+        // Get total count for pagination (with same filters)
         let countQuery = 'SELECT COUNT(*) FROM games WHERE is_active = true';
         const countParams: any[] = [];
         let countParamIndex = 1;
 
-        if (search) {
+        if (name) {
+            countQuery += ` AND name ILIKE $${countParamIndex}`;
+            countParams.push(`%${name}%`);
+            countParamIndex++;
+        }
+
+        if (search && search !== name) {
             countQuery += ` AND name ILIKE $${countParamIndex}`;
             countParams.push(`%${search}%`);
             countParamIndex++;
@@ -147,6 +232,25 @@ router.get('/', async (req, res) => {
         if (server) {
             countQuery += ` AND server = $${countParamIndex}`;
             countParams.push(server);
+            countParamIndex++;
+        }
+
+        if (timezone) {
+            countQuery += ` AND timezone = $${countParamIndex}`;
+            countParams.push(timezone);
+            countParamIndex++;
+        }
+
+        if (reset_time) {
+            countQuery += ` AND daily_reset = $${countParamIndex}`;
+            countParams.push(reset_time);
+            countParamIndex++;
+        }
+
+        if (icon) {
+            countQuery += ` AND icon_name ILIKE $${countParamIndex}`;
+            countParams.push(`%${icon}%`);
+            countParamIndex++;
         }
 
         const countResult = await database.query(countQuery, countParams);
@@ -156,11 +260,22 @@ router.get('/', async (req, res) => {
             games: result.rows,
             total,
             limit: parseInt(limit as string),
-            offset: parseInt(offset as string)
+            offset: parseInt(offset as string),
+            filters_applied: {
+                name: name || null,
+                search: search || null,
+                server: server || null,
+                timezone: timezone || null,
+                reset_time: reset_time || null,
+                icon: icon || null,
+                sort_by: sortField,
+                order: sortOrder
+            }
         });
 
-    } catch (error) {
-        console.error('Error fetching games:', error);
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        console.error('Error fetching games:', errorMessage);
         res.status(500).json({ error: 'Failed to fetch games' });
     }
 });
@@ -193,11 +308,11 @@ router.get('/', async (req, res) => {
  *             example:
  *               game:
  *                 id: 1
- *                 name: "wuthering waves"
- *                 server: "Global"
- *                 timezone: "Etc/GMT+5"
- *                 daily_reset: "04:00"
- *                 icon_name: "wuthering-waves"
+ *                 name: "Azur Lane"
+ *                 server: "EN"
+ *                 timezone: "Etc/GMT+7"
+ *                 daily_reset: "00:00"
+ *                 icon_name: "azur-lane-en"
  *                 last_verified: "2025-01-20T10:30:00.000Z"
  *       404:
  *         description: Game not found
