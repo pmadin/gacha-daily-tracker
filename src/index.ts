@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import database from './config/database';
 import gameRoutes from './routes/games';
-import { authRoutes } from './routes/auth'; // Add this import
+import { authRoutes } from './routes/auth';
 import autoImportService from './services/autoImportService';
 import { specs, swaggerUi, swaggerOptions } from './config/swagger';
 
@@ -26,7 +26,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions));
 
 // Routes
 app.use('/api/games', gameRoutes);
-app.use('/api/auth', authRoutes); // Add this line
+app.use('/api/auth', authRoutes);
 
 /**
  * @swagger
