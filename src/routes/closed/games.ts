@@ -9,7 +9,7 @@ router.use(authenticateToken);
 
 /**
  * @swagger
- * /api/closed/games/{id}:
+ * /gdt/closed/games/{id}:
  *   patch:
  *     summary: Update game information
  *     tags: [Game Management]
@@ -187,7 +187,7 @@ router.patch('/:id', async (req, res) => {
 
 /**
  * @swagger
- * /api/closed/games:
+ * /gdt/closed/games:
  *   post:
  *     summary: Add new game
  *     tags: [Game Management]

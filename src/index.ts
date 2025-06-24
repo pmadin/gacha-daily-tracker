@@ -25,8 +25,8 @@ app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions));
 
 // Routes
-app.use('/api/games', gameRoutes);
-app.use('/api/auth', authRoutes);
+app.use('/gdt/games', gameRoutes);
+app.use('/gdt/auth', authRoutes);
 
 /**
  * @swagger
@@ -57,7 +57,7 @@ app.use('/api/auth', authRoutes);
  *                   properties:
  *                     games:
  *                       type: string
- *                       example: "/api/games"
+ *                       example: "/gdt/games"
  *                     health:
  *                       type: string
  *                       example: "/health"
@@ -71,10 +71,10 @@ app.get('/', (req, res) => {
         version: '1.0.0',
         status: 'running',
         endpoints: {
-            games: '/api/games',
-            auth: '/api/auth',
+            games: '/gdt/games',
+            auth: '/gdt/auth',
             health: '/health',
-            import: '/api/games/import',
+            import: '/gdt/games/import',
             docs: '/api-docs'
         }
     });
@@ -150,8 +150,8 @@ async function initializeApp() {
         app.listen(PORT, () => {
             console.log(`🚀 Server running on port ${PORT}`);
             console.log(`📍 Local: http://localhost:${PORT}`);
-            console.log(`🎮 Games API: http://localhost:${PORT}/api/games`);
-            console.log(`🔐 Auth API: http://localhost:${PORT}/api/auth`);
+            console.log(`🎮 Games API: http://localhost:${PORT}/gdt/games`);
+            console.log(`🔐 Auth API: http://localhost:${PORT}/gdt/auth`);
             console.log(`💚 Health check: http://localhost:${PORT}/health`);
             console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
         });

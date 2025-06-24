@@ -2,6 +2,7 @@ import express, { Request, Response, Router, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import database from '../../config/database';
+import TimezoneService from '../../services/timezoneService';
 
 const registerRouter: Router = express.Router();
 
@@ -18,7 +19,7 @@ function addPepper(password: string): string {
 
 /**
  * @swagger
- * /api/auth/register:
+ * /gdt/auth/register:
  *   post:
  *     summary: Register new user (Enhanced Security)
  *     tags: [Authentication]
@@ -28,6 +29,13 @@ function addPepper(password: string): string {
  *       - Automatic salting (16 rounds)
  *       - Pepper for additional security
  *       - Strong password requirements
+ *       - Timezone auto-detection if not provided
+ *     parameters:
+ *       - in: header
+ *         name: X-User-Timezone
+ *         schema:
+ *           type: string
+ *         description: User's timezone from browser (optional backup)
  *     requestBody:
  *       required: true
  *       content:
@@ -38,7 +46,7 @@ function addPepper(password: string): string {
  *             properties:
  *               username:
  *                 type: string
- *                 minLength: 3
+ *                 minLength: 5
  *                 maxLength: 50
  *                 pattern: "^[a-zA-Z0-9_-]+$"
  *                 example: "gacha_master_2025"
@@ -48,16 +56,54 @@ function addPepper(password: string): string {
  *                 example: "user@example.com"
  *               password:
  *                 type: string
- *                 minLength: 12
+ *                 minLength: 15
  *                 description: Must contain uppercase, lowercase, number, and special character
  *                 example: "MySecure123!Pass"
  *               timezone:
  *                 type: string
- *                 default: "America/Los_Angeles"
+ *                 description: IANA timezone identifier. Auto-detected if not provided.
  *                 example: "America/Los_Angeles"
+ *           examples:
+ *             with_timezone:
+ *               summary: With explicit timezone
+ *               value:
+ *                 username: "gacha_master_2025"
+ *                 email: "user@example.com"
+ *                 password: "MySecure123!Pass"
+ *                 timezone: "America/Los_Angeles"
+ *             auto_detect:
+ *               summary: Auto-detect timezone
+ *               value:
+ *                 username: "gacha_master_2025"
+ *                 email: "user@example.com"
+ *                 password: "MySecure123!Pass"
  *     responses:
  *       201:
  *         description: User created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     username:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     timezone:
+ *                       type: string
+ *                     created_at:
+ *                       type: string
+ *                     detected_timezone:
+ *                       type: boolean
+ *                 security_info:
+ *                   type: object
  *       400:
  *         description: Validation error or user already exists
  *       500:
@@ -65,7 +111,7 @@ function addPepper(password: string): string {
  */
 registerRouter.post('/register', async (req: Request, res: Response) => {
     try {
-        const { username, email, password, timezone = 'America/Los_Angeles' } = req.body;
+        const { username, email, password } = req.body;
 
         // Enhanced validation
         if (!username || !email || !password) {
@@ -75,9 +121,9 @@ registerRouter.post('/register', async (req: Request, res: Response) => {
         }
 
         // Username validation
-        if (username.length < 3 || username.length > 50) {
+        if (username.length < 5 || username.length > 50) {
             return res.status(400).json({
-                error: 'Username must be between 3 and 50 characters'
+                error: 'Username must be between 5 and 50 characters'
             });
         }
 
@@ -88,9 +134,9 @@ registerRouter.post('/register', async (req: Request, res: Response) => {
         }
 
         // Enhanced password validation
-        if (password.length < 12) {
+        if (password.length < 15) {
             return res.status(400).json({
-                error: 'Password must be at least 12 characters long'
+                error: 'Password must be at least 15 characters long'
             });
         }
 
@@ -111,6 +157,20 @@ registerRouter.post('/register', async (req: Request, res: Response) => {
             });
         }
 
+        // Detect or validate timezone
+        let userTimezone = await TimezoneService.detectUserTimezone(req);
+        let wasDetected = !req.body.timezone;
+
+        // If timezone was provided, validate it
+        if (req.body.timezone) {
+            if (!TimezoneService.isValidTimezone(req.body.timezone)) {
+                return res.status(400).json({
+                    error: 'Invalid timezone. Use /gdt/auth/timezones to see valid options.'
+                });
+            }
+            userTimezone = TimezoneService.normalizeTimezone(req.body.timezone);
+        }
+
         // Check if user exists
         const existingUser = await database.query(
             'SELECT id FROM users WHERE email = $1 OR username = $2',
@@ -128,17 +188,18 @@ registerRouter.post('/register', async (req: Request, res: Response) => {
         const saltRounds = 16; // Very secure, takes ~65ms per hash
         const passwordHash = await bcrypt.hash(pepperedPassword, saltRounds);
 
-        // Create user
+        // Create user with timezone
         const result = await database.query(`
             INSERT INTO users (username, email, password_hash, timezone)
             VALUES ($1, $2, $3, $4)
-            RETURNING id, username, email, timezone, created_at
-        `, [username, email, passwordHash, timezone]);
+                RETURNING id, username, email, timezone, created_at
+        `, [username, email, passwordHash, userTimezone]);
 
         const user = result.rows[0];
 
         // Security audit log
         console.log(`🔐 New user registered: ${username} (${email}) with enhanced security`);
+        console.log(`   Timezone: ${userTimezone} (${wasDetected ? 'auto-detected' : 'user-provided'})`);
 
         res.status(201).json({
             message: 'User created successfully',
@@ -147,7 +208,8 @@ registerRouter.post('/register', async (req: Request, res: Response) => {
                 username: user.username,
                 email: user.email,
                 timezone: user.timezone,
-                created_at: user.created_at
+                created_at: user.created_at,
+                detected_timezone: wasDetected
             },
             security_info: {
                 hash_algorithm: 'bcrypt',

@@ -6,7 +6,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/games/servers/list:
+ * /gdt/games/servers/list:
  *   get:
  *     summary: Get all server regions
  *     tags: [Games]
@@ -38,7 +38,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/games:
+ * /gdt/games:
  *   get:
  *     summary: Get all gacha games
  *     tags: [Games]
@@ -282,7 +282,7 @@ router.get('/', async (req, res) => {
 
 /**
  * @swagger
- * /api/games/{id}:
+ * /gdt/games/{id}:
  *   get:
  *     summary: Get specific game by ID
  *     tags: [Games]
@@ -352,7 +352,7 @@ router.get('/:id', async (req, res) => {
 
 /**
  * @swagger
- * /api/games/import:
+ * /gdt/games/import:
  *   post:
  *     summary: Import/Update game data
  *     tags: [Data Management]
@@ -473,7 +473,7 @@ router.post('/import', async (req, res) => {
 
 /**
  * @swagger
- * /api/games/servers/list:
+ * /gdt/games/servers/list:
  *   get:
  *     summary: Get all server regions
  *     tags: [Games]
