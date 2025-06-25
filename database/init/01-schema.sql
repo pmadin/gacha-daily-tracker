@@ -1,10 +1,19 @@
--- Users table
+-- Users table (Updated)
 CREATE TABLE users (
                        id SERIAL PRIMARY KEY,
                        username VARCHAR(50) UNIQUE NOT NULL,
                        email VARCHAR(255) UNIQUE NOT NULL,
                        password_hash VARCHAR(255) NOT NULL,
                        timezone VARCHAR(50) DEFAULT 'America/Los_Angeles',
+
+    -- Optional profile fields
+                       first_name VARCHAR(100),  -- Optional
+                       last_name VARCHAR(100),   -- Optional
+                       phone VARCHAR(20),        -- Optional (for future SMS features)
+
+    -- Role system (1=user, 2=premium, 3=admin, 4=owner)
+                       role INTEGER DEFAULT 1 NOT NULL,
+
                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -36,7 +45,7 @@ CREATE TABLE user_games (
 );
 
 -- Daily completion tracking
-CREATE TABLE daily_completions (s
+CREATE TABLE daily_completions (
                                    id SERIAL PRIMARY KEY,
                                    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
                                    game_id INTEGER REFERENCES games(id) ON DELETE CASCADE,
@@ -59,3 +68,4 @@ CREATE TABLE reminder_settings (
 CREATE INDEX idx_user_games_user_id ON user_games(user_id);
 CREATE INDEX idx_daily_completions_user_date ON daily_completions(user_id, completion_date);
 CREATE INDEX idx_games_active ON games(is_active) WHERE is_active = true;
+CREATE INDEX idx_users_role ON users(role);

@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import database from './config/database';
 import gameRoutes from './routes/games';
 import { authRoutes } from './routes/auth';
+import { timezoneRoutes } from "./routes/timezone";
 import autoImportService from './services/autoImportService';
 import { specs, swaggerUi, swaggerOptions } from './config/swagger';
 
@@ -22,15 +23,32 @@ app.use(cors());
 app.use(express.json());
 
 // API Documentation
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions));
+app.use('/gdt/api-docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions));
 
 // Routes
 app.use('/gdt/games', gameRoutes);
+app.use('/gdt/timezones', timezoneRoutes);
 app.use('/gdt/auth', authRoutes);
 
 /**
  * @swagger
  * /:
+ *   get:
+ *     summary: API Information (Root)
+ *     tags: [Health]
+ *     description: Root endpoint - redirects to API documentation
+ *     responses:
+ *       302:
+ *         description: Redirect to API documentation
+ */
+app.get('/', (req, res) => {
+    // Redirect to API docs for better user experience
+    res.redirect('/gdt/api-docs');
+});
+
+/**
+ * @swagger
+ * /gdt/:
  *   get:
  *     summary: API Information
  *     tags: [Health]
@@ -58,14 +76,23 @@ app.use('/gdt/auth', authRoutes);
  *                     games:
  *                       type: string
  *                       example: "/gdt/games"
+ *                     auth:
+ *                       type: string
+ *                       example: "/gdt/auth"
+ *                     timezones:
+ *                       type: string
+ *                       example: "/gdt/timezones"
  *                     health:
  *                       type: string
- *                       example: "/health"
+ *                       example: "/gdt/health"
+ *                     import:
+ *                       type: string
+ *                       example: "/gdt/games/import"
  *                     docs:
  *                       type: string
- *                       example: "/api-docs"
+ *                       example: "/gdt/api-docs"
  */
-app.get('/', (req, res) => {
+app.get('/gdt/', (req, res) => {
     res.json({
         message: 'Gacha Daily Tracker API',
         version: '1.0.0',
@@ -73,16 +100,17 @@ app.get('/', (req, res) => {
         endpoints: {
             games: '/gdt/games',
             auth: '/gdt/auth',
-            health: '/health',
+            timezones: '/gdt/timezones',
+            health: '/gdt/health',
             import: '/gdt/games/import',
-            docs: '/api-docs'
+            docs: '/gdt/api-docs'
         }
     });
 });
 
 /**
  * @swagger
- * /health:
+ * /gdt/health:
  *   get:
  *     summary: Health Check
  *     tags: [Health]
@@ -114,7 +142,7 @@ app.get('/', (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-app.get('/health', async (req, res) => {
+app.get('/gdt/health', async (req, res) => {
     try {
         const dbHealth = await database.healthCheck();
         const backupInfo = await autoImportService.getBackupInfo();
@@ -152,8 +180,9 @@ async function initializeApp() {
             console.log(`📍 Local: http://localhost:${PORT}`);
             console.log(`🎮 Games API: http://localhost:${PORT}/gdt/games`);
             console.log(`🔐 Auth API: http://localhost:${PORT}/gdt/auth`);
-            console.log(`💚 Health check: http://localhost:${PORT}/health`);
-            console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
+            console.log(`🌐 Timezones API: http://localhost:${PORT}/gdt/timezones`);
+            console.log(`💚 Health check: http://localhost:${PORT}/gdt/health`);
+            console.log(`📚 API Documentation: http://localhost:${PORT}/gdt/api-docs`);
         });
 
     } catch (error: unknown) {

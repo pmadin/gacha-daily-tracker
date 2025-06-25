@@ -1,6 +1,7 @@
-import express, { Request, Response, Router, NextFunction } from 'express';
+import express, { Request, Response, Router } from 'express';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import validator from 'validator';
 import database from '../../config/database';
 import TimezoneService from '../../services/timezoneService';
 
@@ -21,7 +22,7 @@ function addPepper(password: string): string {
  * @swagger
  * /gdt/auth/register:
  *   post:
- *     summary: Register new user (Enhanced Security)
+ *     summary: Register new user
  *     tags: [Authentication]
  *     description: |
  *       Create a new user account with enhanced security:
@@ -29,27 +30,23 @@ function addPepper(password: string): string {
  *       - Automatic salting (16 rounds)
  *       - Pepper for additional security
  *       - Strong password requirements
+ *       - Password confirmation validation
  *       - Timezone auto-detection if not provided
- *     parameters:
- *       - in: header
- *         name: X-User-Timezone
- *         schema:
- *           type: string
- *         description: User's timezone from browser (optional backup)
+ *       - Optional profile fields
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required: [username, email, password]
+ *             required: [username, email, password, confirmPassword]
  *             properties:
  *               username:
  *                 type: string
  *                 minLength: 5
  *                 maxLength: 50
  *                 pattern: "^[a-zA-Z0-9_-]+$"
- *                 example: "gacha_master_2025"
+ *                 example: "gacha_whal3_42069"
  *               email:
  *                 type: string
  *                 format: email
@@ -58,65 +55,53 @@ function addPepper(password: string): string {
  *                 type: string
  *                 minLength: 15
  *                 description: Must contain uppercase, lowercase, number, and special character
- *                 example: "MySecure123!Pass"
+ *                 example: "Azurlane!Xnikke"
+ *               confirmPassword:
+ *                 type: string
+ *                 description: Must match the password field
+ *                 example: "Azurlane!Xnikke"
  *               timezone:
  *                 type: string
  *                 description: IANA timezone identifier. Auto-detected if not provided.
  *                 example: "America/Los_Angeles"
- *           examples:
- *             with_timezone:
- *               summary: With explicit timezone
- *               value:
- *                 username: "gacha_master_2025"
- *                 email: "user@example.com"
- *                 password: "MySecure123!Pass"
- *                 timezone: "America/Los_Angeles"
- *             auto_detect:
- *               summary: Auto-detect timezone
- *               value:
- *                 username: "gacha_master_2025"
- *                 email: "user@example.com"
- *                 password: "MySecure123!Pass"
- *     responses:
- *       201:
- *         description: User created successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 user:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: integer
- *                     username:
- *                       type: string
- *                     email:
- *                       type: string
- *                     timezone:
- *                       type: string
- *                     created_at:
- *                       type: string
- *                     detected_timezone:
- *                       type: boolean
- *                 security_info:
- *                   type: object
- *       400:
- *         description: Validation error or user already exists
- *       500:
- *         description: Server error
+ *               first_name:
+ *                 type: string
+ *                 maxLength: 100
+ *                 description: Optional first name
+ *                 example: "Andy"
+ *               last_name:
+ *                 type: string
+ *                 maxLength: 100
+ *                 description: Optional last name
+ *                 example: "Ken"
+ *               phone:
+ *                 type: string
+ *                 maxLength: 20
+ *                 description: Optional phone number for future SMS features
+ *                 example: "+1234567890"
  */
 registerRouter.post('/register', async (req: Request, res: Response) => {
     try {
-        const { username, email, password } = req.body;
+        const { username, email, password, confirmPassword, first_name, last_name, phone } = req.body;
 
         // Enhanced validation
-        if (!username || !email || !password) {
+        if (!username || !email || !password || !confirmPassword) {
             return res.status(400).json({
-                error: 'Username, email, and password are required'
+                error: 'Username, email, password, and password confirmation are required'
+            });
+        }
+
+        // Email validation using validator
+        if (!validator.isEmail(email)) {
+            return res.status(400).json({
+                error: 'Please enter a valid email address'
+            });
+        }
+
+        // Password confirmation validation
+        if (password !== confirmPassword) {
+            return res.status(400).json({
+                error: 'Password and password confirmation do not match'
             });
         }
 
@@ -157,6 +142,19 @@ registerRouter.post('/register', async (req: Request, res: Response) => {
             });
         }
 
+        // Validate optional fields
+        if (first_name && first_name.length > 100) {
+            return res.status(400).json({ error: 'First name must be 100 characters or less' });
+        }
+
+        if (last_name && last_name.length > 100) {
+            return res.status(400).json({ error: 'Last name must be 100 characters or less' });
+        }
+
+        if (phone && (phone.length > 20 || !/^[+]?[1-9][\d\s\-()]{7,18}$/.test(phone))) {
+            return res.status(400).json({ error: 'Invalid phone number format' });
+        }
+
         // Detect or validate timezone
         let userTimezone = await TimezoneService.detectUserTimezone(req);
         let wasDetected = !req.body.timezone;
@@ -188,12 +186,12 @@ registerRouter.post('/register', async (req: Request, res: Response) => {
         const saltRounds = 16; // Very secure, takes ~65ms per hash
         const passwordHash = await bcrypt.hash(pepperedPassword, saltRounds);
 
-        // Create user with timezone
+        // Create user with optional fields
         const result = await database.query(`
-            INSERT INTO users (username, email, password_hash, timezone)
-            VALUES ($1, $2, $3, $4)
-                RETURNING id, username, email, timezone, created_at
-        `, [username, email, passwordHash, userTimezone]);
+            INSERT INTO users (username, email, password_hash, timezone, first_name, last_name, phone, role)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, 1)
+                RETURNING id, username, email, timezone, first_name, last_name, phone, role, created_at
+        `, [username, email, passwordHash, userTimezone, first_name || null, last_name || null, phone || null]);
 
         const user = result.rows[0];
 
@@ -208,6 +206,10 @@ registerRouter.post('/register', async (req: Request, res: Response) => {
                 username: user.username,
                 email: user.email,
                 timezone: user.timezone,
+                first_name: user.first_name,
+                last_name: user.last_name,
+                phone: user.phone,
+                role: user.role,
                 created_at: user.created_at,
                 detected_timezone: wasDetected
             },

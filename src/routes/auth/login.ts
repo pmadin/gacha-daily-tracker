@@ -21,7 +21,7 @@ function addPepper(password: string): string {
  * @swagger
  * /gdt/auth/login:
  *   post:
- *     summary: Login user (Enhanced Security)
+ *     summary: Login user
  *     tags: [Authentication]
  *     description: |
  *       Authenticate user with enhanced security measures:

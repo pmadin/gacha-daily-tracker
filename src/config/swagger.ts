@@ -35,7 +35,7 @@ const options = {
                 description: 'Development server',
             },
             {
-                url: 'https://your-heroku-app.herokuapp.com',
+                url: 'https://gachadailytracker-88df93607a47.herokuapp.com',
                 description: 'Production server',
             },
         ],

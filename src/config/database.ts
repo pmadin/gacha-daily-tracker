@@ -24,7 +24,9 @@ class Database {
 
         this.pool = new Pool({
             connectionString: process.env.DATABASE_URL,
-            ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+            ssl: process.env.DATABASE_URL?.includes('localhost') ? false : {
+                rejectUnauthorized: false
+            }
         });
 
         // Test connection on startup
@@ -40,6 +42,7 @@ class Database {
         } catch (error: unknown) {
             if (error instanceof Error) {
                 console.error('❌ Database connection failed:', error.message);
+                console.error('💡 If SSL error, try adding ?sslmode=require to DATABASE_URL');
             } else {
                 console.error('❌ Database connection failed with unknown error');
             }
