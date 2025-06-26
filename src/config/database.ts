@@ -42,7 +42,7 @@ class Database {
         } catch (error: unknown) {
             if (error instanceof Error) {
                 console.error('❌ Database connection failed:', error.message);
-                console.error('💡 If SSL error, try adding ?sslmode=require to DATABASE_URL');
+                console.error('💡 If SSL error, try adding ?sslmode=disable to DATABASE_URL');
             } else {
                 console.error('❌ Database connection failed with unknown error');
             }

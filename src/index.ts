@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import path from 'path';
 import database from './config/database';
 import gameRoutes from './routes/games';
 import { authRoutes } from './routes/auth';
@@ -21,6 +22,9 @@ const PORT = process.env.PORT || 4000;
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from public directory
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // API Documentation
 app.use('/gdt/api-docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions));
@@ -102,6 +106,7 @@ app.get('/gdt/', (req, res) => {
             auth: '/gdt/auth',
             timezones: '/gdt/timezones',
             health: '/gdt/health',
+            status: '/gdt/status',
             import: '/gdt/games/import',
             docs: '/gdt/api-docs'
         }
@@ -161,6 +166,244 @@ app.get('/gdt/health', async (req, res) => {
             error: errorMessage
         });
     }
+});
+
+/**
+ * @swagger
+ * /gdt/status:
+ *   get:
+ *     summary: Status Page (HTML)
+ *     tags: [Health]
+ *     description: Visual status page showing system health with modern UI
+ *     responses:
+ *       200:
+ *         description: HTML status page
+ *         content:
+ *           text/html:
+ *             schema:
+ *               type: string
+ */
+app.get('/gdt/status', (req, res) => {
+    const statusPageHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gacha Daily Tracker - Status</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .status-card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            transition: transform 0.2s ease;
+        }
+
+        .status-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .overall-status {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .status-operational {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .status-indicator::before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .status-operational::before {
+            background: #28a745;
+        }
+
+        .status-error::before {
+            background: #dc3545;
+        }
+
+        .timestamp {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .services {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .service {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+            transition: all 0.2s ease;
+        }
+
+        .service:hover {
+            background: #e9ecef;
+        }
+
+        .service.error {
+            border-left-color: #dc3545;
+        }
+
+        .service h3 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .service-status {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #28a745;
+        }
+
+        .service.error .service-status {
+            color: #dc3545;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            opacity: 0.8;
+            margin-top: 40px;
+        }
+
+        .refresh-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 20px;
+            transition: background 0.2s ease;
+        }
+
+        .refresh-btn:hover {
+            background: #5a6fd8;
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .status-card {
+                padding: 30px 20px;
+            }
+            
+            .services {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Gacha Daily Tracker</h1>
+            <p>API Status & System Health</p>
+        </div>
+
+        <div class="status-card" id="statusCard">
+            <div class="overall-status">
+                <div class="status-indicator" id="overallStatus">
+                    <span id="statusText">Loading...</span>
+                </div>
+                <div class="timestamp" id="timestamp">Checking system status...</div>
+            </div>
+
+            <div class="services" id="services">
+                <!-- Services will be populated by JavaScript -->
+            </div>
+
+            <div style="text-align: center;">
+                <button class="refresh-btn" id="refreshBtn">🔄 Refresh Status</button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Last updated: <span id="lastUpdated">Never</span></p>
+            <p>Powered by Heroku • Built with HTML & CSS</p>
+        </div>
+    </div>
+    <script src="/public/status.js"></script>
+</body>
+</html>`;
+
+    res.send(statusPageHTML);
 });
 
 // Auto-import data on startup
