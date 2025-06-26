@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "NODE_PATH=./dist node dist/index.js",
-    "postinstall": "tsc",
-    "build": "tsc -p .",
+    "postinstall": "npm run build",
+    "build": "tsc -p . && cp -r src/public dist/public || xcopy src\\public dist\\public /E /I /Y 2>nul || echo 'Copy completed'",
     "dev": "nodemon -r dotenv/config src/index.ts dotenv_config_path=.env.development",
     "local": "nodemon -r dotenv/config src/index.ts dotenv_config_path=.env",
     "prod": "nodemon -r dotenv/config src/index.ts dotenv_config_path=.env.production",

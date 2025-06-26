@@ -23,8 +23,34 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
-// Serve static files from public directory
-app.use('/public', express.static(path.join(__dirname, 'public')));
+// Serve static files - handle both development and production paths
+const publicPaths = [
+    path.join(__dirname, 'public'),           // Production: dist/public
+    path.join(__dirname, '..', 'src', 'public'), // Development: from dist/ to src/public
+    path.join(process.cwd(), 'src', 'public'), // Development: from root to src/public
+    path.join(process.cwd(), 'dist', 'public'), // Production: from root to dist/public
+    path.join(process.cwd(), 'public')        // Fallback: root/public
+];
+
+// Try each path and use the first one that exists
+let publicPath = publicPaths[0]; // Default fallback
+const fs = require('fs');
+for (const testPath of publicPaths) {
+    try {
+        if (fs.existsSync(testPath)) {
+            publicPath = testPath;
+            console.log(`📁 Using public directory: ${publicPath}`);
+            break;
+        } else {
+            console.log(`📁 Path not found: ${testPath}`);
+        }
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.log(`📁 Error checking path ${testPath}:`, errorMessage);
+    }
+}
+
+app.use('/public', express.static(publicPath));
 
 // API Documentation
 app.use('/gdt/api-docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions));
@@ -166,6 +192,148 @@ app.get('/gdt/health', async (req, res) => {
             error: errorMessage
         });
     }
+});
+
+// Serve the status.js file directly as a fallback
+app.get('/public/status.js', (req, res) => {
+    const statusJS = `
+// Status page JavaScript
+console.log('Status.js loaded successfully');
+
+async function checkStatus() {
+    console.log('checkStatus function called');
+    
+    const statusCard = document.getElementById('statusCard');
+    const overallStatus = document.getElementById('overallStatus');
+    const statusText = document.getElementById('statusText');
+    const timestamp = document.getElementById('timestamp');
+    const servicesDiv = document.getElementById('services');
+    const lastUpdated = document.getElementById('lastUpdated');
+
+    // Show loading state
+    statusCard.classList.add('loading');
+    statusText.textContent = 'Checking...';
+
+    try {
+        // Fetch status from the current domain
+        console.log('Fetching status from /gdt/health...');
+        const response = await fetch('/gdt/health');
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(\`HTTP error! status: \${response.status}\`);
+        }
+        
+        const data = await response.json();
+        console.log('Data received:', data);
+
+        // Update overall status
+        const isHealthy = data.status === 'OK' && data.database?.status === 'healthy';
+        
+        overallStatus.className = \`status-indicator \${isHealthy ? 'status-operational' : 'status-error'}\`;
+        statusText.textContent = isHealthy ? 'All Systems Operational' : 'System Issues Detected';
+
+        // Convert UTC timestamp to local time
+        const utcTime = new Date(data.timestamp);
+        const localTime = utcTime.toLocaleString();
+        timestamp.textContent = \`Last checked: \${localTime}\`;
+
+        // Update services
+        const services = [
+            {
+                name: 'API Server',
+                status: data.status === 'OK' ? 'Operational' : 'Issues',
+                healthy: data.status === 'OK'
+            },
+            {
+                name: 'Database',
+                status: data.database?.status === 'healthy' ? 'Operational' : 'Issues',
+                healthy: data.database?.status === 'healthy'
+            },
+            {
+                name: 'Game Data Sync',
+                status: data.backup_file?.exists ? 'Operational' : 'Pending',
+                healthy: data.backup_file?.exists !== false
+            },
+            {
+                name: 'Authentication',
+                status: 'Operational',
+                healthy: true
+            }
+        ];
+
+        servicesDiv.innerHTML = services.map(service => \`
+            <div class="service \${service.healthy ? '' : 'error'}">
+                <h3>\${service.name}</h3>
+                <div class="service-status">\${service.status}</div>
+            </div>
+        \`).join('');
+
+        // Update last updated time
+        lastUpdated.textContent = new Date().toLocaleString();
+
+    } catch (error) {
+        console.error('Error fetching status:', error);
+        
+        overallStatus.className = 'status-indicator status-error';
+        statusText.textContent = 'Unable to Check Status';
+        timestamp.textContent = \`Connection failed: \${error.message}\`;
+        
+        servicesDiv.innerHTML = \`
+            <div class="service error">
+                <h3>Connection Error</h3>
+                <div class="service-status">Unable to reach server: \${error.message}</div>
+            </div>
+        \`;
+    } finally {
+        statusCard.classList.remove('loading');
+    }
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Content Loaded - Initializing status page');
+    
+    // Add event listener for refresh button
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+            console.log('Refresh button clicked');
+            checkStatus();
+        });
+        console.log('Refresh button event listener added');
+    } else {
+        console.error('Refresh button not found!');
+    }
+
+    // Check status on page load
+    console.log('Starting initial status check');
+    checkStatus();
+
+    // Auto-refresh every 30 seconds
+    console.log('Setting up auto-refresh interval');
+    setInterval(checkStatus, 30000);
+});
+
+// Fallback: if DOMContentLoaded has already fired
+if (document.readyState === 'loading') {
+    console.log('DOM still loading, waiting for DOMContentLoaded');
+} else {
+    console.log('DOM already loaded, initializing immediately');
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+            console.log('Refresh button clicked');
+            checkStatus();
+        });
+    }
+    checkStatus();
+    setInterval(checkStatus, 30000);
+}
+`;
+
+    res.set('Content-Type', 'application/javascript');
+    res.send(statusJS);
 });
 
 /**
@@ -396,7 +564,7 @@ app.get('/gdt/status', (req, res) => {
 
         <div class="footer">
             <p>Last updated: <span id="lastUpdated">Never</span></p>
-            <p>Powered by Heroku • Built with HTML & CSS</p>
+            <p>Powered by Heroku • Built with ❤️</p>
         </div>
     </div>
     <script src="/public/status.js"></script>
@@ -422,9 +590,9 @@ async function initializeApp() {
             console.log(`🚀 Server running on port ${PORT}`);
             console.log(`📍 Local: http://localhost:${PORT}`);
             console.log(`🎮 Games API: http://localhost:${PORT}/gdt/games`);
-            console.log(`🔐 Auth API: http://localhost:${PORT}/gdt/auth`);
             console.log(`🌐 Timezones API: http://localhost:${PORT}/gdt/timezones`);
             console.log(`💚 Health check: http://localhost:${PORT}/gdt/health`);
+            console.log(`✅ Status: http://localhost:${PORT}/gdt/status`);
             console.log(`📚 API Documentation: http://localhost:${PORT}/gdt/api-docs`);
         });
 
