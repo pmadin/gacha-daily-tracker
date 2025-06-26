@@ -55,34 +55,34 @@ const options = {
                         id: {
                             type: 'integer',
                             description: 'Unique game identifier',
-                            example: 1,
+                            example: 126,
                         },
                         name: {
                             type: 'string',
                             description: 'Game name',
-                            example: 'Genshin Impact',
+                            example: 'Guardian Tales',
                         },
                         server: {
                             type: 'string',
                             description: 'Server region',
                             example: 'Global',
-                            enum: ['Global', 'JP', 'KR', 'CN', 'SEA', 'LATAM', 'EU'],
+                            enum: ['Global', 'JP', 'KR', 'CN', 'SEA', 'LATAM', 'EU', 'NA'],
                         },
                         timezone: {
                             type: 'string',
                             description: 'Server timezone',
-                            example: 'Etc/GMT+8',
+                            example: 'America/Los_Angeles',
                         },
                         daily_reset: {
                             type: 'string',
                             format: 'time',
                             description: 'Daily reset time (24h format)',
-                            example: '04:00',
+                            example: '08:00',
                         },
                         icon_name: {
                             type: 'string',
                             description: 'Icon identifier for the game',
-                            example: 'genshin-impact',
+                            example: 'guardian-tales',
                         },
                         last_verified: {
                             type: 'string',
