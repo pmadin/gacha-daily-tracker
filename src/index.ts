@@ -32,6 +32,54 @@ const publicPaths = [
     path.join(process.cwd(), 'public')        // Fallback: root/public
 ];
 
+// Favicon routes - serve from the images directory
+app.get('/favicon.ico', (req, res) => {
+    const faviconPath = path.join(publicPath, 'images', 'favicon.ico');
+    res.sendFile(faviconPath, (err) => {
+        if (err) {
+            console.log('📎 favicon.ico not found, serving fallback');
+            // Fallback to PNG if ICO doesn't exist
+            const fallbackPath = path.join(publicPath, 'images', 'favicon-96x96.png');
+            res.sendFile(fallbackPath, (fallbackErr) => {
+                if (fallbackErr) {
+                    res.status(404).send('Favicon not found');
+                }
+            });
+        }
+    });
+});
+
+// Additional favicon routes for different sizes
+app.get('/favicon-:size.png', (req, res) => {
+    const { size } = req.params;
+    const faviconPath = path.join(publicPath, 'images', `favicon-${size}.png`);
+    res.sendFile(faviconPath, (err) => {
+        if (err) {
+            res.redirect('/favicon.ico');
+        }
+    });
+});
+
+// Apple touch icon
+app.get('/apple-touch-icon.png', (req, res) => {
+    const applePath = path.join(publicPath, 'images', 'apple-touch-icon.png');
+    res.sendFile(applePath, (err) => {
+        if (err) {
+            res.redirect('/favicon.ico');
+        }
+    });
+});
+
+// Web manifest
+app.get('/site.webmanifest', (req, res) => {
+    const manifestPath = path.join(publicPath, 'images', 'site.webmanifest');
+    res.sendFile(manifestPath, (err) => {
+        if (err) {
+            res.status(404).json({ error: 'Manifest not found' });
+        }
+    });
+});
+
 // Try each path and use the first one that exists
 let publicPath = publicPaths[0]; // Default fallback
 const fs = require('fs');
@@ -358,6 +406,15 @@ app.get('/gdt/status', (req, res) => {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gacha Daily Tracker - Status</title>
+    
+    <!-- Updated Favicon Links -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="/public/images/favicon.svg">
+    <link rel="icon" type="image/png" sizes="96x96" href="/public/images/favicon-96x96.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/public/images/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="msapplication-TileColor" content="#667eea">
+    <meta name="theme-color" content="#667eea">
     <style>
         * {
             margin: 0;
@@ -564,7 +621,7 @@ app.get('/gdt/status', (req, res) => {
 
         <div class="footer">
             <p>Last updated: <span id="lastUpdated">Never</span></p>
-            <p>Powered by Heroku • Built with ❤️</p>
+            <p>Powered by Heroku • Built with HTML & CSS</p>
         </div>
     </div>
     <script src="/public/status.js"></script>
