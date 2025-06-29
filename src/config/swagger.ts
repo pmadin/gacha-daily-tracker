@@ -29,16 +29,6 @@ const options = {
                 url: 'https://opensource.org/licenses/MIT',
             },
         },
-        servers: [
-            {
-                url: 'http://localhost:4000',
-                description: 'Development server',
-            },
-            {
-                url: 'https://gachadailytracker-88df93607a47.herokuapp.com',
-                description: 'Production server',
-            },
-        ],
         components: {
             securitySchemes: {
                 bearerAuth: {
@@ -323,7 +313,7 @@ const customCss = `
 const swaggerOptions = {
     customCss,
     customSiteTitle: '🎮 Gacha Daily Tracker API',
-    customfavIcon: '/favicon.ico', // Fixed: Now points to the correct route
+    customfavIcon: '/favicon.ico',
     swaggerOptions: {
         persistAuthorization: true,
         displayRequestDuration: true,
@@ -334,8 +324,10 @@ const swaggerOptions = {
         docExpansion: 'list',
         showExtensions: true,
         showCommonExtensions: true,
+        // Remove any server-related options
+        supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
+        validatorUrl: null, // Disable schema validation
     },
-    // Favicon support in the HTML head
     customHead: `
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
         <link rel="icon" type="image/svg+xml" href="/public/images/favicon.svg">
@@ -344,6 +336,21 @@ const swaggerOptions = {
         <link rel="manifest" href="/site.webmanifest">
         <meta name="msapplication-TileColor" content="#667eea">
         <meta name="theme-color" content="#667eea">
+        
+        <script>
+            // Clean up any remaining server selector elements after load
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(() => {
+                    // Remove any server selector elements that might still appear
+                    const servers = document.querySelectorAll('.servers, .servers-title, [class*="server"]');
+                    servers.forEach(el => {
+                        if (el.textContent && el.textContent.includes('Server')) {
+                            el.style.display = 'none';
+                        }
+                    });
+                }, 500);
+            });
+        </script>
     `,
 };
 

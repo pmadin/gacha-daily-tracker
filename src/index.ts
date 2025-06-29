@@ -1,4 +1,4 @@
-import express from 'express';
+import express, {response} from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
@@ -171,20 +171,250 @@ app.get('/', (req, res) => {
  *                       example: "/gdt/api-docs"
  */
 app.get('/gdt/', (req, res) => {
-    res.json({
-        message: 'Gacha Daily Tracker API',
-        version: '1.0.0',
-        status: 'running',
-        endpoints: {
-            games: '/gdt/games',
-            auth: '/gdt/auth',
-            timezones: '/gdt/timezones',
-            health: '/gdt/health',
-            status: '/gdt/status',
-            import: '/gdt/games/import',
-            docs: '/gdt/api-docs'
+    const homePageHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Gacha Daily Tracker API</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-    });
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 60px;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 300;
+            margin-bottom: 20px;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .card h3 {
+            color: #667eea;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .quick-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .link-card {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .link-card:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-5px);
+        }
+        
+        .link-card a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .link-card p {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+        
+        .footer {
+            text-align: center;
+            color: white;
+            opacity: 0.8;
+            margin-top: 60px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+        
+        .stat {
+            text-align: center;
+            color: white;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Gacha Daily Tracker API</h1>
+            <p>A modern REST API for tracking daily tasks and reset times across 300+ gacha games. Never miss your dailies again!</p>
+            
+            <div class="stats">
+                <div class="stat">
+                    <span class="stat-number" id="gameCount">300+</span>
+                    <span class="stat-label">Games Supported</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number" id="serverCount">8</span>
+                    <span class="stat-label">Server Regions</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">24/7</span>
+                    <span class="stat-label">Uptime</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="cards">
+            <div class="card">
+                <h3>🎯 Core Features</h3>
+                <ul style="list-style: none; padding: 0;">
+                    <li style="margin: 10px 0; padding-left: 20px; position: relative;">
+                        <span style="position: absolute; left: 0;">🕐</span>
+                        Real-time reset tracking for 300+ games
+                    </li>
+                    <li style="margin: 10px 0; padding-left: 20px; position: relative;">
+                        <span style="position: absolute; left: 0;">🌍</span>
+                        Multi-timezone support
+                    </li>
+                    <li style="margin: 10px 0; padding-left: 20px; position: relative;">
+                        <span style="position: absolute; left: 0;">🔐</span>
+                        JWT authentication system
+                    </li>
+                    <li style="margin: 10px 0; padding-left: 20px; position: relative;">
+                        <span style="position: absolute; left: 0;">📊</span>
+                        Comprehensive API documentation
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="card">
+                <h3>⚡ Tech Stack</h3>
+                <ul style="list-style: none; padding: 0;">
+                    <li style="margin: 10px 0; padding-left: 20px; position: relative;">
+                        <span style="position: absolute; left: 0;">🟢</span>
+                        Node.js + Express + TypeScript
+                    </li>
+                    <li style="margin: 10px 0; padding-left: 20px; position: relative;">
+                        <span style="position: absolute; left: 0;">🐘</span>
+                        PostgreSQL Database
+                    </li>
+                    <li style="margin: 10px 0; padding-left: 20px; position: relative;">
+                        <span style="position: absolute; left: 0;">📚</span>
+                        OpenAPI 3.0 / Swagger
+                    </li>
+                    <li style="margin: 10px 0; padding-left: 20px; position: relative;">
+                        <span style="position: absolute; left: 0;">🚀</span>
+                        Heroku Deployment
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="quick-links">
+            <div class="link-card">
+                <a href="/gdt/api-docs">📚 API Documentation</a>
+                <p>Complete Swagger documentation with interactive testing</p>
+            </div>
+            
+            <div class="link-card">
+                <a href="/gdt/games">🎮 Browse Games</a>
+                <p>Explore the database of gacha games and reset times</p>
+            </div>
+            
+            <div class="link-card">
+                <a href="/gdt/status">💚 System Status</a>
+                <p>Real-time system health and uptime monitoring</p>
+            </div>
+            
+            <div class="link-card">
+                <a href="/gdt/health">🔧 Health Check</a>
+                <p>API and database health check endpoint</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Built with ❤️ for the gacha gaming community</p>
+            <p style="margin-top: 10px; font-size: 0.8rem;">
+                <a href="https://github.com/yourusername/gacha-daily-tracker" style="color: rgba(255,255,255,0.8);">View on GitHub</a> | 
+                <a href="/gdt/api-docs" style="color: rgba(255,255,255,0.8);">API Docs</a> | 
+                <a href="/gdt/status" style="color: rgba(255,255,255,0.8);">Status</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- External JavaScript file to avoid CSP issues -->
+    <script src="/public/gameInfo.js"></script>
+</body>
+</html>`;
+    res.send(homePageHTML);
 });
 
 /**
@@ -624,6 +854,7 @@ app.get('/gdt/status', (req, res) => {
             <p>Powered by Heroku • Built with HTML & CSS</p>
         </div>
     </div>
+    <!-- External JavaScript file to avoid CSP issues -->
     <script src="/public/status.js"></script>
 </body>
 </html>`;

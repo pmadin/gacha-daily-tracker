@@ -21,6 +21,10 @@ const router = express.Router();
  *             schema:
  *               type: object
  *               properties:
+ *                 totalGameCount:
+ *                   type: number
+ *                   description: Total number of games across all servers
+ *                   example: 303
  *                 servers:
  *                   type: array
  *                   items:
@@ -34,7 +38,48 @@ const router = express.Router();
  *                         type: string
  *                         description: Number of games in this region
  *                         example: "156"
+ *             example:
+ *               totalGameCount: 303
+ *               servers:
+ *                 - server: "Global"
+ *                   game_count: "156"
+ *                 - server: "JP"
+ *                   game_count: "89"
+ *                 - server: "KR"
+ *                   game_count: "34"
+ *                 - server: "CN"
+ *                   game_count: "24"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
+router.get('/servers/list', async (req, res) => {
+    try {
+        const result = await database.query(`
+            SELECT server, COUNT(*) as game_count
+            FROM games
+            WHERE is_active = true
+            GROUP BY server
+            ORDER BY game_count DESC, server
+        `);
+
+        // Calculate total game count across all servers
+        const totalGameCount = result.rows.reduce((total, row) => {
+            return total + parseInt(row.game_count);
+        }, 0);
+
+        res.json({
+            totalGameCount,
+            servers: result.rows
+        });
+    } catch (error) {
+        console.error('Error fetching servers:', error);
+        res.status(500).json({ error: 'Failed to fetch servers' });
+    }
+});
 
 /**
  * @swagger
@@ -468,71 +513,6 @@ router.post('/import', async (req, res) => {
     } catch (error) {
         console.error('Error importing games:', error);
         res.status(500).json({ error: 'Failed to import game data' });
-    }
-});
-
-/**
- * @swagger
- * /gdt/games/servers/list:
- *   get:
- *     summary: Get all server regions
- *     tags: [Games]
- *     description: |
- *       Retrieve a list of all available server regions with the number of games
- *       available for each region. Useful for populating filter dropdowns.
- *     responses:
- *       200:
- *         description: Server list retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 servers:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       server:
- *                         type: string
- *                         description: Server region name
- *                         example: "Global"
- *                       game_count:
- *                         type: string
- *                         description: Number of games in this region
- *                         example: "156"
- *             example:
- *               servers:
- *                 - server: "Global"
- *                   game_count: "156"
- *                 - server: "JP"
- *                   game_count: "89"
- *                 - server: "KR"
- *                   game_count: "34"
- *                 - server: "CN"
- *                   game_count: "24"
- *       500:
- *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- */
-router.get('/servers/list', async (req, res) => {
-    try {
-        const result = await database.query(`
-            SELECT server, COUNT(*) as game_count
-            FROM games
-            WHERE is_active = true
-            GROUP BY server
-            ORDER BY game_count DESC, server
-        `);
-
-        res.json({ servers: result.rows });
-
-    } catch (error) {
-        console.error('Error fetching servers:', error);
-        res.status(500).json({ error: 'Failed to fetch servers' });
     }
 });
 

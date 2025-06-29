@@ -19,7 +19,7 @@ function addPepper(password: string): string {
 
 /**
  * @swagger
- * /auth/account:
+ * /gdt/auth/account:
  *   delete:
  *     summary: Delete user account
  *     tags: [Authentication]
