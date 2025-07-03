@@ -7,7 +7,7 @@ import database from './config/database';
 import gameRoutes from './routes/games';
 import { authRoutes } from './routes/auth';
 import { timezoneRoutes } from "./routes/timezone";
-import { roleRouter } from './routes/closed/roles'; // Add this import
+import { roleRouter } from './routes/closed/roles';
 import autoImportService from './services/autoImportService';
 import { specs, swaggerUi, swaggerOptions } from './config/swagger';
 

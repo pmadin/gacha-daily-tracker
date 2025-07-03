@@ -1,6 +1,7 @@
 import express, { Request, Response, Router } from 'express';
 import database from '../../config/database';
 import { requireAdmin, ROLES, getRoleName } from '../../middleware/admin';
+import '../../middleware/auth';
 
 const roleRouter: Router = express.Router();
 
