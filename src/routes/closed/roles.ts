@@ -6,18 +6,20 @@ const roleRouter: Router = express.Router();
 
 /**
  * @swagger
- * /gdt/admin/users/role/{userId}:
+ * /gdt/admin/users/role/{username}:
  *   patch:
- *     summary: Update user role (Admin Only)
+ *     summary: Update user role by username (Admin Only)
  *     tags: [Admin]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: userId
+ *         name: username
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
+ *         description: Username of the user to modify
+ *         example: "test_userROLE1"
  *     requestBody:
  *       required: true
  *       content:
@@ -37,10 +39,12 @@ const roleRouter: Router = express.Router();
  *         description: Role updated successfully
  *       403:
  *         description: Insufficient permissions
+ *       404:
+ *         description: User not found
  */
-roleRouter.patch('/users/:userId/role', requireAdmin, async (req: Request, res: Response) => {
+roleRouter.patch('/users/:username/role', requireAdmin, async (req: Request, res: Response) => {
     try {
-        const { userId } = req.params;
+        const { username } = req.params;
         const { newRole, reason } = req.body;
         const adminUser = req.user!;
 
@@ -65,17 +69,27 @@ roleRouter.patch('/users/:userId/role', requireAdmin, async (req: Request, res: 
             });
         }
 
-        // Get target user
+        // Get target user by username
         const targetUserResult = await database.query(
-            'SELECT id, username, email, role FROM users WHERE id = $1',
-            [userId]
+            'SELECT id, username, email, role FROM users WHERE username = $1',
+            [username]
         );
 
         if (targetUserResult.rows.length === 0) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.status(404).json({
+                error: 'User not found',
+                username: username
+            });
         }
 
         const targetUser = targetUserResult.rows[0];
+
+        // Prevent self-demotion for owners
+        if (targetUser.id === adminUser.userId && adminUser.role === ROLES.OWNER && newRole < ROLES.OWNER) {
+            return res.status(403).json({
+                error: 'You cannot demote yourself from owner role'
+            });
+        }
 
         // Prevent demoting other owners (only owners can demote owners)
         if (targetUser.role === ROLES.OWNER && adminUser.role < ROLES.OWNER) {
@@ -87,7 +101,7 @@ roleRouter.patch('/users/:userId/role', requireAdmin, async (req: Request, res: 
         // Update role
         await database.query(
             'UPDATE users SET role = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
-            [newRole, userId]
+            [newRole, targetUser.id]
         );
 
         // Log the role change
@@ -120,38 +134,168 @@ roleRouter.patch('/users/:userId/role', requireAdmin, async (req: Request, res: 
  * @swagger
  * /gdt/admin/users:
  *   get:
- *     summary: List all users (Admin Only)
+ *     summary: List all users with roles (Admin Only)
  *     tags: [Admin]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: integer
+ *           enum: [1, 2, 3, 4]
+ *         description: Filter by role (optional)
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search by username or email (optional)
  *     responses:
  *       200:
- *         description: List of all users
+ *         description: List of all users with role information
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 users:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       username:
+ *                         type: string
+ *                       email:
+ *                         type: string
+ *                       role:
+ *                         type: integer
+ *                       roleName:
+ *                         type: string
+ *                       first_name:
+ *                         type: string
+ *                       last_name:
+ *                         type: string
+ *                       created_at:
+ *                         type: string
+ *                 total:
+ *                   type: integer
+ *                 requestedBy:
+ *                   type: string
  */
 roleRouter.get('/users', requireAdmin, async (req: Request, res: Response) => {
     try {
-        const usersResult = await database.query(`
-            SELECT id, username, email, role, first_name, last_name,
+        const { role, search } = req.query;
+
+        let query = `
+            SELECT id, username, email, role, first_name, last_name, 
                    timezone, created_at, updated_at
-            FROM users
-            ORDER BY role DESC, created_at DESC
-        `);
+            FROM users 
+            WHERE 1=1
+        `;
+
+        const params: any[] = [];
+        let paramIndex = 1;
+
+        // Add role filter
+        if (role) {
+            query += ` AND role = $${paramIndex}`;
+            params.push(parseInt(role as string));
+            paramIndex++;
+        }
+
+        // Add search filter
+        if (search) {
+            query += ` AND (username ILIKE $${paramIndex} OR email ILIKE $${paramIndex})`;
+            params.push(`%${search}%`);
+            paramIndex++;
+        }
+
+        query += ` ORDER BY role DESC, created_at DESC`;
+
+        const usersResult = await database.query(query, params);
 
         const users = usersResult.rows.map(user => ({
             ...user,
-            roleName: getRoleName(user.role)
+            roleName: getRoleName(user.role),
+            // Don't expose password_hash or sensitive info
+            password_hash: undefined
         }));
 
         res.json({
             users,
             total: users.length,
-            requestedBy: req.user!.username
+            requestedBy: req.user!.username,
+            filters: {
+                role: role || 'all',
+                search: search || 'none'
+            }
         });
 
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
         console.error('Users list error:', errorMessage);
         res.status(500).json({ error: 'Failed to fetch users' });
+    }
+});
+
+/**
+ * @swagger
+ * /gdt/admin/users/search:
+ *   get:
+ *     summary: Search users by username or email (Admin Only)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Search term for username or email
+ *         example: "test"
+ *     responses:
+ *       200:
+ *         description: Search results
+ */
+roleRouter.get('/users/search', requireAdmin, async (req: Request, res: Response) => {
+    try {
+        const { q } = req.query;
+
+        if (!q || typeof q !== 'string' || q.length < 2) {
+            return res.status(400).json({
+                error: 'Search query must be at least 2 characters long'
+            });
+        }
+
+        const searchResult = await database.query(`
+            SELECT id, username, email, role, first_name, last_name, created_at
+            FROM users 
+            WHERE username ILIKE $1 OR email ILIKE $1
+            ORDER BY 
+                CASE WHEN username = $2 THEN 1 ELSE 2 END,
+                username
+            LIMIT 20
+        `, [`%${q}%`, q]);
+
+        const users = searchResult.rows.map(user => ({
+            ...user,
+            roleName: getRoleName(user.role)
+        }));
+
+        res.json({
+            users,
+            searchTerm: q,
+            total: users.length,
+            requestedBy: req.user!.username
+        });
+
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        console.error('User search error:', errorMessage);
+        res.status(500).json({ error: 'Failed to search users' });
     }
 });
 

@@ -7,6 +7,7 @@ import database from './config/database';
 import gameRoutes from './routes/games';
 import { authRoutes } from './routes/auth';
 import { timezoneRoutes } from "./routes/timezone";
+import { roleRouter } from './routes/closed/roles'; // Add this import
 import autoImportService from './services/autoImportService';
 import { specs, swaggerUi, swaggerOptions } from './config/swagger';
 
@@ -107,6 +108,7 @@ app.use('/gdt/api-docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions)
 app.use('/gdt/games', gameRoutes);
 app.use('/gdt/timezones', timezoneRoutes);
 app.use('/gdt/auth', authRoutes);
+app.use('gdt/admin', roleRouter);
 
 /**
  * @swagger
