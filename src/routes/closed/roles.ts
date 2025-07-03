@@ -43,7 +43,7 @@ const roleRouter: Router = express.Router();
  *       404:
  *         description: User not found
  */
-roleRouter.patch('/users/:username/role', requireAdmin, async (req: Request, res: Response) => {
+roleRouter.patch('/users/role/:username', requireAdmin, async (req: Request, res: Response) => {
     try {
         const { username } = req.params;
         const { newRole, reason } = req.body;
