@@ -251,7 +251,7 @@ roleRouter.get('/users', requireAdmin, async (req: Request, res: Response) => {
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
- *         name: q
+ *         name: query
  *         required: true
  *         schema:
  *           type: string

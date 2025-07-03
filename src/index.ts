@@ -33,6 +33,26 @@ const publicPaths = [
     path.join(process.cwd(), 'public')        // Fallback: root/public
 ];
 
+// Try each path and use the first one that exists
+let publicPath = publicPaths[0]; // Default fallback
+const fs = require('fs');
+for (const testPath of publicPaths) {
+    try {
+        if (fs.existsSync(testPath)) {
+            publicPath = testPath;
+            console.log(`📁 Using public directory: ${publicPath}`);
+            break;
+        } else {
+            console.log(`📁 Path not found: ${testPath}`);
+        }
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.log(`📁 Error checking path ${testPath}:`, errorMessage);
+    }
+}
+
+app.use('/public', express.static(publicPath));
+
 // Favicon routes - serve from the images directory
 app.get('/favicon.ico', (req, res) => {
     const faviconPath = path.join(publicPath, 'images', 'favicon.ico');
@@ -81,26 +101,6 @@ app.get('/site.webmanifest', (req, res) => {
     });
 });
 
-// Try each path and use the first one that exists
-let publicPath = publicPaths[0]; // Default fallback
-const fs = require('fs');
-for (const testPath of publicPaths) {
-    try {
-        if (fs.existsSync(testPath)) {
-            publicPath = testPath;
-            console.log(`📁 Using public directory: ${publicPath}`);
-            break;
-        } else {
-            console.log(`📁 Path not found: ${testPath}`);
-        }
-    } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.log(`📁 Error checking path ${testPath}:`, errorMessage);
-    }
-}
-
-app.use('/public', express.static(publicPath));
-
 // API Documentation
 app.use('/gdt/api-docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions));
 
@@ -108,7 +108,7 @@ app.use('/gdt/api-docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions)
 app.use('/gdt/games', gameRoutes);
 app.use('/gdt/timezones', timezoneRoutes);
 app.use('/gdt/auth', authRoutes);
-app.use('gdt/admin', roleRouter);
+app.use('/gdt/admin', roleRouter);
 
 /**
  * @swagger
