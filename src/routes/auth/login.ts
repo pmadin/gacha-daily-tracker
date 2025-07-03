@@ -86,7 +86,7 @@ loginRouter.post('/login', async (req: Request, res: Response) => {
 
         // Find user
         const result = await database.query(
-            'SELECT * FROM users WHERE email = $1',
+            'SELECT id, username, email, password_hash, timezone, role FROM users WHERE email = $1',
             [email]
         );
 
@@ -112,6 +112,7 @@ loginRouter.post('/login', async (req: Request, res: Response) => {
                 userId: user.id,
                 email: user.email,
                 username: user.username,
+                role: user.role,
                 iat: Math.floor(Date.now() / 1000) // Issued at time
             },
             process.env.JWT_SECRET || 'fallback-secret-change-in-production',
@@ -132,6 +133,7 @@ loginRouter.post('/login', async (req: Request, res: Response) => {
                 id: user.id,
                 username: user.username,
                 email: user.email,
+                role: user.role,
                 timezone: user.timezone
             },
             expires_in: '30 days'

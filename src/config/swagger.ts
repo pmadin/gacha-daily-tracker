@@ -124,7 +124,7 @@ const options = {
         tags: [
             {
                 name: 'Games',
-                description: '🎮 Game management and data retrieval (Open Access)',
+                description: '🎮 Game management and data retrieval',
             },
             {
                 name: 'Authentication',
@@ -132,7 +132,7 @@ const options = {
             },
             {
                 name: 'Game Management',
-                description: '🔒 Game data editing (Premium - Auth Required)',
+                description: '🔒 Game data editing',
             },
             {
                 name: 'Health',
@@ -140,7 +140,7 @@ const options = {
             },
             {
                 name: 'Data Management',
-                description: '🔄 Import and sync game data (Admin)',
+                description: '🔄 Import and sync game data',
             },
         ],
     },

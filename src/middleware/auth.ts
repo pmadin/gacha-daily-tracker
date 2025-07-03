@@ -9,6 +9,7 @@ declare global {
                 userId: number;
                 email: string;
                 username: string;
+                role: number;
             };
         }
     }
@@ -32,7 +33,8 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
         req.user = {
             userId: decoded.userId,
             email: decoded.email,
-            username: decoded.username
+            username: decoded.username,
+            role: decoded.role || 1 // 1 is default value
         };
 
         next();
@@ -67,7 +69,8 @@ export const optionalAuth = (req: Request, res: Response, next: NextFunction) =>
         req.user = {
             userId: decoded.userId,
             email: decoded.email,
-            username: decoded.username
+            username: decoded.username,
+            role: decoded.role || 1
         };
     } catch (error) {
         // Invalid token, but continue anyway (optional auth)
