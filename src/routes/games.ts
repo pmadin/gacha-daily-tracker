@@ -190,6 +190,15 @@ router.get('/', async (req, res) => {
             order = 'asc'
         } = req.query;
 
+        // Validate limit parameter (min: 1, max: 100, default: 50)
+        let validatedLimit = parseInt(limit as string) || 50;
+        if (validatedLimit < 1) validatedLimit = 1;
+        if (validatedLimit > 100) validatedLimit = 100;
+
+        // Validate offset parameter (min: 0, default: 0)
+        let validatedOffset = parseInt(offset as string) || 0;
+        if (validatedOffset < 0) validatedOffset = 0;
+
         // Validate sort parameters
         const validSortFields = ['name', 'server', 'reset_time', 'timezone', 'daily_reset'];
         const validOrders = ['asc', 'desc'];
@@ -253,7 +262,7 @@ router.get('/', async (req, res) => {
         // Add ordering and pagination
         query += ` ORDER BY ${actualSortField} ${(sortOrder as string).toUpperCase()}, id ASC`;
         query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
-        params.push(parseInt(limit as string), parseInt(offset as string));
+        params.push(validatedLimit, validatedOffset);
 
         const result = await database.query(query, params);
 
@@ -304,8 +313,8 @@ router.get('/', async (req, res) => {
         res.json({
             games: result.rows,
             total,
-            limit: parseInt(limit as string),
-            offset: parseInt(offset as string),
+            limit: validatedLimit,
+            offset: validatedOffset,
             filters_applied: {
                 name: name || null,
                 search: search || null,
