@@ -1,12 +1,12 @@
-import express from 'express';
+import express, { Router } from 'express';
 import database from '../../config/database';
 import { authenticateToken } from '../../middleware/auth';
 import gameDataService from "../../services/gameDataService";
 
-const router = express.Router();
+const updateRouter: Router = express.Router();
 
 // Apply authentication to all routes in this file
-router.use(authenticateToken);
+updateRouter.use(authenticateToken);
 
 /**
  * @swagger
@@ -87,7 +87,7 @@ router.use(authenticateToken);
  *       500:
  *         description: Server error
  */
-router.patch('/:id', async (req, res) => {
+updateRouter.patch('/games/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { daily_reset, timezone, reason } = req.body;
@@ -188,7 +188,7 @@ router.patch('/:id', async (req, res) => {
 
 /**
  * @swagger
- * /gdt/add/games:
+ * /gdt/update/add/game:
  *   post:
  *     summary: Add new game
  *     tags: [Game Management]
@@ -229,7 +229,7 @@ router.patch('/:id', async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.post('/', async (req, res) => {
+updateRouter.post('/add/game', async (req, res) => {
     try {
         const { name, server, timezone, daily_reset, icon_name } = req.body;
         const user = req.user!;
@@ -292,7 +292,172 @@ router.post('/', async (req, res) => {
 
 /**
  * @swagger
- * /gdt/games/import:
+ * /gdt/update/delete/game/{id}:
+ *   delete:
+ *     summary: Delete a game by ID
+ *     tags: [Game Management]
+ *     security:
+ *       - bearerAuth: []
+ *     description: |
+ *       Delete a game from the database by its unique ID. This is safer than deleting by name
+ *       since games like "Wuthering Waves" may have multiple server variants with different IDs.
+ *       Use the search API (/gdt/games?search=game_name) to find the exact game ID first.
+ *       This performs a soft delete by setting is_active = false.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Unique game ID to delete
+ *         example:
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               reason:
+ *                 type: string
+ *                 description: Reason for deletion (for audit purposes)
+ *                 example: "Game discontinued by publisher"
+ *               permanent:
+ *                 type: boolean
+ *                 default: false
+ *                 description: Whether to permanently delete (true) or soft delete (false)
+ *           examples:
+ *             soft_delete:
+ *               summary: Soft delete (recommended)
+ *               value:
+ *                 reason: "Game discontinued by publisher"
+ *                 permanent: false
+ *             permanent_delete:
+ *               summary: Permanent deletion
+ *               value:
+ *                 reason: "Duplicate entry - keeping main server version"
+ *                 permanent: true
+ *     responses:
+ *       200:
+ *         description: Game deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Game deleted successfully"
+ *                 deleted_game:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 532
+ *                     name:
+ *                       type: string
+ *                       example: "Test Game"
+ *                     server:
+ *                       type: string
+ *                       example: "Global"
+ *                 deletion_type:
+ *                   type: string
+ *                   enum: ["soft", "permanent"]
+ *                   example: "soft"
+ *                 deleted_by:
+ *                   type: string
+ *                   example: "admin_user"
+ *                 deletion_reason:
+ *                   type: string
+ *                   example: "Game discontinued"
+ *       400:
+ *         description: Invalid request
+ *       401:
+ *         description: Authentication required
+ *       404:
+ *         description: Game not found
+ *       500:
+ *         description: Server error
+ */
+updateRouter.delete('/delete/game/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { reason, permanent = false } = req.body;
+        const user = req.user!;
+
+        // Check if game exists and is currently active
+        const gameCheck = await database.query(
+            'SELECT * FROM games WHERE id = $1 AND is_active = true',
+            [id]
+        );
+
+        if (gameCheck.rows.length === 0) {
+            return res.status(404).json({
+                error: 'Game not found or already deleted'
+            });
+        }
+
+        const gameToDelete = gameCheck.rows[0];
+
+        let deletionType;
+
+        if (permanent) {
+            // Permanent deletion - actually remove from database
+            await database.query(
+                'DELETE FROM games WHERE id = $1 RETURNING *',
+                [id]
+            );
+            deletionType = 'permanent';
+
+            console.log(`🗑️ Game PERMANENTLY deleted by ${user.username}:`, {
+                gameId: id,
+                gameName: gameToDelete.name,
+                server: gameToDelete.server,
+                reason: reason || 'No reason provided',
+                deletedBy: user.username,
+                timestamp: new Date().toISOString(),
+                WARNING: 'PERMANENT DELETION - CANNOT BE UNDONE'
+            });
+        } else {
+            // Soft deletion - set is_active = false
+            await database.query(
+                'UPDATE games SET is_active = false, last_verified = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *',
+                [id]
+            );
+            deletionType = 'soft';
+
+            console.log(`🗑️ Game soft deleted by ${user.username}:`, {
+                gameId: id,
+                gameName: gameToDelete.name,
+                server: gameToDelete.server,
+                reason: reason || 'No reason provided',
+                deletedBy: user.username,
+                timestamp: new Date().toISOString(),
+                note: 'Soft deletion - can be restored by setting is_active = true'
+            });
+        }
+
+        res.json({
+            message: 'Game deleted successfully',
+            deleted_game: {
+                id: parseInt(id),
+                name: gameToDelete.name,
+                server: gameToDelete.server
+            },
+            deletion_type: deletionType,
+            deleted_by: user.username,
+            deletion_reason: reason || 'No reason provided'
+        });
+
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        console.error('Error deleting game:', errorMessage);
+        res.status(500).json({ error: 'Failed to delete game' });
+    }
+});
+
+/**
+ * @swagger
+ * /gdt/update/games/import:
  *   post:
  *     summary: Import/Update game data
  *     tags: [Data Management]
@@ -357,7 +522,7 @@ router.post('/', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/import', async (req, res) => {
+updateRouter.post('/games/import', async (req, res) => {
     try {
         const { forceRefresh = false } = req.body;
 
@@ -412,3 +577,5 @@ router.post('/import', async (req, res) => {
         res.status(500).json({ error: 'Failed to import game data' });
     }
 });
+
+export { updateRouter };

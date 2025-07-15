@@ -104,7 +104,8 @@ class TimezoneService {
    * Normalize timezone input (handle aliases and common mistakes)
    */
   static normalizeTimezone(input: string): string {
-    if (!input) return 'America/Los_Angeles'; // Default fallback
+    // if timezone is invalid, default to American PST
+    if (!input) return 'America/Los_Angeles';
 
     // Check if it's already a valid IANA timezone
     if (this.COMMON_TIMEZONES.some(tz => tz.timezone === input)) {
