@@ -90,13 +90,22 @@ updateRouter.use(authenticateToken);
 updateRouter.patch('/games/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { daily_reset, timezone, reason } = req.body;
+        const { daily_reset, timezone, is_active, reason } = req.body;
         const user = req.user!; // TypeScript knows user exists due to middleware
 
+        console.log('🔍 Update request received:', {
+            id,
+            daily_reset,
+            timezone,
+            is_active,
+            is_active_type: typeof is_active,
+            reason
+        });
+
         // Validate that at least one field is being updated
-        if (!daily_reset && !timezone) {
+        if (!daily_reset && !timezone && is_active === undefined) {
             return res.status(400).json({
-                error: 'At least one field (daily_reset or timezone) must be provided'
+                error: 'At least one field (daily_reset, timezone, or is_active) must be provided'
             });
         }
 
@@ -110,9 +119,9 @@ updateRouter.patch('/games/:id', async (req, res) => {
             }
         }
 
-        // Check if game exists
+        // Check if game exists (INCLUDING soft-deleted games)
         const gameCheck = await database.query(
-            'SELECT * FROM games WHERE id = $1 AND is_active = true',
+            'SELECT * FROM games WHERE id = $1',
             [id]
         );
 
@@ -121,6 +130,13 @@ updateRouter.patch('/games/:id', async (req, res) => {
         }
 
         const originalGame = gameCheck.rows[0];
+
+        console.log('📋 Original game state:', {
+            id: originalGame.id,
+            name: originalGame.name,
+            is_active: originalGame.is_active,
+            is_active_type: typeof originalGame.is_active
+        });
 
         // Build dynamic update query
         const updateFields: string[] = [];
@@ -139,6 +155,19 @@ updateRouter.patch('/games/:id', async (req, res) => {
             paramIndex++;
         }
 
+        // Handle is_active explicitly - check for both boolean and string values
+        if (is_active !== undefined) {
+            updateFields.push(`is_active = $${paramIndex}`);
+            // Convert string "true"/"false" to boolean if needed
+            let booleanValue = is_active;
+            if (typeof is_active === 'string') {
+                booleanValue = is_active.toLowerCase() === 'true';
+            }
+            updateValues.push(booleanValue);
+            paramIndex++;
+            console.log(`🔄 Adding is_active to update: ${booleanValue} (type: ${typeof booleanValue})`);
+        }
+
         // Always update last_verified
         updateFields.push(`last_verified = CURRENT_TIMESTAMP`);
 
@@ -146,22 +175,41 @@ updateRouter.patch('/games/:id', async (req, res) => {
         updateValues.push(id);
 
         const updateQuery = `
-      UPDATE games 
-      SET ${updateFields.join(', ')}
-      WHERE id = $${paramIndex}
-      RETURNING *
-    `;
+            UPDATE games 
+            SET ${updateFields.join(', ')}
+            WHERE id = $${paramIndex}
+            RETURNING *
+        `;
+
+        console.log('🔧 SQL Query:', updateQuery);
+        console.log('📊 SQL Parameters:', updateValues);
 
         const result = await database.query(updateQuery, updateValues);
         const updatedGame = result.rows[0];
 
+        console.log('✅ Updated game result:', {
+            id: updatedGame.id,
+            is_active: updatedGame.is_active,
+            is_active_type: typeof updatedGame.is_active
+        });
+
+        // Determine what type of operation this was
+        let operationType = 'updated';
+        if (is_active === true && !originalGame.is_active) {
+            operationType = 'restored';
+        } else if (is_active === false && originalGame.is_active) {
+            operationType = 'soft deleted';
+        }
+
         // Log the change for audit purposes
-        console.log(`🔄 Game updated by ${user.username}:`, {
+        console.log(`🔄 Game ${operationType} by ${user.username}:`, {
             gameId: id,
             gameName: originalGame.name,
+            operation: operationType,
             changes: {
                 daily_reset: daily_reset ? `${originalGame.daily_reset} → ${daily_reset}` : 'unchanged',
-                timezone: timezone ? `${originalGame.timezone} → ${timezone}` : 'unchanged'
+                timezone: timezone ? `${originalGame.timezone} → ${timezone}` : 'unchanged',
+                is_active: is_active !== undefined ? `${originalGame.is_active} → ${is_active}` : 'unchanged'
             },
             reason: reason || 'No reason provided',
             updatedBy: user.username,
@@ -169,13 +217,15 @@ updateRouter.patch('/games/:id', async (req, res) => {
         });
 
         res.json({
-            message: 'Game updated successfully',
+            message: `Game ${operationType} successfully`,
+            operation: operationType,
             game: updatedGame,
             updated_by: user.username,
             update_reason: reason || 'No reason provided',
             changes_made: {
                 daily_reset: daily_reset ? `${originalGame.daily_reset} → ${daily_reset}` : null,
-                timezone: timezone ? `${originalGame.timezone} → ${timezone}` : null
+                timezone: timezone ? `${originalGame.timezone} → ${timezone}` : null,
+                is_active: is_active !== undefined ? `${originalGame.is_active} → ${is_active}` : null
             }
         });
 

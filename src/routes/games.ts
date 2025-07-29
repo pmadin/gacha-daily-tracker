@@ -89,9 +89,23 @@ router.get('/servers/list', async (req, res) => {
  *     tags: [Games]
  *     description: |
  *       Retrieve all available gacha games with their daily reset times and server information.
- *       Supports filtering by multiple attributes with optional parameters, similar to a book search.
- *       No authentication required - open for everyone to use.
+ *       Supports filtering by multiple attributes and can show deleted games for restoration purposes.
+ *       No authentication required for viewing - open for everyone to use.
  *     parameters:
+ *       - in: query
+ *         name: includeDeleted
+ *         schema:
+ *           type: boolean
+ *           default: false
+ *         description: Include soft-deleted games in results (shows status field)
+ *         example: false
+ *       - in: query
+ *         name: deletedOnly
+ *         schema:
+ *           type: boolean
+ *           default: false
+ *         description: Show only soft-deleted games (for finding games to restore)
+ *         example: false
  *       - in: query
  *         name: name
  *         schema:
@@ -151,7 +165,7 @@ router.get('/servers/list', async (req, res) => {
  *         name: sort_by
  *         schema:
  *           type: string
- *           enum: [name, server, reset_time, timezone]
+ *           enum: [name, server, reset_time, timezone, id]
  *           default: name
  *         description: Sort results by field
  *         example: "name"
@@ -169,7 +183,53 @@ router.get('/servers/list', async (req, res) => {
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/GameList'
+ *               type: object
+ *               properties:
+ *                 games:
+ *                   type: array
+ *                   items:
+ *                     allOf:
+ *                       - $ref: '#/components/schemas/Game'
+ *                       - type: object
+ *                         properties:
+ *                           status:
+ *                             type: string
+ *                             enum: ["active", "deleted"]
+ *                             description: Game status (only present when includeDeleted=true)
+ *                 total:
+ *                   type: integer
+ *                   description: Total games matching filters
+ *                 active_count:
+ *                   type: integer
+ *                   description: Number of active games (only when includeDeleted=true)
+ *                 deleted_count:
+ *                   type: integer
+ *                   description: Number of deleted games (only when includeDeleted=true)
+ *                 limit:
+ *                   type: integer
+ *                 offset:
+ *                   type: integer
+ *                 filters_applied:
+ *                   type: object
+ *             examples:
+ *               normal_response:
+ *                 summary: Normal response (active games only)
+ *                 value:
+ *                   games: []
+ *                   total: 303
+ *                   limit: 50
+ *                   offset: 0
+ *                   filters_applied: {}
+ *               with_deleted:
+ *                 summary: Response including deleted games
+ *                 value:
+ *                   games: []
+ *                   total: 305
+ *                   active_count: 303
+ *                   deleted_count: 2
+ *                   limit: 50
+ *                   offset: 0
+ *                   filters_applied: {}
  *       400:
  *         description: Invalid query parameters
  *       500:
@@ -178,6 +238,8 @@ router.get('/servers/list', async (req, res) => {
 router.get('/', async (req, res) => {
     try {
         const {
+            includeDeleted = false,
+            deletedOnly = false,
             name,
             search,
             server,
@@ -200,63 +262,90 @@ router.get('/', async (req, res) => {
         if (validatedOffset < 0) validatedOffset = 0;
 
         // Validate sort parameters
-        const validSortFields = ['name', 'server', 'reset_time', 'timezone', 'daily_reset'];
+        const validSortFields = ['name', 'server', 'reset_time', 'timezone', 'daily_reset','id'];
         const validOrders = ['asc', 'desc'];
 
         const sortField = validSortFields.includes(sort_by as string) ? sort_by : 'name';
         const sortOrder = validOrders.includes(order as string) ? order : 'asc';
 
-        // Replace sort_by aliases
-        const actualSortField = sortField === 'reset_time' ? 'daily_reset' : sortField;
+        // sort_by aliases
+        let actualSortField = sortField;
+        if (sortField === 'reset_time') {
+            actualSortField = 'daily_reset';
+        } else if (sortField === 'id') {
+            actualSortField = 'id';
+        } else {
+            actualSortField = sortField;
+        }
+
+        // Determine status filter based on query parameters
+        let statusFilter = '';
+        if (deletedOnly === 'true') {
+            statusFilter = 'WHERE is_active = false';
+        } else if (includeDeleted === 'true') {
+            statusFilter = ''; // No filter - show all games
+        } else {
+            statusFilter = 'WHERE is_active = true'; // Default - only active games
+        }
+
+        // Build the select clause - include status when showing deleted games
+        const selectClause = (includeDeleted === 'true' || deletedOnly === 'true')
+            ? `SELECT id, name, server, timezone, daily_reset, icon_name, last_verified, 
+                      CASE WHEN is_active THEN 'active' ELSE 'deleted' END as status`
+            : `SELECT id, name, server, timezone, daily_reset, icon_name, last_verified`;
 
         let query = `
-            SELECT id, name, server, timezone, daily_reset, icon_name, last_verified
+            ${selectClause}
             FROM games
-            WHERE is_active = true
+            ${statusFilter}
         `;
+
         const params: any[] = [];
         let paramIndex = 1;
 
-        // Add exact name filter
+        // Add filters (same logic as before, but append to existing WHERE clause)
+        const filterConditions: string[] = [];
+
         if (name) {
-            query += ` AND name ILIKE $${paramIndex}`;
+            filterConditions.push(`name ILIKE $${paramIndex}`);
             params.push(`%${name}%`);
             paramIndex++;
         }
 
-        // Add general search filter (different from name for flexibility)
         if (search && search !== name) {
-            query += ` AND name ILIKE $${paramIndex}`;
+            filterConditions.push(`name ILIKE $${paramIndex}`);
             params.push(`%${search}%`);
             paramIndex++;
         }
 
-        // Add server filter
         if (server) {
-            query += ` AND server = $${paramIndex}`;
+            filterConditions.push(`server = $${paramIndex}`);
             params.push(server);
             paramIndex++;
         }
 
-        // Add timezone filter
         if (timezone) {
-            query += ` AND timezone = $${paramIndex}`;
+            filterConditions.push(`timezone = $${paramIndex}`);
             params.push(timezone);
             paramIndex++;
         }
 
-        // Add reset time filter
         if (reset_time) {
-            query += ` AND daily_reset = $${paramIndex}`;
+            filterConditions.push(`daily_reset = $${paramIndex}`);
             params.push(reset_time);
             paramIndex++;
         }
 
-        // Add icon filter
         if (icon) {
-            query += ` AND icon_name ILIKE $${paramIndex}`;
+            filterConditions.push(`icon_name ILIKE $${paramIndex}`);
             params.push(`%${icon}%`);
             paramIndex++;
+        }
+
+        // Append additional filter conditions
+        if (filterConditions.length > 0) {
+            const connector = statusFilter ? ' AND ' : ' WHERE ';
+            query += connector + filterConditions.join(' AND ');
         }
 
         // Add ordering and pagination
@@ -266,56 +355,76 @@ router.get('/', async (req, res) => {
 
         const result = await database.query(query, params);
 
-        // Get total count for pagination (with same filters)
-        let countQuery = 'SELECT COUNT(*) FROM games WHERE is_active = true';
+        // Build count query with same filters
+        let baseCountQuery = '';
+        if (deletedOnly === 'true') {
+            baseCountQuery = 'SELECT COUNT(*) FROM games WHERE is_active = false';
+        } else if (includeDeleted === 'true') {
+            baseCountQuery = 'SELECT COUNT(*) FROM games';
+        } else {
+            baseCountQuery = 'SELECT COUNT(*) FROM games WHERE is_active = true';
+        }
+
+        let countQuery = baseCountQuery;
         const countParams: any[] = [];
         let countParamIndex = 1;
 
+        // Apply same filters to count query
+        const countFilterConditions: string[] = [];
+
         if (name) {
-            countQuery += ` AND name ILIKE $${countParamIndex}`;
+            countFilterConditions.push(`name ILIKE $${countParamIndex}`);
             countParams.push(`%${name}%`);
             countParamIndex++;
         }
 
         if (search && search !== name) {
-            countQuery += ` AND name ILIKE $${countParamIndex}`;
+            countFilterConditions.push(`name ILIKE $${countParamIndex}`);
             countParams.push(`%${search}%`);
             countParamIndex++;
         }
 
         if (server) {
-            countQuery += ` AND server = $${countParamIndex}`;
+            countFilterConditions.push(`server = $${countParamIndex}`);
             countParams.push(server);
             countParamIndex++;
         }
 
         if (timezone) {
-            countQuery += ` AND timezone = $${countParamIndex}`;
+            countFilterConditions.push(`timezone = $${countParamIndex}`);
             countParams.push(timezone);
             countParamIndex++;
         }
 
         if (reset_time) {
-            countQuery += ` AND daily_reset = $${countParamIndex}`;
+            countFilterConditions.push(`daily_reset = $${countParamIndex}`);
             countParams.push(reset_time);
             countParamIndex++;
         }
 
         if (icon) {
-            countQuery += ` AND icon_name ILIKE $${countParamIndex}`;
+            countFilterConditions.push(`icon_name ILIKE $${countParamIndex}`);
             countParams.push(`%${icon}%`);
             countParamIndex++;
+        }
+
+        if (countFilterConditions.length > 0) {
+            const connector = (deletedOnly === 'true' || includeDeleted !== 'true') ? ' AND ' : ' WHERE ';
+            countQuery += connector + countFilterConditions.join(' AND ');
         }
 
         const countResult = await database.query(countQuery, countParams);
         const total = parseInt(countResult.rows[0].count);
 
-        res.json({
+        // Prepare response object
+        const response: any = {
             games: result.rows,
             total,
             limit: validatedLimit,
             offset: validatedOffset,
             filters_applied: {
+                includeDeleted: includeDeleted === 'true' ? true : false,
+                deletedOnly: deletedOnly === 'true' ? true : false,
                 name: name || null,
                 search: search || null,
                 server: server || null,
@@ -325,12 +434,232 @@ router.get('/', async (req, res) => {
                 sort_by: sortField,
                 order: sortOrder
             }
-        });
+        };
+
+        // Add count breakdown when including deleted games
+        if (includeDeleted === 'true') {
+            const activeCountResult = await database.query(
+                `SELECT COUNT(*) FROM games WHERE is_active = true ${countFilterConditions.length > 0 ? 'AND ' + countFilterConditions.join(' AND ') : ''}`,
+                countParams
+            );
+            const deletedCountResult = await database.query(
+                `SELECT COUNT(*) FROM games WHERE is_active = false ${countFilterConditions.length > 0 ? 'AND ' + countFilterConditions.join(' AND ') : ''}`,
+                countParams
+            );
+
+            response.active_count = parseInt(activeCountResult.rows[0].count);
+            response.deleted_count = parseInt(deletedCountResult.rows[0].count);
+        }
+
+        res.json(response);
 
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
         console.error('Error fetching games:', errorMessage);
         res.status(500).json({ error: 'Failed to fetch games' });
+    }
+});
+
+
+/**
+ * @swagger
+ * /gdt/games/deleted:
+ *   get:
+ *     summary: Get only soft-deleted games
+ *     tags: [Games]
+ *     description: |
+ *       Retrieve only soft-deleted games for restoration purposes.
+ *       Shows all deleted games by default, with optional search filtering.
+ *       Always returns results even without parameters.
+ *     parameters:
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Optional search deleted games by name
+ *         example: "test game"
+ *       - in: query
+ *         name: server
+ *         schema:
+ *           type: string
+ *         description: Optional filter by server region
+ *         example: "Global"
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 50
+ *         description: Number of games to return
+ *         example: 50
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *           default: 0
+ *         description: Number of games to skip for pagination
+ *         example: 0
+ *     responses:
+ *       200:
+ *         description: List of soft-deleted games
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 deleted_games:
+ *                   type: array
+ *                   items:
+ *                     allOf:
+ *                       - $ref: '#/components/schemas/Game'
+ *                       - type: object
+ *                         properties:
+ *                           status:
+ *                             type: string
+ *                             enum: ["deleted"]
+ *                 total_deleted:
+ *                   type: integer
+ *                   description: Total number of deleted games matching filters
+ *                 restoration_info:
+ *                   type: object
+ *                   properties:
+ *                     method1:
+ *                       type: string
+ *                       description: Update route method
+ *                     method2:
+ *                       type: string
+ *                       description: Restore route method
+ *             example:
+ *               deleted_games:
+ *                 - id: 304
+ *                   name: "New Gacha Game"
+ *                   server: "Global"
+ *                   timezone: "Etc/GMT+8"
+ *                   daily_reset: "04:00:00"
+ *                   icon_name: "new-gacha-game"
+ *                   last_verified: "2025-07-17T22:01:18.967Z"
+ *                   status: "deleted"
+ *               total_deleted: 1
+ *               restoration_info:
+ *                 method1: "PATCH /gdt/update/games/{id} with body: {\"is_active\": true, \"reason\": \"restoration reason\"}"
+ *                 method2: "POST /gdt/update/restore/game/{id} with body: {\"reason\": \"restoration reason\"}"
+ *       500:
+ *         description: Server error
+ */
+router.get('/deleted', async (req, res) => {
+    try {
+        const {
+            search,
+            server,
+            limit,
+            offset
+        } = req.query;
+
+        // Validate and set defaults for limit and offset
+        let validatedLimit = 50; // default
+        let validatedOffset = 0; // default
+
+        if (limit) {
+            const parsedLimit = parseInt(limit as string);
+            if (!isNaN(parsedLimit) && parsedLimit >= 1 && parsedLimit <= 100) {
+                validatedLimit = parsedLimit;
+            }
+        }
+
+        if (offset) {
+            const parsedOffset = parseInt(offset as string);
+            if (!isNaN(parsedOffset) && parsedOffset >= 0) {
+                validatedOffset = parsedOffset;
+            }
+        }
+
+        // Base query - always get deleted games
+        let query = `
+            SELECT id, name, server, timezone, daily_reset, icon_name, last_verified
+            FROM games
+            WHERE is_active = false
+        `;
+
+        const params: any[] = [];
+        let paramIndex = 1;
+
+        // Add optional search filter
+        if (search && search.toString().trim() !== '') {
+            query += ` AND name ILIKE $${paramIndex}`;
+            params.push(`%${search}%`);
+            paramIndex++;
+        }
+
+        // Add optional server filter
+        if (server && server.toString().trim() !== '') {
+            query += ` AND server = $${paramIndex}`;
+            params.push(server);
+            paramIndex++;
+        }
+
+        // Order by most recently deleted first, then by name for consistency
+        query += ` ORDER BY last_verified DESC, name ASC, id ASC`;
+
+        // Add pagination
+        query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+        params.push(validatedLimit, validatedOffset);
+
+        console.log('🔍 Executing deleted games query:', query);
+        console.log('📋 With parameters:', params);
+
+        const result = await database.query(query, params);
+
+        // Get total count of deleted games matching the same filters
+        let countQuery = 'SELECT COUNT(*) FROM games WHERE is_active = false';
+        const countParams: any[] = [];
+        let countParamIndex = 1;
+
+        if (search && search.toString().trim() !== '') {
+            countQuery += ` AND name ILIKE $${countParamIndex}`;
+            countParams.push(`%${search}%`);
+            countParamIndex++;
+        }
+
+        if (server && server.toString().trim() !== '') {
+            countQuery += ` AND server = $${countParamIndex}`;
+            countParams.push(server);
+            countParamIndex++;
+        }
+
+        const countResult = await database.query(countQuery, countParams);
+        const totalDeleted = parseInt(countResult.rows[0].count);
+
+        console.log(`📊 Found ${result.rows.length} deleted games (${totalDeleted} total)`);
+
+        // Add status to each game for consistency
+        const gamesWithStatus = result.rows.map(game => ({
+            ...game,
+            status: 'soft deleted'
+        }));
+
+        res.json({
+            deleted_games: gamesWithStatus,
+            total_deleted: totalDeleted,
+            limit: validatedLimit,
+            offset: validatedOffset,
+            filters_applied: {
+                search: search ? search.toString() : null,
+                server: server ? server.toString() : null
+            },
+            restoration_info: {
+                method1: "PATCH /gdt/update/games/{id} with body: {\"is_active\": true, \"reason\": \"restoration reason\"}"
+            }
+        });
+
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        console.error('Error fetching deleted games:', errorMessage);
+        res.status(500).json({
+            error: 'Failed to fetch deleted games',
+            details: errorMessage
+        });
     }
 });
 
