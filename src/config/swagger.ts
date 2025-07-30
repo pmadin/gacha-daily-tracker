@@ -324,7 +324,6 @@ const swaggerOptions = {
         docExpansion: 'list',
         showExtensions: true,
         showCommonExtensions: true,
-        // Remove any server-related options
         supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
         validatorUrl: null, // Disable schema validation
     },

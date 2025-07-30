@@ -538,12 +538,15 @@ updateRouter.delete('/delete/game/:id', async (req, res) => {
  *                 forceRefresh: true
  *     responses:
  *       200:
- *         description: Data imported successfully
+ *         description: Data synchronized successfully (updates made)
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Import completed successfully"
  *                 imported:
  *                   type: integer
  *                   description: Number of new games added
@@ -565,6 +568,62 @@ updateRouter.delete('/delete/game/:id', async (req, res) => {
  *                   type: string
  *                   format: date-time
  *                   description: When the import was completed
+ *       201:
+ *         description: Initial data import completed (first time setup)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Initial game data imported successfully"
+ *                 imported:
+ *                   type: integer
+ *                   example: 303
+ *                 updated:
+ *                   type: integer
+ *                   example: 0
+ *                 total:
+ *                   type: integer
+ *                   example: 303
+ *                 source:
+ *                   type: string
+ *                   example: "external"
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       304:
+ *         description: No changes needed (data already up to date)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "No changes needed - data already up to date"
+ *                 imported:
+ *                   type: integer
+ *                   example: 0
+ *                 updated:
+ *                   type: integer
+ *                   example: 0
+ *                 total:
+ *                   type: integer
+ *                   example: 303
+ *                 source:
+ *                   type: string
+ *                   example: "cache/backup"
+ *                 last_sync:
+ *                   type: string
+ *                   format: date-time
+ *       401:
+ *         description: Authentication required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       500:
  *         description: Import failed
  *         content:
@@ -575,56 +634,144 @@ updateRouter.delete('/delete/game/:id', async (req, res) => {
 updateRouter.post('/games/import', async (req, res) => {
     try {
         const { forceRefresh = false } = req.body;
+        const user = req.user!; // From auth middleware
 
-        console.log('🔄 Starting game data import...');
+        console.log(`🔄 Starting optimized game data import by ${user.username}...`);
+
+        // Check if this is first-time setup (empty database)
+        const existingGamesResult = await database.query(
+            'SELECT COUNT(*) FROM games WHERE is_active = true'
+        );
+        const existingCount = parseInt(existingGamesResult.rows[0].count);
+        const isFirstTimeSetup = existingCount === 0;
 
         // Get game data from service
         const gameData = forceRefresh
             ? await gameDataService.refreshFromSource()
             : await gameDataService.getGameData();
 
+        console.log(`📊 Processing ${gameData.length} games with bulk insert...`);
+
+        // For bulk insert, we need to track changes differently
+        // First, get current games to compare
+        const currentGamesResult = await database.query(`
+            SELECT name, server FROM games WHERE source = 'game-time-master'
+        `);
+
+        const currentGames = new Set(
+            currentGamesResult.rows.map(row => `${row.name}|${row.server}`)
+        );
+
+        // Count what will be new vs updated
         let imported = 0;
         let updated = 0;
 
-        // Import each game
-        for (const game of gameData) {
-            try {
-                const insertResult = await database.query(`
-                    INSERT INTO games (name, server, timezone, daily_reset, icon_name, source)
-                    VALUES ($1, $2, $3, $4, $5, $6)
-                        ON CONFLICT (name, server) 
-          DO UPDATE SET
-                        timezone = EXCLUDED.timezone,
-                                         daily_reset = EXCLUDED.daily_reset,
-                                         icon_name = EXCLUDED.icon_name,
-                                         last_verified = CURRENT_TIMESTAMP
-                                         RETURNING (xmax = 0) AS inserted
-                `, [game.game, game.server, game.timezone, game.dailyReset, game.icon, 'game-time-master']);
-
-                if (insertResult.rows[0].inserted) {
-                    imported++;
-                } else {
-                    updated++;
-                }
-
-            } catch (gameError) {
-                console.error(`Failed to import game: ${game.game} (${game.server})`, gameError);
+        gameData.forEach(game => {
+            const gameKey = `${game.game}|${game.server}`;
+            if (currentGames.has(gameKey)) {
+                updated++;
+            } else {
+                imported++;
             }
+        });
+
+        // Perform bulk insert with proper escaping
+        const client = await database.getClient();
+
+        try {
+            await client.query('BEGIN');
+
+            // Clear existing game-time-master data first (to handle deletions)
+            await client.query(`
+                UPDATE games 
+                SET is_active = false 
+                WHERE source = 'game-time-master'
+            `);
+
+            // Prepare bulk insert values with parameterized queries for safety
+            const values: any[] = [];
+            const placeholders: string[] = [];
+
+            gameData.forEach((game, index) => {
+                const baseIndex = index * 6;
+                placeholders.push(`($${baseIndex + 1}, $${baseIndex + 2}, $${baseIndex + 3}, $${baseIndex + 4}, $${baseIndex + 5}, $${baseIndex + 6})`);
+                values.push(
+                    game.game,
+                    game.server,
+                    game.timezone,
+                    game.dailyReset,
+                    game.icon || null,
+                    'game-time-master'
+                );
+            });
+
+            // Bulk insert with conflict resolution
+            await client.query(`
+                INSERT INTO games (name, server, timezone, daily_reset, icon_name, source)
+                VALUES ${placeholders.join(', ')}
+                ON CONFLICT (name, server) 
+                DO UPDATE SET
+                    timezone = EXCLUDED.timezone,
+                    daily_reset = EXCLUDED.daily_reset,
+                    icon_name = EXCLUDED.icon_name,
+                    is_active = true,
+                    last_verified = CURRENT_TIMESTAMP
+            `, values);
+
+            await client.query('COMMIT');
+
+        } catch (bulkError) {
+            await client.query('ROLLBACK');
+            throw bulkError;
+        } finally {
+            client.release();
         }
 
-        console.log(`✅ Import complete: ${imported} new, ${updated} updated`);
+        console.log(`✅ Bulk import complete: ${imported} new, ${updated} updated`);
 
-        res.json({
+        // Prepare response data
+        const responseData = {
             imported,
             updated,
             total: gameData.length,
             source: forceRefresh ? 'external' : 'cache/backup',
-            timestamp: new Date().toISOString()
-        });
+            timestamp: new Date().toISOString(),
+            imported_by: user.username,
+            method: 'bulk_insert'
+        };
+
+        // Determine appropriate status code and message
+        if (isFirstTimeSetup && imported > 0) {
+            // 201: First time setup with data imported
+            res.status(201).json({
+                message: 'Initial game data imported successfully',
+                ...responseData,
+                setup_type: 'first_time_import'
+            });
+        } else if (imported === 0 && updated === 0) {
+            // 304: No changes needed
+            res.status(304).json({
+                message: 'No changes needed - data already up to date',
+                ...responseData,
+                last_sync: new Date().toISOString()
+            });
+        } else {
+            // 200: Standard successful update
+            res.status(200).json({
+                message: 'Import completed successfully',
+                ...responseData,
+                changes_summary: `${imported} new games added, ${updated} games updated`,
+                performance: 'optimized_bulk_insert'
+            });
+        }
 
     } catch (error) {
         console.error('Error importing games:', error);
-        res.status(500).json({ error: 'Failed to import game data' });
+        res.status(500).json({
+            error: 'Failed to import game data',
+            details: error instanceof Error ? error.message : 'Unknown error',
+            timestamp: new Date().toISOString()
+        });
     }
 });
 

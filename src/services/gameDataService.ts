@@ -86,34 +86,14 @@ class GameDataService {
    */
   private parseGameDataFile(fileContent: string): GameData[] {
     try {
-      // First try JSON conversion approach
-      const jsonStart = fileContent.indexOf('[');
-      const jsonEnd = fileContent.lastIndexOf('];');
+      console.log('🔍 Parsing game data file...');
 
-      if (jsonStart !== -1 && jsonEnd !== -1) {
-        try {
-          const arrayContent = fileContent.slice(jsonStart, jsonEnd + 1);
+      // Extract the JavaScript array directly
+      const evalContent = fileContent
+          .replace('var gameData = ', '')  // Remove variable declaration
+          .replace(/;\s*$/, '');          // Remove trailing semicolon
 
-          // Convert JS object notation to JSON
-          let validJson = arrayContent
-              .replace(/\t/g, ' ')
-              .replace(/\n\s+/g, '\n  ')
-              .replace(/^\s*(\w+):/gm, '  "$1":')
-              .replace(/,\s*\n/g, ',\n')
-              .replace(/"([^"]+)":/g, '"$1":');
-
-          const gameData = JSON.parse(validJson);
-
-          if (Array.isArray(gameData) && gameData.length > 0) {
-            return gameData;
-          }
-        } catch (jsonError) {
-          console.log('JSON parsing failed, trying eval method...');
-        }
-      }
-
-      // Fallback to eval method (safe for trusted source)
-      const evalContent = fileContent.replace('var gameData = ', '').replace(/;\s*$/, '');
+      // Safely evaluate the JavaScript array
       const gameData = eval('(' + evalContent + ')');
 
       // Validate data structure
@@ -121,8 +101,11 @@ class GameDataService {
         throw new Error('Game data is not a valid array');
       }
 
+      console.log(`✅ Successfully parsed ${gameData.length} games`);
       return gameData;
+
     } catch (error) {
+      console.error('❌ Failed to parse game data:', error);
       throw new Error(`Failed to parse game data: ${error}`);
     }
   }
