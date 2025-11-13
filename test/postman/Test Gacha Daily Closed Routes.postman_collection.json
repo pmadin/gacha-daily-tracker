@@ -1,0 +1,1251 @@
+{
+	"info": {
+		"_postman_id": "1a5d45f2-a501-45a7-a637-f0086b166bfa",
+		"name": "Test Gacha Daily Closed Routes",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "44170125",
+		"_collection_link": "https://petermadin.postman.co/workspace/Messages~a71a6062-1fcf-4f82-8a64-231b7113bb99/collection/44170125-1a5d45f2-a501-45a7-a637-f0086b166bfa?action=share&source=collection_link&creator=44170125"
+	},
+	"item": [
+		{
+			"name": "Test update by daily reset",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Generate a new reset time for testing\r",
+							"const hours = Math.floor(Math.random() * 24).toString().padStart(2, '0');\r",
+							"const minutes = Math.floor(Math.random() * 60).toString().padStart(2, '0');\r",
+							"const newResetTime = `${hours}:${minutes}`;\r",
+							"\r",
+							"pm.collectionVariables.set('test_reset_time', newResetTime);\r",
+							"\r",
+							"// Set up request body - MUST be a JSON string, not an object\r",
+							"const requestBody = {\r",
+							"    daily_reset: newResetTime,\r",
+							"    reason: \"Testing daily reset time update via Postman\"\r",
+							"};\r",
+							"\r",
+							"pm.request.body.raw = JSON.stringify(requestBody);\r",
+							"\r",
+							"// Make sure Content-Type is set to application/json\r",
+							"pm.request.headers.upsert({\r",
+							"    key: 'Content-Type',\r",
+							"    value: 'application/json'\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Authentication and authorization check\r",
+							"pm.test(\"Response status should be 200 with valid bearer token\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Validate response structure matches documentation\r",
+							"pm.test(\"Response should contain required fields from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('message');\r",
+							"    pm.expect(response.message).to.equal('Game updated successfully');\r",
+							"    pm.expect(response).to.have.property('game');\r",
+							"    pm.expect(response).to.have.property('updated_by');\r",
+							"    pm.expect(response).to.have.property('update_reason');\r",
+							"    pm.expect(response).to.have.property('changes_made');\r",
+							"});\r",
+							"\r",
+							"// Test 3: Validate game object contains updated daily_reset\r",
+							"pm.test(\"Game should contain updated daily_reset time\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    const expectedResetTime = pm.collectionVariables.get('test_reset_time');\r",
+							"    \r",
+							"    pm.expect(response.game).to.have.property('daily_reset');\r",
+							"    pm.expect(response.game.daily_reset).to.equal(expectedResetTime + ':00');\r",
+							"    console.log(`✓ Daily reset updated to: ${response.game.daily_reset}`);\r",
+							"});\r",
+							"\r",
+							"// Test 4: Validate changes_made field shows the change\r",
+							"pm.test(\"Changes made field should reflect daily_reset update\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.changes_made).to.have.property('daily_reset');\r",
+							"    pm.expect(response.changes_made.daily_reset).to.be.a('string');\r",
+							"    pm.expect(response.changes_made.daily_reset).to.include('→');\r",
+							"    console.log(`Change tracking: ${response.changes_made.daily_reset}`);\r",
+							"});\r",
+							"\r",
+							"// Test 5: Validate updated_by field contains username\r",
+							"pm.test(\"Updated by field should contain username\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.updated_by).to.be.a('string').and.not.be.empty;\r",
+							"    console.log(`Updated by: ${response.updated_by}`);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/update/games/109",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"update",
+						"games",
+						"109"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test update by daily reset Copy",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"daily_reset\": \"04:00\",\r\n  \"reason\": \"undo change\",\r\n  \"is_active\": true\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/update/games/33",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"update",
+						"games",
+						"33"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test update with non-existent game ID",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.request.body.raw = JSON.stringify({\r",
+							"    daily_reset: \"03:00\",\r",
+							"    reason: \"Testing with non-existent game ID\"\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Should return 404 for non-existent game\r",
+							"pm.test(\"Response status should be 404 for non-existent game\", () => {\r",
+							"    pm.response.to.have.status(404);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Error message should match documentation\r",
+							"pm.test(\"Error message should match documentation for game not found\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.error).to.equal('Game not found');\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/update/games/1337",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"update",
+						"games",
+						"1337"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test update with no fields provided",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.request.body.raw = JSON.stringify({\r",
+							"    reason: \"Testing with no update fields\"\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Should return 400 when no fields provided\r",
+							"pm.test(\"Response status should be 400 when no update fields provided\", () => {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Error message should match documentation\r",
+							"pm.test(\"Error message should match documentation for missing fields\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.error).to.equal('At least one field (daily_reset or timezone) must be provided');\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/update/games/241",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"update",
+						"games",
+						"241"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test update by Invalid daily reset format",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.request.body.raw = JSON.stringify({\r",
+							"    daily_reset: \"25:70\", // Invalid time format\r",
+							"    reason: \"Testing invalid time format\"\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Should return 400 for invalid time format\r",
+							"pm.test(\"Response status should be 400 for invalid daily_reset format\", () => {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Error message should match documentation\r",
+							"pm.test(\"Error message should match documentation for invalid format\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('error');\r",
+							"    pm.expect(response.error).to.equal('daily_reset must be in HH:MM format (24-hour)');\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/update/games/135",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"update",
+						"games",
+						"135"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test update by missing bearer token",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Remove authorization header to test 401\r",
+							"pm.request.headers.remove('Authorization');\r",
+							"\r",
+							"pm.request.body.raw = JSON.stringify({\r",
+							"    daily_reset: \"12:00\",\r",
+							"    reason: \"Testing without auth\"\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Should return 401 without authentication\r",
+							"pm.test(\"Response status should be 401 without bearer token\", () => {\r",
+							"    pm.response.to.have.status(401);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Should return appropriate error message\r",
+							"pm.test(\"Should return authentication error\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('error');\r",
+							"    console.log(\"Auth error:\", response.error);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/update/games/111",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"update",
+						"games",
+						"111"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test update by timezone",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Set up timezone update request\r",
+							"const testTimezones = ['America/New_York', 'Europe/London', 'Asia/Tokyo', 'Australia/Sydney'];\r",
+							"const randomTimezone = testTimezones[Math.floor(Math.random() * testTimezones.length)];\r",
+							"\r",
+							"pm.collectionVariables.set('test_timezone', randomTimezone);\r",
+							"\r",
+							"const requestBody = {\r",
+							"    timezone: randomTimezone,\r",
+							"    reason: \"Testing timezone update via Postman\"\r",
+							"};\r",
+							"\r",
+							"pm.request.body.raw = JSON.stringify(requestBody);\r",
+							"\r",
+							"// Ensure Content-Type header is set\r",
+							"pm.request.headers.upsert({\r",
+							"    key: 'Content-Type',\r",
+							"    value: 'application/json'\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Successful timezone update\r",
+							"pm.test(\"Response status should be 200 for timezone update\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Validate timezone was updated correctly\r",
+							"pm.test(\"Game should contain updated timezone\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    const expectedTimezone = pm.collectionVariables.get('test_timezone');\r",
+							"    \r",
+							"    pm.expect(response.game.timezone).to.equal(expectedTimezone);\r",
+							"    console.log(`✓ Timezone updated to: ${response.game.timezone}`);\r",
+							"});\r",
+							"\r",
+							"// Test 3: Validate changes_made shows timezone change\r",
+							"pm.test(\"Changes made should show timezone update\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.changes_made).to.have.property('timezone');\r",
+							"    pm.expect(response.changes_made.timezone).to.include('→');\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/update/games/109",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"update",
+						"games",
+						"109"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test update by timezone & daily reset",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Generate both new reset time and timezone\r",
+							"const hours = Math.floor(Math.random() * 24).toString().padStart(2, '0');\r",
+							"const minutes = Math.floor(Math.random() * 60).toString().padStart(2, '0');\r",
+							"const newResetTime = `${hours}:${minutes}`;\r",
+							"\r",
+							"pm.collectionVariables.set('test_reset_time', newResetTime);\r",
+							"\r",
+							"// Set up timezone update request\r",
+							"const testTimezones = ['America/New_York', 'Europe/London', 'Asia/Tokyo', 'Australia/Sydney'];\r",
+							"const randomTimezone = testTimezones[Math.floor(Math.random() * testTimezones.length)];\r",
+							"\r",
+							"pm.collectionVariables.set('test_timezone', randomTimezone);\r",
+							"\r",
+							"const requestBody = {\r",
+							"    daily_reset: newResetTime,\r",
+							"    timezone: randomTimezone,\r",
+							"    reason: \"Testing both daily_reset and timezone update\"\r",
+							"};\r",
+							"\r",
+							"pm.request.body.raw = JSON.stringify(requestBody);\r",
+							"\r",
+							"// Ensure Content-Type header is set\r",
+							"pm.request.headers.upsert({\r",
+							"    key: 'Content-Type',\r",
+							"    value: 'application/json'\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"\r",
+							"// Test 1: Successful udpate\r",
+							"pm.test(\"Response status should be 200 for update\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Validate response structure matches documentation\r",
+							"pm.test(\"Response should contain required fields from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('message');\r",
+							"    pm.expect(response.message).to.equal('Game updated successfully');\r",
+							"    pm.expect(response).to.have.property('game');\r",
+							"    pm.expect(response).to.have.property('updated_by');\r",
+							"    pm.expect(response).to.have.property('update_reason');\r",
+							"    pm.expect(response).to.have.property('changes_made');\r",
+							"});\r",
+							"\r",
+							"// Test 3: Validate game object contains updated daily_reset\r",
+							"pm.test(\"Game should contain updated daily_reset time\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    const expectedResetTime = pm.collectionVariables.get('test_reset_time');\r",
+							"    \r",
+							"    pm.expect(response.game).to.have.property('daily_reset');\r",
+							"    pm.expect(response.game.daily_reset).to.equal(expectedResetTime + ':00');\r",
+							"    console.log(`✓ Daily reset updated to: ${response.game.daily_reset}`);\r",
+							"});\r",
+							"\r",
+							"// Test 4: Validate changes_made field shows the change\r",
+							"pm.test(\"Changes made field should reflect daily_reset update\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.changes_made).to.have.property('daily_reset');\r",
+							"    pm.expect(response.changes_made.daily_reset).to.be.a('string');\r",
+							"    pm.expect(response.changes_made.daily_reset).to.include('→');\r",
+							"    console.log(`Change tracking: ${response.changes_made.daily_reset}`);\r",
+							"});\r",
+							"\r",
+							"// Test 5: Validate updated_by field contains username\r",
+							"pm.test(\"Updated by field should contain username\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.updated_by).to.be.a('string').and.not.be.empty;\r",
+							"    console.log(`Updated by: ${response.updated_by}`);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"// Test 6: Validate timezone was updated correctly\r",
+							"pm.test(\"Game should contain updated timezone\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    const expectedTimezone = pm.collectionVariables.get('test_timezone');\r",
+							"    \r",
+							"    pm.expect(response.game.timezone).to.equal(expectedTimezone);\r",
+							"    console.log(`✓ Timezone updated to: ${response.game.timezone}`);\r",
+							"});\r",
+							"\r",
+							"// Test 7: Validate changes_made shows timezone change\r",
+							"pm.test(\"Changes made should show timezone update\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.changes_made).to.have.property('timezone');\r",
+							"    pm.expect(response.changes_made.timezone).to.include('→');\r",
+							"});\r",
+							"\r",
+							"// Test 8: Both fields updated successfully\r",
+							"pm.test(\"Both daily_reset and timezone should be updated\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.changes_made).to.have.property('daily_reset');\r",
+							"    pm.expect(response.changes_made).to.have.property('timezone');\r",
+							"    pm.expect(response.changes_made.daily_reset).to.not.be.null;\r",
+							"    pm.expect(response.changes_made.timezone).to.not.be.null;\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/update/games/109",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"update",
+						"games",
+						"109"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test update by adding new game",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Generate unique game data\r",
+							"const gameNames = ['Test RPG', 'Sample Gacha', 'Demo Adventure', 'Trial Game'];\r",
+							"const servers = ['Global', 'JP', 'KR', 'CN','EN'];\r",
+							"const timezones = ['Etc/GMT+8', 'Asia/Tokyo', 'America/New_York', 'Europe/London'];\r",
+							"\r",
+							"const randomName = gameNames[Math.floor(Math.random() * gameNames.length)] + ' ' + Date.now();\r",
+							"const randomServer = servers[Math.floor(Math.random() * servers.length)];\r",
+							"const randomTimezone = timezones[Math.floor(Math.random() * timezones.length)];\r",
+							"\r",
+							"pm.collectionVariables.set('new_game_name', randomName);\r",
+							"pm.collectionVariables.set('new_game_server', randomServer);\r",
+							"\r",
+							"pm.request.body.raw = JSON.stringify({\r",
+							"    name: randomName,\r",
+							"    server: randomServer,\r",
+							"    timezone: randomTimezone,\r",
+							"    daily_reset: \"04:00\",\r",
+							"    icon_name: \"test-game-icon\"\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Successful game creation\r",
+							"pm.test(\"Response status should be 201 for successful game creation\", () => {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Response structure matches documentation\r",
+							"pm.test(\"Response should contain required fields from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('message');\r",
+							"    pm.expect(response.message).to.equal('Game added successfully');\r",
+							"    pm.expect(response).to.have.property('game');\r",
+							"    pm.expect(response).to.have.property('added_by');\r",
+							"});\r",
+							"\r",
+							"// Test 3: Game object contains all provided data\r",
+							"pm.test(\"Game object should contain all provided data\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    const expectedName = pm.collectionVariables.get('new_game_name');\r",
+							"    const expectedServer = pm.collectionVariables.get('new_game_server');\r",
+							"    \r",
+							"    pm.expect(response.game.name).to.equal(expectedName);\r",
+							"    pm.expect(response.game.server).to.equal(expectedServer);\r",
+							"    pm.expect(response.game.daily_reset).to.equal('04:00:00');\r",
+							"    pm.expect(response.game.timezone).to.be.a('string');\r",
+							"    pm.expect(response.game.icon_name).to.equal('test-game-icon');\r",
+							"    \r",
+							"    // Store game ID for potential cleanup\r",
+							"    pm.collectionVariables.set('created_game_id', response.game.id);\r",
+							"});\r",
+							"\r",
+							"// Test 4: Added by field contains username\r",
+							"pm.test(\"Added by field should contain username\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.added_by).to.be.a('string').and.not.be.empty;\r",
+							"    console.log(`Game added by: ${response.added_by}`);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/update/add/game",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"update",
+						"add",
+						"game"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test update by adding new game missing fields",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Missing required fields (no timezone and daily_reset)\r",
+							"const requestBody = {\r",
+							"    name: \"Incomplete Game\",\r",
+							"    server: \"Global\"\r",
+							"};\r",
+							"\r",
+							"pm.request.body.raw = JSON.stringify(requestBody);\r",
+							"\r",
+							"pm.request.headers.upsert({\r",
+							"    key: 'Content-Type',\r",
+							"    value: 'application/json'\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Should return 400 for missing required fields\r",
+							"pm.test(\"Response status should be 400 for missing required fields\", () => {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Error message should match documentation\r",
+							"pm.test(\"Error message should specify required fields\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.error).to.equal('name, server, timezone, and daily_reset are required');\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoicG1hZGluOTk5QGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZGV2YWRtaW50ZXN0Iiwicm9sZSI6NCwiaWF0IjoxNzUzNzUzNTQ5LCJleHAiOjE3NTYzNDU1NDksImF1ZCI6ImdhY2hhLXVzZXJzIiwiaXNzIjoiZ2FjaGEtZGFpbHktdHJhY2tlciJ9.8zDuhAAYQDFPaWeWcvYhSmciybITQkFhyYdD2n42Cao",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/update/add/game",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"update",
+						"add",
+						"game"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test update by adding new game invalid daily reset",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const requestBody = {\r",
+							"    name: \"Test Game Invalid Time\",\r",
+							"    server: \"Global\", \r",
+							"    timezone: \"Etc/GMT+8\",\r",
+							"    daily_reset: \"4:44:44PM\"\r",
+							"};\r",
+							"\r",
+							"pm.request.body.raw = JSON.stringify(requestBody);\r",
+							"\r",
+							"pm.request.headers.upsert({\r",
+							"    key: 'Content-Type',\r",
+							"    value: 'application/json'\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Should return 400 for invalid time format\r",
+							"pm.test(\"Response status should be 400 for invalid daily_reset format\", () => {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Error message should match documentation\r",
+							"pm.test(\"Error message should specify time format requirement\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.error).to.equal('daily_reset must be in HH:MM format (24-hour)');\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoicG1hZGluOTk5QGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZGV2YWRtaW50ZXN0Iiwicm9sZSI6NCwiaWF0IjoxNzUzNzUzNTQ5LCJleHAiOjE3NTYzNDU1NDksImF1ZCI6ImdhY2hhLXVzZXJzIiwiaXNzIjoiZ2FjaGEtZGFpbHktdHJhY2tlciJ9.8zDuhAAYQDFPaWeWcvYhSmciybITQkFhyYdD2n42Cao",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/update/add/game",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"update",
+						"add",
+						"game"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test update by adding new game dup game",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const duplicateName = pm.collectionVariables.get('new_game_name');\r",
+							"const duplicateServer = pm.collectionVariables.get('new_game_server');\r",
+							"\r",
+							"const requestBody = {\r",
+							"    name: duplicateName,\r",
+							"    server: duplicateServer,\r",
+							"    timezone: \"Etc/GMT+8\",\r",
+							"    daily_reset: \"05:00\"\r",
+							"};\r",
+							"\r",
+							"pm.request.body.raw = JSON.stringify(requestBody);\r",
+							"\r",
+							"pm.request.headers.upsert({\r",
+							"    key: 'Content-Type',\r",
+							"    value: 'application/json'\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Should return 400 for duplicate game\r",
+							"pm.test(\"Response status should be 400 for duplicate game\", () => {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Error message should indicate duplicate\r",
+							"pm.test(\"Error message should indicate game already exists\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.error).to.include('already exists for server');\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoicG1hZGluOTk5QGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZGV2YWRtaW50ZXN0Iiwicm9sZSI6NCwiaWF0IjoxNzUzNzUzNTQ5LCJleHAiOjE3NTYzNDU1NDksImF1ZCI6ImdhY2hhLXVzZXJzIiwiaXNzIjoiZ2FjaGEtZGFpbHktdHJhY2tlciJ9.8zDuhAAYQDFPaWeWcvYhSmciybITQkFhyYdD2n42Cao",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/update/add/game",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"update",
+						"add",
+						"game"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test delete",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Use a different game ID for permanent deletion\r",
+							"const requestBody = {\r",
+							"    reason: \"Testing permanent delete - duplicate entry removal\",\r",
+							"    permanent: true\r",
+							"};\r",
+							"\r",
+							"pm.request.body.raw = JSON.stringify(requestBody);\r",
+							"\r",
+							"pm.request.headers.upsert({\r",
+							"    key: 'Content-Type',\r",
+							"    value: 'application/json'\r",
+							"});\r",
+							"\r",
+							"console.log(\"⚠️ Testing PERMANENT delete for game ID:\", pm.collectionVariables.get('test_delete_game_id'));"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Successful permanent deletion\r",
+							"pm.test(\"Response status should be 200 for successful permanent delete\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Deletion type should be permanent\r",
+							"pm.test(\"Deletion type should be permanent for permanent delete\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.deletion_type).to.equal('permanent');\r",
+							"    console.log(\"⚠️ PERMANENT deletion completed - cannot be undone!\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoicG1hZGluOTk5QGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZGV2YWRtaW50ZXN0Iiwicm9sZSI6NCwiaWF0IjoxNzUzNzUzNTQ5LCJleHAiOjE3NTYzNDU1NDksImF1ZCI6ImdhY2hhLXVzZXJzIiwiaXNzIjoiZ2FjaGEtZGFpbHktdHJhY2tlciJ9.8zDuhAAYQDFPaWeWcvYhSmciybITQkFhyYdD2n42Cao",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/update/delete/game/305",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"update",
+						"delete",
+						"game",
+						"305"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test update by importing",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.request.body.raw = JSON.stringify({\r",
+							"    forceRefresh: false\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Import should complete successfully\r",
+							"pm.test(\"Response status should be 200 for successful import\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Response structure matches documentation\r",
+							"pm.test(\"Response should contain required fields from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('imported');\r",
+							"    pm.expect(response.imported).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('updated');\r",
+							"    pm.expect(response.updated).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('total');\r",
+							"    pm.expect(response.total).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('source');\r",
+							"    pm.expect(response).to.have.property('timestamp');\r",
+							"});\r",
+							"\r",
+							"// Test 3: Source should be cache/backup for normal import\r",
+							"pm.test(\"Source should be cache/backup for normal import\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.source).to.equal('cache/backup');\r",
+							"});\r",
+							"\r",
+							"// Test 4: Total should equal imported + updated\r",
+							"pm.test(\"Total should equal sum of imported and updated\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.total).to.equal(response.imported + response.updated);\r",
+							"    console.log(`Import summary: ${response.imported} new, ${response.updated} updated, ${response.total} total`);\r",
+							"});\r",
+							"\r",
+							"// Test 5: Timestamp should be valid ISO date\r",
+							"pm.test(\"Timestamp should be valid ISO date format\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    const timestamp = new Date(response.timestamp);\r",
+							"    pm.expect(timestamp.toISOString()).to.equal(response.timestamp);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoicG1hZGluOTk5QGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZGV2YWRtaW50ZXN0Iiwicm9sZSI6NCwiaWF0IjoxNzUzODI1MTI2LCJleHAiOjE3NTY0MTcxMjYsImF1ZCI6ImdhY2hhLXVzZXJzIiwiaXNzIjoiZ2FjaGEtZGFpbHktdHJhY2tlciJ9.pK4w3Af1NWs4ZTtm5kFUNYhfiIkSuCOJwWl0RNf3wqY",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"forceRefresh\": false\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/update/games/import",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"update",
+						"games",
+						"import"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{auth}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "test_reset_time",
+			"value": ""
+		},
+		{
+			"key": "test_timezone",
+			"value": ""
+		},
+		{
+			"key": "new_game_name",
+			"value": ""
+		},
+		{
+			"key": "new_game_server",
+			"value": ""
+		},
+		{
+			"key": "created_game_id",
+			"value": ""
+		}
+	]
+}

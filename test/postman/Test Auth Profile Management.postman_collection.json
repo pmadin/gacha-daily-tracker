@@ -1,0 +1,1014 @@
+{
+	"info": {
+		"name": "Test Auth Profile Management",
+		"description": "Comprehensive tests for profile, password, and email update endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Profile Update Tests",
+			"item": [
+				{
+					"name": "Test Update Profile - Timezone",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Set up profile update request",
+									"const newTimezone = 'America/New_York';",
+									"",
+									"pm.request.body.raw = JSON.stringify({",
+									"    timezone: newTimezone,",
+									"    first_name: 'UpdatedFirst',",
+									"    last_name: 'UpdatedLast',",
+									"    phone: '+19876543210'",
+									"});",
+									"",
+									"pm.collectionVariables.set('expected_timezone', newTimezone);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Successful profile update",
+									"pm.test(\"Response status should be 200 for successful profile update\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test 2: Response structure validation",
+									"pm.test(\"Response should contain updated user object\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('message');",
+									"    pm.expect(response).to.have.property('user');",
+									"    pm.expect(response.user).to.be.an('object');",
+									"});",
+									"",
+									"// Test 3: Verify updated fields",
+									"pm.test(\"User profile should contain updated values\", () => {",
+									"    const response = pm.response.json();",
+									"    const user = response.user;",
+									"    const requestBody = JSON.parse(pm.request.body.raw);",
+									"    ",
+									"    pm.expect(user.timezone).to.equal(requestBody.timezone);",
+									"    pm.expect(user.first_name).to.equal(requestBody.first_name);",
+									"    pm.expect(user.last_name).to.equal(requestBody.last_name);",
+									"    pm.expect(user.phone).to.equal(requestBody.phone);",
+									"});",
+									"",
+									"// Test 4: Verify user ID and email unchanged",
+									"pm.test(\"User ID and email should remain unchanged\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.user).to.have.property('id');",
+									"    pm.expect(response.user).to.have.property('email');",
+									"    pm.expect(response.user.email).to.be.a('string');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gdt/auth/profile",
+							"host": ["{{base_url}}"],
+							"path": ["gdt", "auth", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Test Update Profile - Invalid Timezone",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.body.raw = JSON.stringify({",
+									"    timezone: 'Invalid/Timezone',",
+									"    first_name: 'Test'",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Should return 400 for invalid timezone",
+									"pm.test(\"Response status should be 400 for invalid timezone\", () => {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"// Test 2: Error message validation",
+									"pm.test(\"Error message should indicate invalid timezone\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('error');",
+									"    pm.expect(response.error).to.include('timezone');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gdt/auth/profile",
+							"host": ["{{base_url}}"],
+							"path": ["gdt", "auth", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Test Update Profile - Without JWT",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.body.raw = JSON.stringify({",
+									"    timezone: 'America/Chicago'",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Should return 401 without authentication",
+									"pm.test(\"Response status should be 401 without JWT token\", () => {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"// Test 2: Error message validation",
+									"pm.test(\"Error message should indicate authentication required\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('error');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gdt/auth/profile",
+							"host": ["{{base_url}}"],
+							"path": ["gdt", "auth", "profile"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Password Update Tests",
+			"item": [
+				{
+					"name": "Test Update Password - Success",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Use test user credentials",
+									"const currentPassword = pm.globals.get('test_password') || 'MySecure123!Pass';",
+									"const newPassword = 'NewSecure456!Pass';",
+									"",
+									"pm.request.body.raw = JSON.stringify({",
+									"    identifier: pm.globals.get('test_email') || 'test@example.com',",
+									"    currentPassword: currentPassword,",
+									"    newPassword: newPassword,",
+									"    confirmNewPassword: newPassword",
+									"});",
+									"",
+									"// Store for reverting later",
+									"pm.collectionVariables.set('temp_new_password', newPassword);",
+									"pm.collectionVariables.set('temp_old_password', currentPassword);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Successful password update",
+									"pm.test(\"Response status should be 200 for successful password update\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test 2: Response structure",
+									"pm.test(\"Response should contain success message\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('message');",
+									"    pm.expect(response.message).to.include('Password updated successfully');",
+									"});",
+									"",
+									"// Test 3: Security info validation",
+									"pm.test(\"Response should contain security information\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('security_info');",
+									"    pm.expect(response.security_info).to.have.property('hash_algorithm');",
+									"    pm.expect(response.security_info.hash_algorithm).to.equal('bcrypt');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gdt/auth/update-password",
+							"host": ["{{base_url}}"],
+							"path": ["gdt", "auth", "update-password"]
+						}
+					}
+				},
+				{
+					"name": "Test Update Password - Wrong Current Password",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.body.raw = JSON.stringify({",
+									"    identifier: pm.globals.get('test_email') || 'test@example.com',",
+									"    currentPassword: 'WrongPassword123!',",
+									"    newPassword: 'NewSecure789!Pass',",
+									"    confirmNewPassword: 'NewSecure789!Pass'",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Should return 401 for wrong current password",
+									"pm.test(\"Response status should be 401 for wrong current password\", () => {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"// Test 2: Error message validation",
+									"pm.test(\"Error message should indicate incorrect password\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('error');",
+									"    pm.expect(response.error).to.include('Current password is incorrect');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gdt/auth/update-password",
+							"host": ["{{base_url}}"],
+							"path": ["gdt", "auth", "update-password"]
+						}
+					}
+				},
+				{
+					"name": "Test Update Password - Weak Password",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.body.raw = JSON.stringify({",
+									"    identifier: pm.globals.get('test_email') || 'test@example.com',",
+									"    currentPassword: pm.globals.get('test_password') || 'MySecure123!Pass',",
+									"    newPassword: 'weak',",
+									"    confirmNewPassword: 'weak'",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Should return 400 for weak password",
+									"pm.test(\"Response status should be 400 for weak password\", () => {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"// Test 2: Error message validation",
+									"pm.test(\"Error message should indicate password requirements\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('error');",
+									"    pm.expect(response.error).to.match(/password.*strong|minimum|requirements/i);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gdt/auth/update-password",
+							"host": ["{{base_url}}"],
+							"path": ["gdt", "auth", "update-password"]
+						}
+					}
+				},
+				{
+					"name": "Test Update Password - Mismatch Confirmation",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.body.raw = JSON.stringify({",
+									"    identifier: pm.globals.get('test_email') || 'test@example.com',",
+									"    currentPassword: pm.globals.get('test_password') || 'MySecure123!Pass',",
+									"    newPassword: 'NewSecure789!Pass',",
+									"    confirmNewPassword: 'DifferentPassword789!Pass'",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Should return 400 for password mismatch",
+									"pm.test(\"Response status should be 400 for password mismatch\", () => {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"// Test 2: Error message validation",
+									"pm.test(\"Error message should indicate password mismatch\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('error');",
+									"    pm.expect(response.error).to.match(/password.*match|confirmation/i);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gdt/auth/update-password",
+							"host": ["{{base_url}}"],
+							"path": ["gdt", "auth", "update-password"]
+						}
+					}
+				},
+				{
+					"name": "Test Update Password - Without JWT",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.body.raw = JSON.stringify({",
+									"    identifier: 'test@example.com',",
+									"    currentPassword: 'OldPass123!',",
+									"    newPassword: 'NewPass456!',",
+									"    confirmNewPassword: 'NewPass456!'",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Should return 401 without authentication",
+									"pm.test(\"Response status should be 401 without JWT token\", () => {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"// Test 2: Error message validation",
+									"pm.test(\"Error message should indicate authentication required\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('error');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gdt/auth/update-password",
+							"host": ["{{base_url}}"],
+							"path": ["gdt", "auth", "update-password"]
+						}
+					}
+				},
+				{
+					"name": "Test Update Password - Revert to Original",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Revert password back to original",
+									"const newPassword = pm.collectionVariables.get('temp_new_password');",
+									"const oldPassword = pm.collectionVariables.get('temp_old_password');",
+									"",
+									"pm.request.body.raw = JSON.stringify({",
+									"    identifier: pm.globals.get('test_email') || 'test@example.com',",
+									"    currentPassword: newPassword,",
+									"    newPassword: oldPassword,",
+									"    confirmNewPassword: oldPassword",
+									"});",
+									"",
+									"console.log('Reverting password back to original for future tests');"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Password revert successful",
+									"pm.test(\"Password reverted successfully\", () => {",
+									"    pm.response.to.have.status(200);",
+									"    console.log('✓ Password reverted to original value');",
+									"});",
+									"",
+									"// Clean up temp variables",
+									"pm.collectionVariables.unset('temp_new_password');",
+									"pm.collectionVariables.unset('temp_old_password');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gdt/auth/update-password",
+							"host": ["{{base_url}}"],
+							"path": ["gdt", "auth", "update-password"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Email Update Tests",
+			"item": [
+				{
+					"name": "Test Update Email - Success",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generate unique email for testing",
+									"const timestamp = Date.now();",
+									"const newEmail = `newemail${timestamp}@example.com`;",
+									"",
+									"pm.request.body.raw = JSON.stringify({",
+									"    identifier: pm.globals.get('test_email') || 'test@example.com',",
+									"    password: pm.globals.get('test_password') || 'MySecure123!Pass',",
+									"    newEmail: newEmail,",
+									"    confirmNewEmail: newEmail",
+									"});",
+									"",
+									"pm.collectionVariables.set('temp_new_email', newEmail);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Successful email update",
+									"pm.test(\"Response status should be 200 for successful email update\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test 2: Response structure",
+									"pm.test(\"Response should contain updated user with new email\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('message');",
+									"    pm.expect(response).to.have.property('user');",
+									"    pm.expect(response.user).to.have.property('email');",
+									"});",
+									"",
+									"// Test 3: Verify email was updated",
+									"pm.test(\"User email should be updated to new email\", () => {",
+									"    const response = pm.response.json();",
+									"    const newEmail = pm.collectionVariables.get('temp_new_email');",
+									"    pm.expect(response.user.email).to.equal(newEmail);",
+									"    console.log(`✓ Email updated to: ${response.user.email}`);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gdt/auth/update-email",
+							"host": ["{{base_url}}"],
+							"path": ["gdt", "auth", "update-email"]
+						}
+					}
+				},
+				{
+					"name": "Test Update Email - Duplicate Email",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Try to use an existing email",
+									"pm.request.body.raw = JSON.stringify({",
+									"    identifier: pm.globals.get('test_email') || 'test@example.com',",
+									"    password: pm.globals.get('test_password') || 'MySecure123!Pass',",
+									"    newEmail: pm.globals.get('test_email') || 'test@example.com',",
+									"    confirmNewEmail: pm.globals.get('test_email') || 'test@example.com'",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Should return 400 for duplicate email",
+									"pm.test(\"Response status should be 400 for duplicate email\", () => {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"// Test 2: Error message validation",
+									"pm.test(\"Error message should indicate email already exists\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('error');",
+									"    pm.expect(response.error).to.match(/email.*already.*use|exists/i);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gdt/auth/update-email",
+							"host": ["{{base_url}}"],
+							"path": ["gdt", "auth", "update-email"]
+						}
+					}
+				},
+				{
+					"name": "Test Update Email - Invalid Format",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.body.raw = JSON.stringify({",
+									"    identifier: pm.globals.get('test_email') || 'test@example.com',",
+									"    password: pm.globals.get('test_password') || 'MySecure123!Pass',",
+									"    newEmail: 'invalid-email-format',",
+									"    confirmNewEmail: 'invalid-email-format'",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Should return 400 for invalid email format",
+									"pm.test(\"Response status should be 400 for invalid email format\", () => {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"// Test 2: Error message validation",
+									"pm.test(\"Error message should indicate invalid email format\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('error');",
+									"    pm.expect(response.error).to.match(/email.*invalid|format/i);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gdt/auth/update-email",
+							"host": ["{{base_url}}"],
+							"path": ["gdt", "auth", "update-email"]
+						}
+					}
+				},
+				{
+					"name": "Test Update Email - Wrong Password",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.body.raw = JSON.stringify({",
+									"    identifier: pm.globals.get('test_email') || 'test@example.com',",
+									"    password: 'WrongPassword123!',",
+									"    newEmail: 'newemail@example.com',",
+									"    confirmNewEmail: 'newemail@example.com'",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Should return 401 for wrong password",
+									"pm.test(\"Response status should be 401 for wrong password\", () => {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"// Test 2: Error message validation",
+									"pm.test(\"Error message should indicate incorrect password\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('error');",
+									"    pm.expect(response.error).to.include('Password is incorrect');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gdt/auth/update-email",
+							"host": ["{{base_url}}"],
+							"path": ["gdt", "auth", "update-email"]
+						}
+					}
+				},
+				{
+					"name": "Test Update Email - Mismatch Confirmation",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.body.raw = JSON.stringify({",
+									"    identifier: pm.globals.get('test_email') || 'test@example.com',",
+									"    password: pm.globals.get('test_password') || 'MySecure123!Pass',",
+									"    newEmail: 'email1@example.com',",
+									"    confirmNewEmail: 'email2@example.com'",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Should return 400 for email mismatch",
+									"pm.test(\"Response status should be 400 for email mismatch\", () => {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"// Test 2: Error message validation",
+									"pm.test(\"Error message should indicate email mismatch\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('error');",
+									"    pm.expect(response.error).to.match(/email.*match|confirmation/i);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gdt/auth/update-email",
+							"host": ["{{base_url}}"],
+							"path": ["gdt", "auth", "update-email"]
+						}
+					}
+				},
+				{
+					"name": "Test Update Email - Without JWT",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.body.raw = JSON.stringify({",
+									"    identifier: 'test@example.com',",
+									"    password: 'Password123!',",
+									"    newEmail: 'new@example.com',",
+									"    confirmNewEmail: 'new@example.com'",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Should return 401 without authentication",
+									"pm.test(\"Response status should be 401 without JWT token\", () => {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"// Test 2: Error message validation",
+									"pm.test(\"Error message should indicate authentication required\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('error');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gdt/auth/update-email",
+							"host": ["{{base_url}}"],
+							"path": ["gdt", "auth", "update-email"]
+						}
+					}
+				},
+				{
+					"name": "Test Update Email - Revert to Original",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Revert email back to original",
+									"const newEmail = pm.collectionVariables.get('temp_new_email');",
+									"const oldEmail = pm.globals.get('test_email') || 'test@example.com';",
+									"",
+									"pm.request.body.raw = JSON.stringify({",
+									"    identifier: newEmail,",
+									"    password: pm.globals.get('test_password') || 'MySecure123!Pass',",
+									"    newEmail: oldEmail,",
+									"    confirmNewEmail: oldEmail",
+									"});",
+									"",
+									"console.log('Reverting email back to original for future tests');"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Email revert successful",
+									"pm.test(\"Email reverted successfully\", () => {",
+									"    pm.response.to.have.status(200);",
+									"    console.log('✓ Email reverted to original value');",
+									"});",
+									"",
+									"// Clean up temp variables",
+									"pm.collectionVariables.unset('temp_new_email');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gdt/auth/update-email",
+							"host": ["{{base_url}}"],
+							"path": ["gdt", "auth", "update-email"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{auth}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "expected_timezone",
+			"value": ""
+		},
+		{
+			"key": "temp_new_password",
+			"value": ""
+		},
+		{
+			"key": "temp_old_password",
+			"value": ""
+		},
+		{
+			"key": "temp_new_email",
+			"value": ""
+		}
+	]
+}

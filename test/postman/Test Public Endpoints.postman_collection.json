@@ -1,0 +1,366 @@
+{
+	"info": {
+		"name": "Test Public Endpoints",
+		"description": "Tests for deleted games, health, and status endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Deleted Games Tests",
+			"item": [
+				{
+					"name": "Test Get Deleted Games",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Endpoint accessible",
+									"pm.test(\"Should return 200 for deleted games request\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test 2: Response structure",
+									"pm.test(\"Response should contain games array and pagination\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('games');",
+									"    pm.expect(response.games).to.be.an('array');",
+									"    pm.expect(response).to.have.property('total');",
+									"    pm.expect(response).to.have.property('limit');",
+									"    pm.expect(response).to.have.property('offset');",
+									"});",
+									"",
+									"// Test 3: Verify all games are deleted (is_active = false)",
+									"pm.test(\"All returned games should be deleted (is_active = false)\", () => {",
+									"    const response = pm.response.json();",
+									"    if (response.games.length > 0) {",
+									"        response.games.forEach(game => {",
+									"            pm.expect(game).to.have.property('is_active');",
+									"            pm.expect(game.is_active).to.be.false;",
+									"            pm.expect(game).to.have.property('status');",
+									"            pm.expect(game.status).to.equal('deleted');",
+									"        });",
+									"    }",
+									"});",
+									"",
+									"// Test 4: Game object structure",
+									"pm.test(\"Each deleted game should have required fields\", () => {",
+									"    const response = pm.response.json();",
+									"    if (response.games.length > 0) {",
+									"        const game = response.games[0];",
+									"        pm.expect(game).to.have.property('id');",
+									"        pm.expect(game).to.have.property('name');",
+									"        pm.expect(game).to.have.property('server');",
+									"        pm.expect(game).to.have.property('timezone');",
+									"        pm.expect(game).to.have.property('daily_reset');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/gdt/games/deleted",
+							"host": ["{{base_url}}"],
+							"path": ["gdt", "games", "deleted"]
+						}
+					}
+				},
+				{
+					"name": "Test Get Deleted Games - With Search",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Search filter applied",
+									"pm.test(\"Should return 200 with search filter\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test 2: Results match search criteria",
+									"pm.test(\"Results should match search term and be deleted\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('filters_applied');",
+									"    pm.expect(response.filters_applied).to.have.property('search');",
+									"    ",
+									"    if (response.games.length > 0) {",
+									"        response.games.forEach(game => {",
+									"            pm.expect(game.is_active).to.be.false;",
+									"        });",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/gdt/games/deleted?search=test",
+							"host": ["{{base_url}}"],
+							"path": ["gdt", "games", "deleted"],
+							"query": [
+								{
+									"key": "search",
+									"value": "test"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Test Get Deleted Games - With Server Filter",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Server filter applied",
+									"pm.test(\"Should filter deleted games by server\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test 2: All results match server filter",
+									"pm.test(\"All results should be from Global server and deleted\", () => {",
+									"    const response = pm.response.json();",
+									"    if (response.games.length > 0) {",
+									"        response.games.forEach(game => {",
+									"            pm.expect(game.server).to.equal('Global');",
+									"            pm.expect(game.is_active).to.be.false;",
+									"        });",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/gdt/games/deleted?server=Global",
+							"host": ["{{base_url}}"],
+							"path": ["gdt", "games", "deleted"],
+							"query": [
+								{
+									"key": "server",
+									"value": "Global"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Test Get Deleted Games - With Pagination",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Pagination applied",
+									"pm.test(\"Pagination should be applied to deleted games\", () => {",
+									"    pm.response.to.have.status(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.limit).to.equal(10);",
+									"    pm.expect(response.offset).to.equal(0);",
+									"    pm.expect(response.games.length).to.be.at.most(10);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/gdt/games/deleted?limit=10&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["gdt", "games", "deleted"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Health & Status Tests",
+			"item": [
+				{
+					"name": "Test Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Health endpoint accessible",
+									"pm.test(\"Health endpoint should return 200\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test 2: Response structure",
+									"pm.test(\"Health response should contain status and database info\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('status');",
+									"    pm.expect(response).to.have.property('database');",
+									"    pm.expect(response.database).to.be.an('object');",
+									"});",
+									"",
+									"// Test 3: Status is OK",
+									"pm.test(\"Overall status should be OK\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.status).to.equal('OK');",
+									"});",
+									"",
+									"// Test 4: Database connection status",
+									"pm.test(\"Database should be connected\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.database).to.have.property('status');",
+									"    pm.expect(response.database.status).to.match(/connected|OK/i);",
+									"});",
+									"",
+									"// Test 5: Backup file status present",
+									"pm.test(\"Backup file status should be present\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('backup_file');",
+									"    pm.expect(response.backup_file).to.be.an('object');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/gdt/health",
+							"host": ["{{base_url}}"],
+							"path": ["gdt", "health"]
+						}
+					}
+				},
+				{
+					"name": "Test Status Page",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Status page accessible",
+									"pm.test(\"Status page should return 200\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test 2: Response is HTML",
+									"pm.test(\"Status page should return HTML content\", () => {",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include('text/html');",
+									"});",
+									"",
+									"// Test 3: HTML contains system status",
+									"pm.test(\"HTML should contain status information\", () => {",
+									"    const html = pm.response.text();",
+									"    pm.expect(html).to.include('status');",
+									"    pm.expect(html).to.match(/<!DOCTYPE html>|<html/i);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/gdt/status",
+							"host": ["{{base_url}}"],
+							"path": ["gdt", "status"]
+						}
+					}
+				},
+				{
+					"name": "Test API Home Page",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: API home accessible",
+									"pm.test(\"API home page should return 200\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test 2: Response is HTML",
+									"pm.test(\"API home should return HTML content\", () => {",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include('text/html');",
+									"});",
+									"",
+									"// Test 3: Contains documentation links",
+									"pm.test(\"HTML should contain docs links\", () => {",
+									"    const html = pm.response.text();",
+									"    pm.expect(html).to.match(/api-docs|documentation|swagger/i);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/gdt/",
+							"host": ["{{base_url}}"],
+							"path": ["gdt", ""]
+						}
+					}
+				},
+				{
+					"name": "Test Root Redirect",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Root redirects",
+									"pm.test(\"Root should redirect to API docs\", () => {",
+									"    // Could be 301, 302, or 200 depending on redirect handling",
+									"    const validCodes = [200, 301, 302];",
+									"    pm.expect(validCodes).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/",
+							"host": ["{{base_url}}"],
+							"path": [""]
+						}
+					}
+				}
+			]
+		}
+	]
+}

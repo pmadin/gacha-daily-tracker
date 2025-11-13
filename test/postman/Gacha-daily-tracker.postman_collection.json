@@ -1,0 +1,492 @@
+{
+	"info": {
+		"_postman_id": "76f43070-7ed2-4cf6-9b21-59022143cddf",
+		"name": "Gacha-daily-tracker",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "44170125",
+		"_collection_link": "https://petermadin.postman.co/workspace/Messages~a71a6062-1fcf-4f82-8a64-231b7113bb99/collection/44170125-76f43070-7ed2-4cf6-9b21-59022143cddf?action=share&source=collection_link&creator=44170125"
+	},
+	"item": [
+		{
+			"name": "Get gacha games-wuther",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/games?name=Wuthering%20Waves&timezone=Etc%2FGMT%2B5&reset_time=04%3A00&limit=50&offset=0&sort_by=name&order=asc",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"games"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "Wuthering%20Waves"
+						},
+						{
+							"key": "timezone",
+							"value": "Etc%2FGMT%2B5"
+						},
+						{
+							"key": "reset_time",
+							"value": "04%3A00"
+						},
+						{
+							"key": "limit",
+							"value": "50"
+						},
+						{
+							"key": "offset",
+							"value": "0"
+						},
+						{
+							"key": "sort_by",
+							"value": "name"
+						},
+						{
+							"key": "order",
+							"value": "asc"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Search by time zone",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/games?timezone=Etc%2FGMT%2B5&limit=50&offset=0&sort_by=name&order=asc",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"games"
+					],
+					"query": [
+						{
+							"key": "timezone",
+							"value": "Etc%2FGMT%2B5"
+						},
+						{
+							"key": "limit",
+							"value": "50"
+						},
+						{
+							"key": "offset",
+							"value": "0"
+						},
+						{
+							"key": "sort_by",
+							"value": "name"
+						},
+						{
+							"key": "order",
+							"value": "asc"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Search by daily reset",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/games?reset_time=00%3A00&limit=50",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"games"
+					],
+					"query": [
+						{
+							"key": "reset_time",
+							"value": "00%3A00"
+						},
+						{
+							"key": "limit",
+							"value": "50"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Search by server region",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/games?server=Global&limit=50",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"games"
+					],
+					"query": [
+						{
+							"key": "server",
+							"value": "Global"
+						},
+						{
+							"key": "limit",
+							"value": "50"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Search by icon",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/games?icon=nikke&limit=50",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"games"
+					],
+					"query": [
+						{
+							"key": "icon",
+							"value": "nikke"
+						},
+						{
+							"key": "limit",
+							"value": "50"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Search by general search across game names",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/games?search=zenless",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"games"
+					],
+					"query": [
+						{
+							"key": "search",
+							"value": "zenless"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Search by offset limit (101 start to 200)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/games?limit=100&offset=100",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"games"
+					],
+					"query": [
+						{
+							"key": "limit",
+							"value": "100"
+						},
+						{
+							"key": "offset",
+							"value": "100"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Gacha register",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"devadmintest\",\r\n    \"email\": \"pmadin999@gmail.com\",\r\n    \"password\": \"MySecure123!Pass\",\r\n    \"timezone\": \"America/Los_Angeles\",\r\n    \"confirmPassword\": \"MySecure123!Pass\",\r\n    \"registrationToken\": \"e6b1228b6525d690bfc64ab355db000c1d9a49d921c97bbb9166a627d200c66437d2dfd53f2ea1d3ae2e173593732935c11b9418507a79fb6f39864ba6b83fc6\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/auth/register",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Gacha register Copy",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"wahgew\",\r\n    \"email\": \"petermadin@yahoo.com\",\r\n    \"password\": \"xrZ#$s^L7mUpjkUIfrCMojomm\",\r\n    \"timezone\": \"America/Los_Angeles\",\r\n    \"confirmPassword\": \"xrZ#$s^L7mUpjkUIfrCMojomm\",\r\n    \"registrationToken\": \"e6b1228b6525d690bfc64ab355db000c1d9a49d921c97bbb9166a627d200c66437d2dfd53f2ea1d3ae2e173593732935c11b9418507a79fb6f39864ba6b83fc6\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/auth/register",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Gacha register standard user",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "e6b1228b6525d690bfc64ab355db000c1d9a49d92",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"test_userROLE1\",\r\n    \"email\": \"test@example.com\",\r\n    \"password\": \"TestPassword123!\",\r\n    \"confirmPassword\": \"TestPassword123!\",\r\n    \"registrationToken\": \"e6b1228b6525d690bfc64ab355db000c1d9a49d921c97bbb9166a627d200c66437d2dfd53f2ea1d3ae2e173593732935c11b9418507a79fb6f39864ba6b83fc6\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/auth/register",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Gacha login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"pmadin999@gmail.com\",\r\n  \"password\": \"MySecure123!Pass\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/auth/login",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Gacha login owner",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"petermadin@yahoo.com\",\r\n  \"password\": \"xrZ#$s^L7mUpjkUIfrCMojomm\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/auth/login",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Gacha login admin",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"pmadin999@gmail.com\",\r\n  \"password\": \"MySecure123!Pass\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/auth/login",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Gacha user delete",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"password\": \"MySecure123!Pass\",\r\n  \"identifier\": \"pmadin999@gmail.com\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/auth/account",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"auth",
+						"account"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all admin users",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/admin/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"admin",
+						"users"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{auth}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

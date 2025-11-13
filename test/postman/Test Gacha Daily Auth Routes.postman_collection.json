@@ -1,0 +1,426 @@
+{
+	"info": {
+		"_postman_id": "a639571a-5ee3-4d68-9e26-f2d756cc092f",
+		"name": "Test Gacha Daily Auth Routes",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "44170125",
+		"_collection_link": "https://petermadin.postman.co/workspace/Messages~a71a6062-1fcf-4f82-8a64-231b7113bb99/collection/44170125-a639571a-5ee3-4d68-9e26-f2d756cc092f?action=share&source=collection_link&creator=44170125"
+	},
+	"item": [
+		{
+			"name": "Test Register",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Create a NEW test user for registration testing (separate from login tests)\r",
+							"const timestamp = Date.now();\r",
+							"const registrationData = {\r",
+							"    username: \"reg_test_\" + timestamp,\r",
+							"    email: \"regtest\" + timestamp + \"@example.com\",\r",
+							"    password: \"MySecure123!Pass\",\r",
+							"    confirmPassword: \"MySecure123!Pass\",\r",
+							"    registrationToken: \"e6b1228b6525d690bfc64ab355db000c1d9a49d921c97bbb9166a627d200c66437d2dfd53f2ea1d3ae2e173593732935c11b9418507a79fb6f39864ba6b83fc6\",\r",
+							"    first_name: \"RegTest\",\r",
+							"    last_name: \"User\",\r",
+							"    phone: \"+1234567890\",\r",
+							"    timezone: \"America/Los_Angeles\"\r",
+							"};\r",
+							"\r",
+							"pm.request.body.raw = JSON.stringify(registrationData);\r",
+							"\r",
+							"// Store registration data (separate from existing test users)\r",
+							"pm.globals.set(\"new_reg_username\", registrationData.username);\r",
+							"pm.globals.set(\"new_reg_email\", registrationData.email);\r",
+							"pm.globals.set(\"new_reg_password\", registrationData.password);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Response should contain all required user fields from documentation\r",
+							"pm.test(\"Response should contain complete user object with all documented fields\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('message');\r",
+							"    pm.expect(response).to.have.property('user');\r",
+							"    \r",
+							"    const user = response.user;\r",
+							"    pm.expect(user).to.have.property('id').that.is.a('number');\r",
+							"    pm.expect(user).to.have.property('username').that.is.a('string');\r",
+							"    pm.expect(user).to.have.property('email').that.is.a('string');\r",
+							"    pm.expect(user).to.have.property('timezone').that.is.a('string');\r",
+							"    pm.expect(user).to.have.property('first_name').that.is.a('string');\r",
+							"    pm.expect(user).to.have.property('last_name').that.is.a('string');\r",
+							"    pm.expect(user).to.have.property('phone').that.is.a('string');\r",
+							"    pm.expect(user).to.have.property('role').that.is.a('number');\r",
+							"    pm.expect(user).to.have.property('created_at').that.is.a('string');\r",
+							"    pm.expect(user).to.have.property('detected_timezone').that.is.a('boolean');\r",
+							"});\r",
+							"\r",
+							"// Test 2: Security info should be present as documented\r",
+							"pm.test(\"Response should contain security information\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('security_info');\r",
+							"    \r",
+							"    const securityInfo = response.security_info;\r",
+							"    pm.expect(securityInfo).to.have.property('hash_algorithm').that.equals('bcrypt');\r",
+							"    pm.expect(securityInfo).to.have.property('salt_rounds').that.is.a('number');\r",
+							"    pm.expect(securityInfo).to.have.property('additional_security').that.is.an('array');\r",
+							"    pm.expect(securityInfo.additional_security).to.include.members(['pepper', 'timing-attack-protection', 'strong-password-policy']);\r",
+							"});\r",
+							"\r",
+							"// Test 3: User data should match input values\r",
+							"pm.test(\"User data should match provided registration data\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    const user = response.user;\r",
+							"    const requestBody = JSON.parse(pm.request.body.raw);\r",
+							"    \r",
+							"    pm.expect(user.username).to.equal(requestBody.username);\r",
+							"    pm.expect(user.email).to.equal(requestBody.email);\r",
+							"    pm.expect(user.first_name).to.equal(requestBody.first_name);\r",
+							"    pm.expect(user.last_name).to.equal(requestBody.last_name);\r",
+							"    pm.expect(user.phone).to.equal(requestBody.phone);\r",
+							"    pm.expect(user.timezone).to.equal(requestBody.timezone);\r",
+							"    pm.expect(user.role).to.equal(1); // Default role as per documentation\r",
+							"});\r",
+							"\r",
+							"// Test 4: Timezone detection should be correct\r",
+							"pm.test(\"Timezone detection should be false when timezone is provided\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.user.detected_timezone).to.be.false;\r",
+							"});\r",
+							"\r",
+							"// Test 5: Created timestamp should be valid ISO date\r",
+							"pm.test(\"Created timestamp should be valid ISO date format\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    const createdAt = new Date(response.user.created_at);\r",
+							"    pm.expect(createdAt.toISOString()).to.equal(response.user.created_at);\r",
+							"});\r",
+							"\r",
+							"// Test 6: Store NEW user ID for subsequent tests (separate from existing test users)\r",
+							"pm.test(\"Store NEW registration user ID\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.globals.set(\"new_reg_user_id\", response.user.id);\r",
+							"    console.log(\"New registration user ID stored:\", response.user.id);\r",
+							"});\r",
+							"\r",
+							"// Test 7: Response status should be 201 for successful registration\r",
+							"pm.test(\"Response status should be 201 for successful registration\", () => {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/auth/register",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test Register Invalid Reg Token",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.request.body.raw = JSON.stringify({\r",
+							"    username: \"test_user_fail\",\r",
+							"    email: \"testfail@example.com\",\r",
+							"    password: \"MySecure123!Pass\",\r",
+							"    confirmPassword: \"MySecure123!Pass\",\r",
+							"    registrationToken: \"invalid-token420adncc22332scsdasdaa423491hjvvvmm\"\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Response status should be 403 for invalid reg token\r",
+							"pm.test(\"Should return 403 for invalid registration token\", () => {\r",
+							"    pm.response.to.have.status(403);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Check for proper error message when registration token is invalid\r",
+							"pm.test(\"Should return proper error message for invalid token\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('error').that.includes('Invalid registration token');\r",
+							"    pm.expect(response).to.have.property('hint').that.includes('Contact the administrator');\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/auth/register",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test Login",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Updated test users from DB\r",
+							"const existingTestUsers = [\r",
+							"    { email: \"test1754082456666@example.com\", username: \"test_user_1754082456666\" },\r",
+							"    { email: \"test1754082501144@example.com\", username: \"test_user_1754082501144\" },\r",
+							"    { email: \"test1754082754288@example.com\", username: \"test_user_1754082754288\" }\r",
+							"];\r",
+							"\r",
+							"// Use the first available test user\r",
+							"const testUser = existingTestUsers[0];\r",
+							"\r",
+							"pm.request.body.raw = JSON.stringify({\r",
+							"    email: testUser.email,\r",
+							"    password: \"MySecure123!Pass\" // All test users should have this password\r",
+							"});\r",
+							"\r",
+							"// Store credentials for subsequent tests\r",
+							"pm.globals.set(\"test_email\", testUser.email);\r",
+							"pm.globals.set(\"test_password\", \"MySecure123!Pass\");\r",
+							"pm.globals.set(\"test_username\", testUser.username);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Response should contain all documented login fields\r",
+							"pm.test(\"Response should contain complete login response structure\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('message').that.equals('Login successful');\r",
+							"    pm.expect(response).to.have.property('token').that.is.a('string');\r",
+							"    pm.expect(response).to.have.property('user').that.is.an('object');\r",
+							"    pm.expect(response).to.have.property('expires_in').that.equals('30 days');\r",
+							"});\r",
+							"\r",
+							"// Test 2: User object should contain documented fields\r",
+							"pm.test(\"User object should contain all documented fields\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    const user = response.user;\r",
+							"    \r",
+							"    pm.expect(user).to.have.property('id').that.is.a('number');\r",
+							"    pm.expect(user).to.have.property('username').that.is.a('string');\r",
+							"    pm.expect(user).to.have.property('email').that.is.a('string');\r",
+							"    pm.expect(user).to.have.property('role').that.is.a('number');\r",
+							"    pm.expect(user).to.have.property('timezone').that.is.a('string');\r",
+							"});\r",
+							"\r",
+							"// Test 3: JWT token should be valid format\r",
+							"pm.test(\"JWT token should be valid format\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    const token = response.token;\r",
+							"    \r",
+							"    // JWT should have 3 parts separated by dots\r",
+							"    const tokenParts = token.split('.');\r",
+							"    pm.expect(tokenParts).to.have.lengthOf(3);\r",
+							"    \r",
+							"    // Store token for authenticated requests\r",
+							"    pm.globals.set(\"auth_token\", token);\r",
+							"});\r",
+							"\r",
+							"// Test 4: User data should match registered user\r",
+							"pm.test(\"Returned user should match the existing test user\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    const user = response.user;\r",
+							"    \r",
+							"    pm.expect(user.username).to.equal(pm.globals.get(\"test_username\"));\r",
+							"    pm.expect(user.email).to.equal(pm.globals.get(\"test_email\"));\r",
+							"    // Don't check user.id since we're using existing users\r",
+							"});\r",
+							"\r",
+							"// Test 5: Response status should be 200 for successful login\r",
+							"pm.test(\"Response status should be 200 for successful login\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/auth/login",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test Invalid Login",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Pre-request Script\r",
+							"pm.request.body.raw = JSON.stringify({\r",
+							"    email: \"nonexistent@example.com\",\r",
+							"    password: \"WrongSecure123!Pass\"\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Response status should be 401 for invalid login\r",
+							"pm.test(\"Should return 401 for invalid credentials\", () => {\r",
+							"    pm.response.to.have.status(401);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Response body should contain a generic error message for security\r",
+							"pm.test(\"Should return generic error message for security\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('error').that.equals('Invalid email or password');\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/auth/login",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{auth}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

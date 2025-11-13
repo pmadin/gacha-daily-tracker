@@ -24,6 +24,9 @@ build/
 .DS_Store
 Thumbs.db
 
+# Claude
+.claudeignore
+
 # Logs
 logs/
 *.log

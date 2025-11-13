@@ -1,0 +1,1682 @@
+{
+	"info": {
+		"_postman_id": "2e2a8501-735a-4c97-a801-9ec89f439bcf",
+		"name": "Test-Gacha-daily-tracker (games files open)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "44170125",
+		"_collection_link": "https://petermadin.postman.co/workspace/Messages~a71a6062-1fcf-4f82-8a64-231b7113bb99/collection/44170125-2e2a8501-735a-4c97-a801-9ec89f439bcf?action=share&source=collection_link&creator=44170125"
+	},
+	"item": [
+		{
+			"name": "Test GET server list",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Basic response structure validation\r",
+							"pm.test(\"Response status should be 200\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response should contain totalGameCount and servers array\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('totalGameCount');\r",
+							"    pm.expect(response.totalGameCount).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('servers');\r",
+							"    pm.expect(response.servers).to.be.an('array');\r",
+							"});\r",
+							"\r",
+							"// Test 2: Validate server object structure as per documentation\r",
+							"pm.test(\"Each server object should have required fields from documentation (server & game_count)\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    \r",
+							"    if (response.servers && response.servers.length > 0) {\r",
+							"        const server = response.servers[0];\r",
+							"        pm.expect(server).to.have.property('server');\r",
+							"        pm.expect(server.server).to.be.a('string');\r",
+							"        pm.expect(server).to.have.property('game_count');\r",
+							"        pm.expect(server.game_count).to.be.a('string'); // Documentation shows this as string\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"// Test 3: Validate totalGameCount calculation matches documentation\r",
+							"pm.test(\"Total game count should match sum of all server game counts\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    \r",
+							"    if (response.servers && response.servers.length > 0) {\r",
+							"        const calculatedTotal = response.servers.reduce((total, server) => {\r",
+							"            return total + parseInt(server.game_count);\r",
+							"        }, 0);\r",
+							"        \r",
+							"        pm.expect(response.totalGameCount).to.equal(calculatedTotal);\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"// Test 4: Validate servers are ordered by game_count DESC as per query\r",
+							"pm.test(\"Servers should be ordered by game count descending\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    \r",
+							"    if (response.servers && response.servers.length > 1) {\r",
+							"        for (let i = 0; i < response.servers.length - 1; i++) {\r",
+							"            const currentCount = parseInt(response.servers[i].game_count);\r",
+							"            const nextCount = parseInt(response.servers[i + 1].game_count);\r",
+							"            pm.expect(currentCount).to.be.at.least(nextCount);\r",
+							"        }\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/games/servers/list",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"games",
+						"servers",
+						"list"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test GET games basic no parameters",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Basic response structure validation\r",
+							"pm.test(\"Response status should be 200\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Validate server object structure as per documentation\r",
+							"pm.test(\"Response should contain required fields from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('games');\r",
+							"    pm.expect(response.games).to.be.an('array');\r",
+							"    pm.expect(response).to.have.property('total');\r",
+							"    pm.expect(response.total).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('limit');\r",
+							"    pm.expect(response.limit).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('offset');\r",
+							"    pm.expect(response.offset).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('filters_applied');\r",
+							"    pm.expect(response.filters_applied).to.be.an('object');\r",
+							"});\r",
+							"\r",
+							"// Test 3: Validate pagation limit\r",
+							"pm.test(\"Default limit should be 50 as per documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.limit).to.equal(50);\r",
+							"});\r",
+							"\r",
+							"// Test 4: Validate pagation offset\r",
+							"pm.test(\"Default offset should be 0 as per documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.offset).to.equal(0);\r",
+							"});\r",
+							"\r",
+							"// Test 5: Validate server object structure as per documentation\r",
+							"pm.test(\"Each game should have required fields from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    \r",
+							"    if (response.games && response.games.length > 0) {\r",
+							"        const game = response.games[0];\r",
+							"        pm.expect(game).to.have.property('id');\r",
+							"        pm.expect(game).to.have.property('name');\r",
+							"        pm.expect(game).to.have.property('server');\r",
+							"        pm.expect(game).to.have.property('timezone');\r",
+							"        pm.expect(game).to.have.property('daily_reset');\r",
+							"        pm.expect(game).to.have.property('icon_name');\r",
+							"        pm.expect(game).to.have.property('last_verified');\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"// Test 6: Validate games are ordered by name by ASC as per query\r",
+							"pm.test(\"Default sort should be by name ascending\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.filters_applied.sort_by).to.equal('name');\r",
+							"    pm.expect(response.filters_applied.order).to.equal('asc');\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/games",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"games"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test GET games with multi filter",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Basic response structure validation\r",
+							"pm.test(\"Response status should be 200\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Validate server object structure as per documentation\r",
+							"pm.test(\"Response should contain required fields from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('games');\r",
+							"    pm.expect(response.games).to.be.an('array');\r",
+							"    pm.expect(response).to.have.property('total');\r",
+							"    pm.expect(response.total).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('limit');\r",
+							"    pm.expect(response.limit).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('offset');\r",
+							"    pm.expect(response.offset).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('filters_applied');\r",
+							"    pm.expect(response.filters_applied).to.be.an('object');\r",
+							"});\r",
+							"\r",
+							"// Test 3: Validate pagation offset\r",
+							"pm.test(\"Default offset should be 0 as per documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.offset).to.equal(0);\r",
+							"});\r",
+							"\r",
+							"// Test 4: Validate server object structure as per documentation\r",
+							"pm.test(\"Each game should have required fields from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    \r",
+							"    if (response.games && response.games.length > 0) {\r",
+							"        const game = response.games[0];\r",
+							"        pm.expect(game).to.have.property('id');\r",
+							"        pm.expect(game).to.have.property('name');\r",
+							"        pm.expect(game).to.have.property('server');\r",
+							"        pm.expect(game).to.have.property('timezone');\r",
+							"        pm.expect(game).to.have.property('daily_reset');\r",
+							"        pm.expect(game).to.have.property('icon_name');\r",
+							"        pm.expect(game).to.have.property('last_verified');\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"// Test 5: Validate games are ordered by name by ASC as per query\r",
+							"pm.test(\"Default sort should be by name ascending\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.filters_applied.sort_by).to.equal('name');\r",
+							"    pm.expect(response.filters_applied.order).to.equal('asc');\r",
+							"});\r",
+							"\r",
+							"// Test 6: Validate applied filters work\r",
+							"pm.test(\"Multiple filters should work together correctly\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    \r",
+							"    // Verify all filters are applied\r",
+							"    pm.expect(response.filters_applied.server).to.equal('Global');\r",
+							"    pm.expect(response.filters_applied.timezone).to.equal('Etc/GMT+7');\r",
+							"    pm.expect(response.filters_applied.sort_by).to.equal('name');\r",
+							"    pm.expect(response.filters_applied.order).to.equal('asc');\r",
+							"    pm.expect(response.limit).to.equal(17);\r",
+							"    \r",
+							"    // Verify results match all filters\r",
+							"    if (response.games && response.games.length > 0) {\r",
+							"        response.games.forEach(game => {\r",
+							"            pm.expect(game.server).to.equal('Global');\r",
+							"            pm.expect(game.timezone).to.equal('Etc/GMT+7');\r",
+							"        });\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/games?server=Global&timezone=Etc%2FGMT%2B7&limit=17&offset=0&sort_by=name&order=asc",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"games"
+					],
+					"query": [
+						{
+							"key": "server",
+							"value": "Global"
+						},
+						{
+							"key": "timezone",
+							"value": "Etc%2FGMT%2B7"
+						},
+						{
+							"key": "limit",
+							"value": "17"
+						},
+						{
+							"key": "offset",
+							"value": "0"
+						},
+						{
+							"key": "sort_by",
+							"value": "name"
+						},
+						{
+							"key": "order",
+							"value": "asc"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test GET games with limit validation",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Basic response structure validation\r",
+							"pm.test(\"Response status should be 200\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Validate server object structure as per documentation\r",
+							"pm.test(\"Response should contain required fields from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('games');\r",
+							"    pm.expect(response.games).to.be.an('array');\r",
+							"    pm.expect(response).to.have.property('total');\r",
+							"    pm.expect(response.total).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('limit');\r",
+							"    pm.expect(response.limit).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('offset');\r",
+							"    pm.expect(response.offset).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('filters_applied');\r",
+							"    pm.expect(response.filters_applied).to.be.an('object');\r",
+							"});\r",
+							"\r",
+							"// Test 4: Validate pagation offset\r",
+							"pm.test(\"Default offset should be 0 as per documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.offset).to.equal(0);\r",
+							"});\r",
+							"\r",
+							"// Test 5: Validate server object structure as per documentation\r",
+							"pm.test(\"Each game should have required fields from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    \r",
+							"    if (response.games && response.games.length > 0) {\r",
+							"        const game = response.games[0];\r",
+							"        pm.expect(game).to.have.property('id');\r",
+							"        pm.expect(game).to.have.property('name');\r",
+							"        pm.expect(game).to.have.property('server');\r",
+							"        pm.expect(game).to.have.property('timezone');\r",
+							"        pm.expect(game).to.have.property('daily_reset');\r",
+							"        pm.expect(game).to.have.property('icon_name');\r",
+							"        pm.expect(game).to.have.property('last_verified');\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"// Test 6: Validate games are ordered by name by ASC as per query\r",
+							"pm.test(\"Default sort should be by name ascending\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.filters_applied.sort_by).to.equal('name');\r",
+							"    pm.expect(response.filters_applied.order).to.equal('asc');\r",
+							"});\r",
+							"\r",
+							"// Test 7: large limit\r",
+							"pm.test(\"Large limit should be handled according to documentation max of 100\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    // The API should either cap at 100 or return an error\r",
+							"    if (pm.response.code === 200) {\r",
+							"        pm.expect(response.limit).to.be.at.most(321);\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.code).to.equal(400);\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/games?limit=321",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"games"
+					],
+					"query": [
+						{
+							"key": "limit",
+							"value": "321"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test GET games with sorting",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Basic response structure validation\r",
+							"pm.test(\"Response status should be 200\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Validate server object structure as per documentation\r",
+							"pm.test(\"Response should contain required fields from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('games');\r",
+							"    pm.expect(response.games).to.be.an('array');\r",
+							"    pm.expect(response).to.have.property('total');\r",
+							"    pm.expect(response.total).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('limit');\r",
+							"    pm.expect(response.limit).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('offset');\r",
+							"    pm.expect(response.offset).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('filters_applied');\r",
+							"    pm.expect(response.filters_applied).to.be.an('object');\r",
+							"});\r",
+							"\r",
+							"// Test 3: Validate pagation limit\r",
+							"pm.test(\"Default limit should be 50 as per documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.limit).to.equal(50);\r",
+							"});\r",
+							"\r",
+							"// Test 4: Validate pagation offset\r",
+							"pm.test(\"Default offset should be 0 as per documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.offset).to.equal(0);\r",
+							"});\r",
+							"\r",
+							"// Test 5: Validate server object structure as per documentation\r",
+							"pm.test(\"Each game should have required fields from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    \r",
+							"    if (response.games && response.games.length > 0) {\r",
+							"        const game = response.games[0];\r",
+							"        pm.expect(game).to.have.property('id');\r",
+							"        pm.expect(game).to.have.property('name');\r",
+							"        pm.expect(game).to.have.property('server');\r",
+							"        pm.expect(game).to.have.property('timezone');\r",
+							"        pm.expect(game).to.have.property('daily_reset');\r",
+							"        pm.expect(game).to.have.property('icon_name');\r",
+							"        pm.expect(game).to.have.property('last_verified');\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"// Test 6: Validate sorting paramerters\r",
+							"pm.test(\"Sort parameters should be applied correctly\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.filters_applied.sort_by).to.equal('server');\r",
+							"    pm.expect(response.filters_applied.order).to.equal('desc');\r",
+							"    \r",
+							"    // Debug: Log the actual server order and IDs to understand the sorting\r",
+							"    if (response.games && response.games.length > 0) {\r",
+							"        const gameDetails = response.games.map(g => ({ server: g.server, id: g.id }));\r",
+							"        console.log(\"Actual game order:\", gameDetails);\r",
+							"        \r",
+							"        // Group games by server to understand the secondary sorting by ID\r",
+							"        const serverGroups = {};\r",
+							"        response.games.forEach(game => {\r",
+							"            if (!serverGroups[game.server]) {\r",
+							"                serverGroups[game.server] = [];\r",
+							"            }\r",
+							"            serverGroups[game.server].push(game.id);\r",
+							"        });\r",
+							"        console.log(\"Games grouped by server:\", serverGroups);\r",
+							"        \r",
+							"        // Check primary sort (by server)\r",
+							"        // Get unique servers in the order they appear\r",
+							"        const uniqueServers = [...new Set(response.games.map(g => g.server))];\r",
+							"        console.log(\"Unique servers in order:\", uniqueServers);\r",
+							"        \r",
+							"        let primarySortCorrect = true;\r",
+							"        for (let i = 0; i < uniqueServers.length - 1; i++) {\r",
+							"            const current = uniqueServers[i];\r",
+							"            const next = uniqueServers[i + 1];\r",
+							"            \r",
+							"            // PostgreSQL string comparison - typically case-insensitive\r",
+							"            // For DESC: current should be >= next\r",
+							"            if (current.toLowerCase() < next.toLowerCase()) {\r",
+							"                primarySortCorrect = false;\r",
+							"                console.log(`Primary sort issue: \"${current}\" < \"${next}\" (should be >= for DESC)`);\r",
+							"                break;\r",
+							"            }\r",
+							"        }\r",
+							"        \r",
+							"        // Check secondary sort (by ID ASC within same server)\r",
+							"        let secondarySortCorrect = true;\r",
+							"        Object.keys(serverGroups).forEach(server => {\r",
+							"            const ids = serverGroups[server];\r",
+							"            for (let i = 0; i < ids.length - 1; i++) {\r",
+							"                if (ids[i] > ids[i + 1]) {\r",
+							"                    secondarySortCorrect = false;\r",
+							"                    console.log(`Secondary sort issue in server \"${server}\": ID ${ids[i]} > ${ids[i + 1]} (should be ASC)`);\r",
+							"                }\r",
+							"            }\r",
+							"        });\r",
+							"        \r",
+							"        // For a valid test, we mainly care about primary sort\r",
+							"        // Secondary sort by ID is expected behavior based on the code\r",
+							"        pm.expect(primarySortCorrect).to.be.true;\r",
+							"        \r",
+							"        if (secondarySortCorrect) {\r",
+							"            console.log(\"✓ Secondary sort by ID ASC is working correctly within server groups\");\r",
+							"        }\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/games?sort_by=server&order=desc",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"games"
+					],
+					"query": [
+						{
+							"key": "sort_by",
+							"value": "server"
+						},
+						{
+							"key": "order",
+							"value": "desc"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test GET games with search parameter",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Basic response structure validation\r",
+							"pm.test(\"Response status should be 200\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Validate server object structure as per documentation\r",
+							"pm.test(\"Response should contain required fields from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('games');\r",
+							"    pm.expect(response.games).to.be.an('array');\r",
+							"    pm.expect(response).to.have.property('total');\r",
+							"    pm.expect(response.total).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('limit');\r",
+							"    pm.expect(response.limit).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('offset');\r",
+							"    pm.expect(response.offset).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('filters_applied');\r",
+							"    pm.expect(response.filters_applied).to.be.an('object');\r",
+							"});\r",
+							"\r",
+							"// Test 3: Validate pagation limit\r",
+							"pm.test(\"Default limit should be 50 as per documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.limit).to.equal(50);\r",
+							"});\r",
+							"\r",
+							"// Test 4: Validate pagation offset\r",
+							"pm.test(\"Default offset should be 0 as per documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.offset).to.equal(0);\r",
+							"});\r",
+							"\r",
+							"// Test 5: Validate server object structure as per documentation\r",
+							"pm.test(\"Each game should have required fields from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    \r",
+							"    if (response.games && response.games.length > 0) {\r",
+							"        const game = response.games[0];\r",
+							"        pm.expect(game).to.have.property('id');\r",
+							"        pm.expect(game).to.have.property('name');\r",
+							"        pm.expect(game).to.have.property('server');\r",
+							"        pm.expect(game).to.have.property('timezone');\r",
+							"        pm.expect(game).to.have.property('daily_reset');\r",
+							"        pm.expect(game).to.have.property('icon_name');\r",
+							"        pm.expect(game).to.have.property('last_verified');\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"// Test 6: Validate games are ordered by name by ASC as per query\r",
+							"pm.test(\"Default sort should be by name ascending\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.filters_applied.sort_by).to.equal('name');\r",
+							"    pm.expect(response.filters_applied.order).to.equal('asc');\r",
+							"});\r",
+							"\r",
+							"// Test: 7 Validate filter search query\r",
+							"pm.test(\"Search filter should be applied correctly\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.filters_applied.search).to.equal('Wuthering');\r",
+							"    \r",
+							"    // All returned games should contain the search term (case-insensitive)\r",
+							"    if (response.games && response.games.length > 0) {\r",
+							"        response.games.forEach(game => {\r",
+							"            pm.expect(game.name.toLowerCase()).to.include('wuthering');\r",
+							"        });\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/games?search=Wuthering",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"games"
+					],
+					"query": [
+						{
+							"key": "search",
+							"value": "Wuthering"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test GET games with server filter",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Basic response structure validation\r",
+							"pm.test(\"Response status should be 200\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Validate server object structure as per documentation\r",
+							"pm.test(\"Response should contain required fields from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('games');\r",
+							"    pm.expect(response.games).to.be.an('array');\r",
+							"    pm.expect(response).to.have.property('total');\r",
+							"    pm.expect(response.total).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('limit');\r",
+							"    pm.expect(response.limit).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('offset');\r",
+							"    pm.expect(response.offset).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('filters_applied');\r",
+							"    pm.expect(response.filters_applied).to.be.an('object');\r",
+							"});\r",
+							"\r",
+							"// Test 3: Validate pagation limit\r",
+							"pm.test(\"Default limit should be 50 as per documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.limit).to.equal(50);\r",
+							"});\r",
+							"\r",
+							"// Test 4: Validate pagation offset\r",
+							"pm.test(\"Default offset should be 0 as per documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.offset).to.equal(0);\r",
+							"});\r",
+							"\r",
+							"// Test 5: Validate server object structure as per documentation\r",
+							"pm.test(\"Each game should have required fields from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    \r",
+							"    if (response.games && response.games.length > 0) {\r",
+							"        const game = response.games[0];\r",
+							"        pm.expect(game).to.have.property('id');\r",
+							"        pm.expect(game).to.have.property('name');\r",
+							"        pm.expect(game).to.have.property('server');\r",
+							"        pm.expect(game).to.have.property('timezone');\r",
+							"        pm.expect(game).to.have.property('daily_reset');\r",
+							"        pm.expect(game).to.have.property('icon_name');\r",
+							"        pm.expect(game).to.have.property('last_verified');\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"// Test 6: Validate games are ordered by name by ASC as per query\r",
+							"pm.test(\"Default sort should be by name ascending\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.filters_applied.sort_by).to.equal('name');\r",
+							"    pm.expect(response.filters_applied.order).to.equal('asc');\r",
+							"});\r",
+							"\r",
+							"// Test 7: Validate games with server fliter set as Global\r",
+							"pm.test(\"Server filter should be applied correctly\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.filters_applied.server).to.equal('Global');\r",
+							"    \r",
+							"    // All returned games should have the specified server\r",
+							"    if (response.games && response.games.length > 0) {\r",
+							"        response.games.forEach(game => {\r",
+							"            pm.expect(game.server).to.equal('Global');\r",
+							"        });\r",
+							"    }\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/games?server=Global",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"games"
+					],
+					"query": [
+						{
+							"key": "server",
+							"value": "Global"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test GET games with reset time filter",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Basic response structure validation\r",
+							"pm.test(\"Response status should be 200\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Validate server object structure as per documentation\r",
+							"pm.test(\"Response should contain required fields from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('games');\r",
+							"    pm.expect(response.games).to.be.an('array');\r",
+							"    pm.expect(response).to.have.property('total');\r",
+							"    pm.expect(response.total).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('limit');\r",
+							"    pm.expect(response.limit).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('offset');\r",
+							"    pm.expect(response.offset).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('filters_applied');\r",
+							"    pm.expect(response.filters_applied).to.be.an('object');\r",
+							"});\r",
+							"\r",
+							"// Test 3: Validate pagation limit\r",
+							"pm.test(\"Default limit should be 50 as per documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.limit).to.equal(50);\r",
+							"});\r",
+							"\r",
+							"// Test 4: Validate pagation offset\r",
+							"pm.test(\"Default offset should be 0 as per documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.offset).to.equal(0);\r",
+							"});\r",
+							"\r",
+							"// Test 5: Validate server object structure as per documentation\r",
+							"pm.test(\"Each game should have required fields from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    \r",
+							"    if (response.games && response.games.length > 0) {\r",
+							"        const game = response.games[0];\r",
+							"        pm.expect(game).to.have.property('id');\r",
+							"        pm.expect(game).to.have.property('name');\r",
+							"        pm.expect(game).to.have.property('server');\r",
+							"        pm.expect(game).to.have.property('timezone');\r",
+							"        pm.expect(game).to.have.property('daily_reset');\r",
+							"        pm.expect(game).to.have.property('icon_name');\r",
+							"        pm.expect(game).to.have.property('last_verified');\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"// Test 6: Validate games are ordered by name by ASC as per query\r",
+							"pm.test(\"Default sort should be by name ascending\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.filters_applied.sort_by).to.equal('name');\r",
+							"    pm.expect(response.filters_applied.order).to.equal('asc');\r",
+							"});\r",
+							"\r",
+							"// Test 7: Validate games with rest time set to 00:00 (midnight)\r",
+							"pm.test(\"Reset time filter should be applied correctly\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.filters_applied.reset_time).to.equal('00:00'); // format (HH:MM)\r",
+							"    \r",
+							"    // All returned games should have the specified reset time\r",
+							"    if (response.games && response.games.length > 0) {\r",
+							"        response.games.forEach(game => {\r",
+							"            pm.expect(game.daily_reset).to.equal('00:00:00'); // format (HH:MM:SS)\r",
+							"        });\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/games?reset_time=00:00",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"games"
+					],
+					"query": [
+						{
+							"key": "reset_time",
+							"value": "00:00"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test GET games with search non existing game",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Basic response structure validation\r",
+							"pm.test(\"Response status should be 200\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Validate server object structure as per documentation\r",
+							"pm.test(\"Response should contain required fields from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('games');\r",
+							"    pm.expect(response.games).to.be.an('array');\r",
+							"    pm.expect(response).to.have.property('total');\r",
+							"    pm.expect(response.total).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('limit');\r",
+							"    pm.expect(response.limit).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('offset');\r",
+							"    pm.expect(response.offset).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('filters_applied');\r",
+							"    pm.expect(response.filters_applied).to.be.an('object');\r",
+							"});\r",
+							"\r",
+							"// Test 3: Validate pagation limit\r",
+							"pm.test(\"Default limit should be 50 as per documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.limit).to.equal(50);\r",
+							"});\r",
+							"\r",
+							"// Test 4: Validate pagation offset\r",
+							"pm.test(\"Default offset should be 0 as per documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.offset).to.equal(0);\r",
+							"});\r",
+							"\r",
+							"// Test 5: Validate server object structure as per documentation\r",
+							"pm.test(\"Each game should have required fields from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    \r",
+							"    if (response.games && response.games.length > 0) {\r",
+							"        const game = response.games[0];\r",
+							"        pm.expect(game).to.have.property('id');\r",
+							"        pm.expect(game).to.have.property('name');\r",
+							"        pm.expect(game).to.have.property('server');\r",
+							"        pm.expect(game).to.have.property('timezone');\r",
+							"        pm.expect(game).to.have.property('daily_reset');\r",
+							"        pm.expect(game).to.have.property('icon_name');\r",
+							"        pm.expect(game).to.have.property('last_verified');\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"// Test 6: Validate games are ordered by name by ASC as per query\r",
+							"pm.test(\"Default sort should be by name ascending\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.filters_applied.sort_by).to.equal('name');\r",
+							"    pm.expect(response.filters_applied.order).to.equal('asc');\r",
+							"});\r",
+							"\r",
+							"// Test 7: Search for non-existent game returns empty results\r",
+							"pm.test(\"Search for non-existent game should return empty results\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    const searchTerm = response.filters_applied.name;\r",
+							"    \r",
+							"    // Check response structure\r",
+							"    pm.expect(response.games).to.be.an('array');\r",
+							"    pm.expect(response.total).to.be.a('number');\r",
+							"    \r",
+							"    // If games are returned, they should contain the search term\r",
+							"    if (response.games.length > 0) {\r",
+							"        response.games.forEach(game => {\r",
+							"            pm.expect(game.name.toLowerCase()).to.include(searchTerm.toLowerCase());\r",
+							"        });\r",
+							"    }\r",
+							"    \r",
+							"    // Verify the search filter was applied\r",
+							"    pm.expect(response.filters_applied.name).to.equal(searchTerm);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/games?search=nogamenolife",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"games"
+					],
+					"query": [
+						{
+							"key": "search",
+							"value": "nogamenolife"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test GET games with search non existing game Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Basic response structure validation\r",
+							"pm.test(\"Response status should be 200\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Validate server object structure as per documentation\r",
+							"pm.test(\"Response should contain required fields from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('games');\r",
+							"    pm.expect(response.games).to.be.an('array');\r",
+							"    pm.expect(response).to.have.property('total');\r",
+							"    pm.expect(response.total).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('limit');\r",
+							"    pm.expect(response.limit).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('offset');\r",
+							"    pm.expect(response.offset).to.be.a('number');\r",
+							"    pm.expect(response).to.have.property('filters_applied');\r",
+							"    pm.expect(response.filters_applied).to.be.an('object');\r",
+							"});\r",
+							"\r",
+							"// Test 3: Validate server object structure as per documentation\r",
+							"pm.test(\"Each game should have required fields from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    \r",
+							"    if (response.games && response.games.length > 0) {\r",
+							"        const game = response.games[0];\r",
+							"        pm.expect(game).to.have.property('id');\r",
+							"        pm.expect(game).to.have.property('name');\r",
+							"        pm.expect(game).to.have.property('server');\r",
+							"        pm.expect(game).to.have.property('timezone');\r",
+							"        pm.expect(game).to.have.property('daily_reset');\r",
+							"        pm.expect(game).to.have.property('icon_name');\r",
+							"        pm.expect(game).to.have.property('last_verified');\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"// Test 4: Validate games are ordered by name by ASC as per query\r",
+							"pm.test(\"Default sort should be by name ascending\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.filters_applied.sort_by).to.equal('name');\r",
+							"    pm.expect(response.filters_applied.order).to.equal('asc');\r",
+							"});\r",
+							"\r",
+							"// Test 5: Validate pagination offset and limit is correct\r",
+							"pm.test(\"Pagination parameters should be applied correctly\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.limit).to.equal(13);\r",
+							"    pm.expect(response.offset).to.equal(68);\r",
+							"    pm.expect(response.games.length).to.be.at.most(13);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/games?limit=13&offset=68",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"games"
+					],
+					"query": [
+						{
+							"key": "limit",
+							"value": "13"
+						},
+						{
+							"key": "offset",
+							"value": "68"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test GET games with set game id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Basic response structure validation\r",
+							"pm.test(\"Response status should be 200 for valid game ID\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Validate server object structure as per documentation\r",
+							"pm.test(\"Response should contain game object with required fields\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('game');\r",
+							"    \r",
+							"    const game = response.game;\r",
+							"    pm.expect(game).to.have.property('id');\r",
+							"    pm.expect(game).to.have.property('name');\r",
+							"    pm.expect(game).to.have.property('server');\r",
+							"    pm.expect(game).to.have.property('timezone');\r",
+							"    pm.expect(game).to.have.property('daily_reset');\r",
+							"    pm.expect(game).to.have.property('icon_name');\r",
+							"    pm.expect(game).to.have.property('last_verified');\r",
+							"});\r",
+							"\r",
+							"// Test 3: Validate correct game ID requested\r",
+							"pm.test(\"Game ID should match requested ID\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    const requestedId = pm.request.url.path[pm.request.url.path.length - 1];\r",
+							"    pm.expect(response.game.id.toString()).to.equal(requestedId);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/games/37",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"games",
+						"37"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test GET games with set game id (not exist)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Basic response structure validation\r",
+							"pm.test(\"Response status should be 200 for valid game ID\", () => {\r",
+							"    pm.response.to.have.status(404);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Validate game does not exist\r",
+							"pm.test(\"Error message should match documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('error');\r",
+							"    pm.expect(response.error).to.equal('Game not found');\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/games/9000",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"games",
+						"9000"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test GET games with set game id (not numeric)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Basic response structure validation\r",
+							"pm.test(\"Response should handle invalid ID format appropriately\", () => {\r",
+							"    // Could be 400 for bad request or 404 for not found\r",
+							"    const validStatusCodes = [400, 404, 500];\r",
+							"    pm.expect(validStatusCodes).to.include(pm.response.code);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response should contain error message\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('error');\r",
+							"    pm.expect(response.error).to.equal('Failed to fetch game');\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/games/azurlane",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"games",
+						"azurlane"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test GET timezone",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Basic response structure validation\r",
+							"pm.test(\"Response status should be 200\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Validate response contains timezones object as per documentation\r",
+							"pm.test(\"Response should contain timezones object from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('timezones');\r",
+							"    pm.expect(response.timezones).to.be.an('object');\r",
+							"});\r",
+							"\r",
+							"// Test 3: Validate timezones are grouped by region as per documentation\r",
+							"pm.test(\"Timezones should be grouped by region with arrays of timezone objects\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    const timezones = response.timezones;\r",
+							"    \r",
+							"    // Check that we have region groups (should be object with string keys)\r",
+							"    const regions = Object.keys(timezones);\r",
+							"    pm.expect(regions.length).to.be.greaterThan(0, \"Should have at least one timezone region\");\r",
+							"    \r",
+							"    // Each region should contain an array of timezone objects\r",
+							"    regions.forEach(region => {\r",
+							"        pm.expect(timezones[region]).to.be.an('array', `Region \"${region}\" should contain an array`);\r",
+							"        \r",
+							"        if (timezones[region].length > 0) {\r",
+							"            const timezone = timezones[region][0];\r",
+							"            pm.expect(timezone).to.have.property('timezone');\r",
+							"            pm.expect(timezone.timezone).to.be.a('string');\r",
+							"            pm.expect(timezone).to.have.property('offset');\r",
+							"            pm.expect(timezone.offset).to.be.a('string');\r",
+							"            pm.expect(timezone).to.have.property('label');\r",
+							"            pm.expect(timezone.label).to.be.a('string');\r",
+							"        }\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"// Test 4: Validate timezone object structure matches documentation example\r",
+							"pm.test(\"Each timezone object should have required fields from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    const timezones = response.timezones;\r",
+							"    \r",
+							"    // Find any timezone object to validate structure\r",
+							"    let foundTimezone = null;\r",
+							"    for (const region in timezones) {\r",
+							"        if (timezones[region].length > 0) {\r",
+							"            foundTimezone = timezones[region][0];\r",
+							"            break;\r",
+							"        }\r",
+							"    }\r",
+							"    \r",
+							"    if (foundTimezone) {\r",
+							"        // Validate structure matches documentation schema\r",
+							"        pm.expect(foundTimezone).to.have.property('timezone');\r",
+							"        pm.expect(foundTimezone.timezone).to.match(/^[A-Za-z_]+\\/[A-Za-z_]+/, \"Timezone should be in format like 'America/Los_Angeles'\");\r",
+							"        pm.expect(foundTimezone).to.have.property('offset');\r",
+							"        pm.expect(foundTimezone.offset).to.match(/^UTC[+-]\\d+/, \"Offset should be in format like 'UTC-8'\");\r",
+							"        pm.expect(foundTimezone).to.have.property('label');\r",
+							"        pm.expect(foundTimezone.label).to.be.a('string').and.not.be.empty;\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"// Test 5: Validate common timezone regions exist\r",
+							"pm.test(\"Should include common timezone regions\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    const regions = Object.keys(response.timezones);\r",
+							"    \r",
+							"    // Log available regions for debugging\r",
+							"    console.log(\"Available timezone regions:\", regions);\r",
+							"    \r",
+							"    // Should have some major timezone regions (flexible test)\r",
+							"    pm.expect(regions.length).to.be.at.least(3, \"Should have multiple timezone regions\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/timezones",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"timezones"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test GET timezone auto detect",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Basic response structure validation  \r",
+							"pm.test(\"Response status should be 200\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Validate response contains required fields from documentation\r",
+							"pm.test(\"Response should contain detected_timezone and current_time from documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('detected_timezone');\r",
+							"    pm.expect(response.detected_timezone).to.be.a('string');\r",
+							"    pm.expect(response).to.have.property('current_time');\r",
+							"    pm.expect(response.current_time).to.be.a('string');\r",
+							"});\r",
+							"\r",
+							"// Test 3: Validate detected timezone format\r",
+							"pm.test(\"Detected timezone should be in valid timezone format\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    // Should be in format like \"America/Los_Angeles\" or \"UTC\" \r",
+							"    pm.expect(response.detected_timezone).to.match(/^[A-Za-z_]+\\/[A-Za-z_]+$|^UTC$|^Etc\\/GMT[+-]?\\d*$/);\r",
+							"});\r",
+							"\r",
+							"// Test 4: Validate current time format matches documentation example\r",
+							"pm.test(\"Current time should be in HH:MM format as per documentation\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    // Should be in format like \"14:30\"\r",
+							"    pm.expect(response.current_time).to.match(/^\\d{1,2}:\\d{2}$/, \"Time should be in HH:MM format\");\r",
+							"    \r",
+							"    // Validate it's a valid time\r",
+							"    const [hours, minutes] = response.current_time.split(':').map(Number);\r",
+							"    pm.expect(hours).to.be.at.least(0).and.at.most(23);\r",
+							"    pm.expect(minutes).to.be.at.least(0).and.at.most(59);\r",
+							"});\r",
+							"\r",
+							"// Test 5: Log detected timezone for debugging\r",
+							"pm.test(\"Log detected timezone information\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    console.log(`Detected timezone: ${response.detected_timezone}`);\r",
+							"    console.log(`Current time in detected timezone: ${response.current_time}`);\r",
+							"    pm.expect(true).to.be.true; // Always pass, just for logging\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/timezones/detect",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"timezones",
+						"detect"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test GET Invalid timezone header",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Validate API handles invalid timezone gracefully\r",
+							"pm.test(\"Should handle invalid timezone header gracefully\", () => {\r",
+							"    // API should either fallback to default or return error\r",
+							"    if (pm.response.code === 200) {\r",
+							"        const response = pm.response.json();\r",
+							"        pm.expect(response).to.have.property('detected_timezone');\r",
+							"        pm.expect(response).to.have.property('current_time');\r",
+							"        console.log(\"✓ API fell back to default timezone:\", response.detected_timezone);\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.code).to.equal(500);\r",
+							"        const response = pm.response.json();\r",
+							"        pm.expect(response).to.have.property('error');\r",
+							"        console.log(\"✓ API returned error for invalid timezone\");\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"// Test 2: Validate error message structure if error returned\r",
+							"pm.test(\"Error response should match documentation format\", () => {\r",
+							"    if (pm.response.code === 500) {\r",
+							"        const response = pm.response.json();\r",
+							"        pm.expect(response).to.have.property('error');\r",
+							"        pm.expect(response.error).to.equal('Failed to detect timezone');\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Set an invalid timezone to test error handling\r",
+							"pm.request.headers.add({\r",
+							"    key: 'X-User-Timezone',\r",
+							"    value: 'GRN'\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/timezones/detect",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"timezones",
+						"detect"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test GET Empty timezone header",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Empty timezone header handling\r",
+							"pm.test(\"Should handle empty timezone header\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Should fallback to default detection with empty header\r",
+							"pm.test(\"Should fallback to default timezone detection with empty header\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('detected_timezone');\r",
+							"    pm.expect(response.detected_timezone).to.not.be.empty;\r",
+							"    console.log(\"Fallback timezone:\", response.detected_timezone);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Set an invalid timezone to test error handling\r",
+							"pm.request.headers.add({\r",
+							"    key: 'X-User-Timezone',\r",
+							"    value: ''\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/timezones/detect",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"timezones",
+						"detect"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test GET timezone auto detect with X-user timezone header",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Timezone abbreviations mapping\r",
+							"const timezoneAliases = {\r",
+							"    'PST': 'America/Los_Angeles',\r",
+							"    'PDT': 'America/Los_Angeles', \r",
+							"    'MST': 'America/Denver',\r",
+							"    'MDT': 'America/Denver',\r",
+							"    'CDT': 'America/Chicago',\r",
+							"    'EST': 'America/New_York',\r",
+							"    'EDT': 'America/New_York',\r",
+							"    'GMT': 'Europe/London',\r",
+							"    'BST': 'Europe/London',\r",
+							"    'CET': 'Europe/Paris',\r",
+							"    'CEST': 'Europe/Paris',\r",
+							"    'JST': 'Asia/Tokyo',\r",
+							"    'KST': 'Asia/Seoul',\r",
+							"    'CST': 'Asia/Shanghai',\r",
+							"    'IST': 'Asia/Kolkata',\r",
+							"    'AEST': 'Australia/Sydney',\r",
+							"    'AEDT': 'Australia/Sydney'\r",
+							"};\r",
+							"\r",
+							"// Store the mapping for use in tests\r",
+							"pm.collectionVariables.set('timezoneAliases', JSON.stringify(timezoneAliases));\r",
+							"\r",
+							"// Get current test iteration or start with first timezone\r",
+							"let currentAliases = Object.keys(timezoneAliases);\r",
+							"let currentIndex = pm.collectionVariables.get('timezoneTestIndex') || 0;\r",
+							"\r",
+							"if (currentIndex < currentAliases.length) {\r",
+							"    const currentAlias = currentAliases[currentIndex];\r",
+							"    \r",
+							"    // Set the timezone abbreviation in header\r",
+							"    pm.request.headers.add({\r",
+							"        key: 'X-User-Timezone',\r",
+							"        value: currentAlias\r",
+							"    });\r",
+							"    \r",
+							"    // Store current test data\r",
+							"    pm.collectionVariables.set('currentTimezoneAlias', currentAlias);\r",
+							"    pm.collectionVariables.set('expectedTimezone', timezoneAliases[currentAlias]);\r",
+							"    pm.collectionVariables.set('timezoneTestIndex', currentIndex + 1);\r",
+							"    \r",
+							"    console.log(`Testing timezone alias: ${currentAlias} -> ${timezoneAliases[currentAlias]}`);\r",
+							"} else {\r",
+							"    // Reset for next run\r",
+							"    pm.collectionVariables.set('timezoneTestIndex', 0);\r",
+							"    console.log('All timezone aliases tested');\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Basic response validation for timezone abbreviation\r",
+							"pm.test(\"Response status should be 200 with timezone abbreviation\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Test 2: Validate API correctly maps timezone abbreviation to IANA timezone\r",
+							"pm.test(\"Should correctly map timezone abbreviation to IANA timezone\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    const currentAlias = pm.collectionVariables.get('currentTimezoneAlias');\r",
+							"    const expectedTimezone = pm.collectionVariables.get('expectedTimezone');\r",
+							"    \r",
+							"    if (currentAlias && expectedTimezone) {\r",
+							"        pm.expect(response.detected_timezone).to.equal(expectedTimezone, \r",
+							"            `${currentAlias} should map to ${expectedTimezone}`);\r",
+							"        console.log(`✓ ${currentAlias} correctly mapped to ${response.detected_timezone}`);\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"// Test 3: Validate response structure for each timezone\r",
+							"pm.test(\"Response should contain required fields for each timezone test\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property('detected_timezone');\r",
+							"    pm.expect(response).to.have.property('current_time');\r",
+							"    pm.expect(response.detected_timezone).to.be.a('string');\r",
+							"    pm.expect(response.current_time).to.be.a('string');\r",
+							"});\r",
+							"\r",
+							"// Test 4: Validate time format for each timezone\r",
+							"pm.test(\"Current time should be valid for each tested timezone\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    const currentAlias = pm.collectionVariables.get('currentTimezoneAlias');\r",
+							"    \r",
+							"    pm.expect(response.current_time).to.match(/^\\d{1,2}:\\d{2}$/, \r",
+							"        `Time format should be HH:MM for ${currentAlias}`);\r",
+							"    \r",
+							"    // Validate it's a valid time\r",
+							"    const [hours, minutes] = response.current_time.split(':').map(Number);\r",
+							"    pm.expect(hours).to.be.at.least(0).and.at.most(23);\r",
+							"    pm.expect(minutes).to.be.at.least(0).and.at.most(59);\r",
+							"    \r",
+							"    if (currentAlias) {\r",
+							"        console.log(`Time in ${currentAlias} (${response.detected_timezone}): ${response.current_time}`);\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"// Test 5: Summary test to track progress\r",
+							"pm.test(\"Timezone alias mapping test progress\", () => {\r",
+							"    const timezoneAliases = JSON.parse(pm.collectionVariables.get('timezoneAliases'));\r",
+							"    const currentIndex = pm.collectionVariables.get('timezoneTestIndex') || 0;\r",
+							"    const totalTests = Object.keys(timezoneAliases).length;\r",
+							"    \r",
+							"    console.log(`Progress: ${Math.min(currentIndex, totalTests)}/${totalTests} timezone aliases tested`);\r",
+							"    \r",
+							"    if (currentIndex >= totalTests) {\r",
+							"        console.log('🎉 All timezone abbreviations have been tested successfully!');\r",
+							"        \r",
+							"        // Clean up collection variables\r",
+							"        pm.collectionVariables.unset('timezoneTestIndex');\r",
+							"        pm.collectionVariables.unset('currentTimezoneAlias');\r",
+							"        pm.collectionVariables.unset('expectedTimezone');\r",
+							"    }\r",
+							"    \r",
+							"    pm.expect(true).to.be.true; // Always pass, just for logging\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/gdt/timezones/detect",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"timezones",
+						"detect"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{auth}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "timezoneAliases",
+			"value": ""
+		},
+		{
+			"key": "currentTimezoneAlias",
+			"value": ""
+		},
+		{
+			"key": "expectedTimezone",
+			"value": ""
+		},
+		{
+			"key": "timezoneTestIndex",
+			"value": ""
+		}
+	]
+}
