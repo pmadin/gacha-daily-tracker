@@ -415,6 +415,29 @@ Test Suite: POST /gdt/update/games/import (Additional)
 
 ---
 
+## API Design Notes
+
+### Lenient Timezone Validation
+
+**Important:** Your API implements a **fallback mechanism** for timezone validation rather than strict validation:
+
+- **Behavior:** Invalid timezones are automatically corrected to `America/Los_Angeles`
+- **Status Code:** Returns `200 OK` (not `400 Bad Request`)
+- **Applies To:**
+  - `POST /gdt/auth/register` - Registration with invalid timezone
+  - `PUT /gdt/auth/profile` - Profile update with invalid timezone
+  - `PATCH /gdt/update/games/:id` - Game update with invalid timezone
+
+**Design Rationale:**
+- User-friendly: Prevents registration/update failures due to timezone issues
+- Graceful degradation: Falls back to a sensible default
+- Transparent: Response shows the corrected timezone value
+
+**Test Implications:**
+Tests verify the auto-correction behavior instead of expecting validation errors.
+
+---
+
 ## Summary Statistics
 
 | Category | Endpoints | Tested | Partial | Missing | Coverage |

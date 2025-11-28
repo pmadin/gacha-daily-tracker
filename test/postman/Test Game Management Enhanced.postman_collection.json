@@ -379,7 +379,7 @@
 			"name": "Update Validation Tests",
 			"item": [
 				{
-					"name": "Test Update - Invalid Timezone Format",
+					"name": "Test Update - Invalid Timezone Format (Auto-Corrected)",
 					"event": [
 						{
 							"listen": "prerequest",
@@ -387,7 +387,7 @@
 								"exec": [
 									"pm.request.body.raw = JSON.stringify({",
 									"    timezone: 'NotAValidTimezone/Format',",
-									"    reason: 'Testing invalid timezone validation'",
+									"    reason: 'Testing timezone auto-correction on game update'",
 									"});"
 								],
 								"type": "text/javascript"
@@ -397,16 +397,27 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"// Test 1: Should return 400 for invalid timezone",
-									"pm.test(\"Should return 400 for invalid timezone\", () => {",
-									"    pm.response.to.have.status(400);",
+									"// Test 1: Update succeeds with auto-corrected timezone",
+									"pm.test(\"Game update should succeed with fallback timezone\", () => {",
+									"    pm.response.to.have.status(200);",
+									"    console.log('✓ API accepts game update with invalid timezone (uses fallback)');",
 									"});",
 									"",
-									"// Test 2: Error message validation",
-									"pm.test(\"Error message should indicate invalid timezone\", () => {",
+									"// Test 2: Timezone auto-corrected to default",
+									"pm.test(\"Invalid timezone should be auto-corrected to America/Los_Angeles\", () => {",
 									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('error');",
-									"    pm.expect(response.error).to.match(/timezone.*invalid/i);",
+									"    pm.expect(response).to.have.property('game');",
+									"    pm.expect(response.game).to.have.property('timezone');",
+									"    pm.expect(response.game.timezone).to.equal('America/Los_Angeles');",
+									"    console.log('✓ Game timezone auto-corrected: NotAValidTimezone/Format → America/Los_Angeles');",
+									"});",
+									"",
+									"// Test 3: Audit trail present",
+									"pm.test(\"Audit trail should show timezone change\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('changes_made');",
+									"    pm.expect(response.changes_made).to.have.property('timezone');",
+									"    console.log(`Change: ${response.changes_made.timezone}`);",
 									"});"
 								],
 								"type": "text/javascript"

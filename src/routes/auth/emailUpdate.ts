@@ -77,7 +77,7 @@ function addPepper(password: string): string {
  *         description: Validation error
  *       401:
  *         description: Unauthorized
- *       403:
+ *       401:
  *         description: Invalid password
  *       409:
  *         description: Email already in use
@@ -150,7 +150,7 @@ emailRouter.patch('/update-email', async (req: Request, res: Response) => {
 
         if (!validPassword) {
             await client.query('ROLLBACK');
-            return res.status(403).json({
+            return res.status(401).json({
                 error: 'Invalid password'
             });
         }

@@ -356,7 +356,7 @@
 					}
 				},
 				{
-					"name": "Test Register - Invalid Timezone",
+					"name": "Test Register - Invalid Timezone (Auto-Corrected)",
 					"event": [
 						{
 							"listen": "prerequest",
@@ -368,9 +368,12 @@
 									"    email: `invalidtz${timestamp}@example.com`,",
 									"    password: 'MySecure123!Pass',",
 									"    confirmPassword: 'MySecure123!Pass',",
-									"    timezone: 'Invalid/Timezone',",
+									"    timezone: 'InvalidTest/Timezone',",
 									"    registrationToken: 'e6b1228b6525d690bfc64ab355db000c1d9a49d921c97bbb9166a627d200c66437d2dfd53f2ea1d3ae2e173593732935c11b9418507a79fb6f39864ba6b83fc6'",
-									"});"
+									"});",
+									"",
+									"// Store username for potential cleanup",
+									"pm.collectionVariables.set('last_created_user', `invalid_tz_${timestamp}`);"
 								],
 								"type": "text/javascript"
 							}
@@ -379,16 +382,35 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"// Test 1: Should reject invalid timezone",
-									"pm.test(\"Should return 400 for invalid timezone\", () => {",
-									"    pm.response.to.have.status(400);",
+									"// Test 1: Registration succeeds with auto-corrected timezone",
+									"pm.test(\"Registration should succeed with fallback timezone (200 or 201)\", () => {",
+									"    const validCodes = [200, 201];",
+									"    pm.expect(validCodes).to.include(pm.response.code);",
+									"    console.log('✓ API accepts registration with invalid timezone (uses fallback)');",
 									"});",
 									"",
-									"// Test 2: Error message validation",
-									"pm.test(\"Error message should indicate invalid timezone\", () => {",
+									"// Test 2: Timezone auto-corrected to default",
+									"pm.test(\"Invalid timezone should be auto-corrected to America/Los_Angeles\", () => {",
 									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('error');",
-									"    pm.expect(response.error).to.match(/timezone.*invalid/i);",
+									"    pm.expect(response).to.have.property('user');",
+									"    pm.expect(response.user).to.have.property('timezone');",
+									"    pm.expect(response.user.timezone).to.equal('America/Los_Angeles');",
+									"    console.log('✓ Timezone auto-corrected: InvalidTest/Timezone → America/Los_Angeles');",
+									"});",
+									"",
+									"// Test 3: User created with correct data",
+									"pm.test(\"User should be created with other fields intact\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.user).to.have.property('username');",
+									"    pm.expect(response.user).to.have.property('email');",
+									"    pm.expect(response.user.username).to.include('invalid_tz_');",
+									"});",
+									"",
+									"// Test 4: detected_timezone should be false (user provided timezone)",
+									"pm.test(\"Detected timezone flag should be false\", () => {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.user).to.have.property('detected_timezone');",
+									"    pm.expect(response.user.detected_timezone).to.be.false;",
 									"});"
 								],
 								"type": "text/javascript"

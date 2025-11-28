@@ -173,7 +173,7 @@ passwordRouter.patch('/update-password', async (req: Request, res: Response) => 
 
         if (!validCurrentPassword) {
             await client.query('ROLLBACK');
-            return res.status(403).json({
+            return res.status(401).json({
                 error: 'Current password is incorrect'
             });
         }

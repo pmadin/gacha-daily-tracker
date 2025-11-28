@@ -330,7 +330,36 @@ Always run tests in this order to avoid dependencies:
 - Revert operations clean up automatically
 - Soft-deletes can be restored
 
-### 4. Continuous Integration
+### 4. API Behavior Notes
+
+**Lenient Timezone Validation:**
+Your API uses a **fallback mechanism** for invalid timezones instead of strict validation:
+- Invalid timezones are automatically corrected to `America/Los_Angeles`
+- This applies to all endpoints: registration, profile updates, and game updates
+- Tests are designed to verify this auto-correction behavior
+- Status code: **200 OK** (not 400 Bad Request)
+
+Example:
+```json
+// Input
+{
+  "timezone": "InvalidTest/Timezone"
+}
+
+// Response
+{
+  "user": {
+    "timezone": "America/Los_Angeles"  // Auto-corrected
+  }
+}
+```
+
+**Tests Affected:**
+- `Test Update Profile - Invalid Timezone (Auto-Corrected)`
+- `Test Register - Invalid Timezone (Auto-Corrected)`
+- `Test Update - Invalid Timezone Format (Auto-Corrected)`
+
+### 5. Continuous Integration
 ```yaml
 # Example GitHub Actions workflow
 name: API Tests

@@ -271,10 +271,18 @@ roleRouter.get('/users/search', requireAdmin, async (req: Request, res: Response
             });
         }
 
+        // Allow single character if it's a number (role search), otherwise require 2+ chars
+        if (q.length < 2 && !/^\d+$/.test(q)) {
+            return res.status(400).json({
+                error: 'Search query must be at least 2 characters long'
+            });
+        }
+
+
         const searchResult = await database.query(`
             SELECT id, username, email, role, first_name, last_name, created_at
             FROM users 
-            WHERE username ILIKE $1 OR email ILIKE $1
+            WHERE username ILIKE $1 OR email ILIKE $1 OR (role = $2)
             ORDER BY 
                 CASE WHEN username = $2 THEN 1 ELSE 2 END,
                 username
