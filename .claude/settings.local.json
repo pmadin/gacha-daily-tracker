@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(tree /F 'F:\\University\\My Personal Programs\\gacha_tracker\\src' 2)",
-      "Bash(nul)"
+      "Bash(nul)",
+      "Bash(docker-compose down:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(node -e \"const data = require\\('./data/game-data-backup.json'\\); console.log\\('Total games in backup:', Array.isArray\\(data\\) ? data.length : Object.keys\\(data\\).length\\)\")"
     ],
     "deny": [],
     "ask": []

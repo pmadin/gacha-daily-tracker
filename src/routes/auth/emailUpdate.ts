@@ -76,9 +76,7 @@ function addPepper(password: string): string {
  *       400:
  *         description: Validation error
  *       401:
- *         description: Unauthorized
- *       401:
- *         description: Invalid password
+ *         description: Unauthorized (invalid credentials or password)
  *       409:
  *         description: Email already in use
  */

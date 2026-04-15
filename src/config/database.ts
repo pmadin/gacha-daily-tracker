@@ -40,12 +40,18 @@ class Database {
             console.log('🗄️  Database connected successfully at:', result.rows[0].now);
             client.release();
         } catch (error: unknown) {
-            if (error instanceof Error) {
+            if (error instanceof Error && 'errors' in error && Array.isArray((error as any).errors)) {
+                console.error('❌ Database connection failed (multiple errors):');
+                (error as any).errors.forEach((e: unknown, i: number) => {
+                    console.error(`  [${i}]`, e instanceof Error ? e.message : e);
+                });
+            } else if (error instanceof Error) {
                 console.error('❌ Database connection failed:', error.message);
-                console.error('💡 If SSL error, try adding ?sslmode=disable to DATABASE_URL');
             } else {
-                console.error('❌ Database connection failed with unknown error');
+                console.error('❌ Database connection failed:', error);
             }
+            console.error('💡 DATABASE_URL:', process.env.DATABASE_URL);
+            console.error('💡 If SSL error, try adding ?sslmode=disable to DATABASE_URL');
             process.exit(1);
         }
     }

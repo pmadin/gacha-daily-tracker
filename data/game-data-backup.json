@@ -1,14 +1,28 @@
 {
-  "lastUpdated": "2025-07-30T05:48:32.818Z",
+  "lastUpdated": "2026-04-15T20:18:02.687Z",
   "source": "https://raw.githubusercontent.com/cicerakes/Game-Time-Master/refs/heads/master/game-data.js",
-  "gameCount": 303,
+  "gameCount": 332,
   "data": [
+    {
+      "game": "18TRIP",
+      "server": "JP",
+      "timezone": "Asia/Tokyo",
+      "dailyReset": "00:00",
+      "icon": "18trip"
+    },
     {
       "game": "A3!",
       "server": "JP",
       "timezone": "Asia/Tokyo",
       "dailyReset": "00:00",
       "icon": "a3"
+    },
+    {
+      "game": "Action Taimanin",
+      "server": "Global",
+      "timezone": "Etc/UTC",
+      "dailyReset": "02:00",
+      "icon": "action-taimanin"
     },
     {
       "game": "Aether Gazer",
@@ -46,49 +60,6 @@
       "icon": "alchemia-story"
     },
     {
-      "game": "Alchemy Stars",
-      "server": "Global",
-      "timezone": "Etc/UTC",
-      "dailyReset": "05:00",
-      "icon": "alchemy-stars"
-    },
-    {
-      "game": "Alchemy Stars",
-      "server": "JP",
-      "timezone": "Asia/Tokyo",
-      "dailyReset": "10:00",
-      "icon": "alchemy-stars"
-    },
-    {
-      "game": "Alchemy Stars",
-      "server": "LATAM",
-      "timezone": "Etc/GMT+3",
-      "dailyReset": "05:00",
-      "icon": "alchemy-stars"
-    },
-    {
-      "game": "Alchemy Stars",
-      "server": "SEA",
-      "timezone": "Etc/GMT-8",
-      "dailyReset": "05:00",
-      "icon": "alchemy-stars"
-    },
-    {
-      "game": "Alchemy Stars",
-      "server": "US",
-      "timezone": "America/Chicago",
-      "dailyReset": "10:00",
-      "icon": "alchemy-stars",
-      "utcDailyReset": true
-    },
-    {
-      "game": "Alice Closet: Anime Dress Up",
-      "server": "EN",
-      "timezone": "Etc/GMT+4",
-      "dailyReset": "12:00",
-      "icon": "alice-closet-anime-dress-up"
-    },
-    {
       "game": "Another Eden",
       "server": "Global",
       "timezone": "Etc/UTC",
@@ -101,13 +72,6 @@
       "timezone": "Asia/Shanghai",
       "dailyReset": "05:00",
       "icon": "aotu-world"
-    },
-    {
-      "game": "Archeland",
-      "server": "KR",
-      "timezone": "Asia/Seoul",
-      "dailyReset": "05:00",
-      "icon": "archeland"
     },
     {
       "game": "Arknights",
@@ -131,32 +95,18 @@
       "icon": "arknights"
     },
     {
-      "game": "Artery Gear: Fusion",
-      "server": "America",
+      "game": "Arknights: Endfield",
+      "server": "Americas / Europe",
       "timezone": "Etc/GMT+5",
-      "dailyReset": "05:00",
-      "icon": "artery-gear"
+      "dailyReset": "04:00",
+      "icon": "arknights-endfield"
     },
     {
-      "game": "Artery Gear: Fusion",
-      "server": "Europe",
-      "timezone": "Etc/GMT-1",
-      "dailyReset": "05:00",
-      "icon": "artery-gear"
-    },
-    {
-      "game": "Artery Gear: Fusion",
-      "server": "JP",
-      "timezone": "Asia/Tokyo",
-      "dailyReset": "05:00",
-      "icon": "artery-gear"
-    },
-    {
-      "game": "Artery Gear: Fusion",
-      "server": "Pacific",
+      "game": "Arknights: Endfield",
+      "server": "Asia",
       "timezone": "Etc/GMT-8",
-      "dailyReset": "05:00",
-      "icon": "artery-gear"
+      "dailyReset": "04:00",
+      "icon": "arknights-endfield"
     },
     {
       "game": "Ash Arms",
@@ -166,6 +116,20 @@
       "icon": "ash-arms"
     },
     {
+      "game": "Ash Echoes",
+      "server": "Global",
+      "timezone": "Etc/GMT+5",
+      "dailyReset": "04:00",
+      "icon": "ash-echoes"
+    },
+    {
+      "game": "Ash Echoes",
+      "server": "SEA",
+      "timezone": "Etc/GMT-7",
+      "dailyReset": "04:00",
+      "icon": "ash-echoes-sea"
+    },
+    {
       "game": "Assault Lily: Last Bullet",
       "server": "JP",
       "timezone": "Asia/Tokyo",
@@ -173,15 +137,8 @@
       "icon": "assault-lily-last-bullet"
     },
     {
-      "game": "Atelier Online: Alchemist of Bressisle",
-      "server": "EN",
-      "timezone": "Etc/UTC",
-      "dailyReset": "04:00",
-      "icon": "atelier-online-alchemist-of-bressisle"
-    },
-    {
       "game": "Atelier Resleriana",
-      "server": "Global",
+      "server": "JP",
       "timezone": "Etc/GMT-8",
       "dailyReset": "11:00",
       "icon": "atelier-resleriana"
@@ -192,13 +149,6 @@
       "timezone": "America/New_York",
       "dailyReset": "02:00",
       "icon": "attack-on-time-kog"
-    },
-    {
-      "game": "Auto Heroes",
-      "server": "NA",
-      "timezone": "America/New_York",
-      "dailyReset": "08:00",
-      "icon": "auto-heroes"
     },
     {
       "game": "Azur Lane",
@@ -236,20 +186,6 @@
       "icon": "bang-dream-gbp-jp"
     },
     {
-      "game": "Black Clover M",
-      "server": "AS",
-      "timezone": "Etc/GMT-7",
-      "dailyReset": "04:00",
-      "icon": "black-clover-m"
-    },
-    {
-      "game": "Black Clover M",
-      "server": "EU",
-      "timezone": "Etc/GMT-1",
-      "dailyReset": "04:00",
-      "icon": "black-clover-m"
-    },
-    {
       "game": "Bleach: Brave Souls",
       "server": "Global",
       "timezone": "Asia/Tokyo",
@@ -271,11 +207,12 @@
       "icon": "blue-archive"
     },
     {
-      "game": "Brave Nine",
-      "server": "Global & Europe",
-      "timezone": "Etc/UTC",
-      "dailyReset": "20:00",
-      "icon": "brave-nine"
+      "game": "Brawlhalla",
+      "server": "Global",
+      "timezone": "America/New_York",
+      "dailyReset": "10:00",
+      "icon": "brawlhalla",
+      "utcDailyReset": true
     },
     {
       "game": "BrownDust2",
@@ -306,11 +243,11 @@
       "icon": "captain-tsubasa-dream-team"
     },
     {
-      "game": "Cloud Song: Saga of Skywalkers",
+      "game": "Chaos Zero Nightmare",
       "server": "Global",
-      "timezone": "Etc/GMT-8",
-      "dailyReset": "06:00",
-      "icon": "cloud-song-saga-of-skywalkers"
+      "timezone": "Etc/UTC",
+      "dailyReset": "18:00",
+      "icon": "chaos-zero-nightmare"
     },
     {
       "game": "Cookie Run: Kingdom",
@@ -318,6 +255,14 @@
       "timezone": "Asia/Seoul",
       "dailyReset": "00:00",
       "icon": "cookie-run-kingdom"
+    },
+    {
+      "game": "Counter-Strike Nexon",
+      "server": "Global",
+      "timezone": "Europe/Berlin",
+      "dailyReset": "22:00",
+      "icon": "counter-strike-nexon",
+      "utcDailyReset": true
     },
     {
       "game": "Counter:Side",
@@ -335,9 +280,9 @@
     },
     {
       "game": "Crash Fever",
-      "server": "EN",
-      "timezone": "Etc/UTC",
-      "dailyReset": "06:00",
+      "server": "JP",
+      "timezone": "Asia/Tokyo",
+      "dailyReset": "02:00",
       "icon": "crash-fever"
     },
     {
@@ -362,25 +307,18 @@
       "icon": "d4-dj-groovy-mix"
     },
     {
-      "game": "DanMachi - MEMORIA FREESE",
-      "server": "EN",
-      "timezone": "Etc/GMT+8",
-      "dailyReset": "22:00",
-      "icon": "dan-machi-memoria-freese"
-    },
-    {
-      "game": "Darkness Rises",
-      "server": "NA",
-      "timezone": "America/Los_Angeles",
-      "dailyReset": "00:00",
-      "icon": "darkness-rises"
-    },
-    {
-      "game": "Date A Live: Spirit Pledge",
+      "game": "Date A Live: Spirit Echo",
       "server": "Global",
       "timezone": "Etc/GMT+7",
       "dailyReset": "00:00",
-      "icon": "date-a-live-spirit-pledge"
+      "icon": "date-a-live-spirit-echo"
+    },
+    {
+      "game": "DC: Dark Legion",
+      "server": "Global",
+      "timezone": "Etc/UTC",
+      "dailyReset": "00:00",
+      "icon": "dc-dark-legion"
     },
     {
       "game": "DEAD OR ALIVE Xtreme Venus Vacation",
@@ -397,26 +335,12 @@
       "icon": "demon-god"
     },
     {
-      "game": "Dengeki Bunko: Crossing Void",
-      "server": "Global",
-      "timezone": "Etc/UTC",
-      "dailyReset": "12:00",
-      "icon": "dengeki-bunko-crossing-void"
-    },
-    {
       "game": "Destiny 2",
       "server": "Global",
       "timezone": "America/Los_Angeles",
       "dailyReset": "17:00",
       "icon": "destiny-2",
       "utcDailyReset": true
-    },
-    {
-      "game": "Destiny Child",
-      "server": "Global",
-      "timezone": "Etc/UTC",
-      "dailyReset": "04:00",
-      "icon": "destiny-child"
     },
     {
       "game": "Diablo Immortal",
@@ -462,13 +386,6 @@
     },
     {
       "game": "Disgaea RPG",
-      "server": "Global",
-      "timezone": "Etc/GMT+4",
-      "dailyReset": "00:00",
-      "icon": "disgaea-rpg"
-    },
-    {
-      "game": "Disgaea RPG",
       "server": "JP",
       "timezone": "Asia/Tokyo",
       "dailyReset": "00:00",
@@ -480,6 +397,13 @@
       "timezone": "Etc/UTC",
       "dailyReset": "00:00",
       "icon": "dislyte"
+    },
+    {
+      "game": "Disney Pixel RPG",
+      "server": "Global",
+      "timezone": "Etc/UTC",
+      "dailyReset": "07:00",
+      "icon": "disney-pixel-rpg"
     },
     {
       "game": "Disney Twisted-Wonderland",
@@ -494,13 +418,6 @@
       "timezone": "Asia/Tokyo",
       "dailyReset": "00:00",
       "icon": "disney-twisted-wonderland"
-    },
-    {
-      "game": "DISSIDIA FINAL FANTASY OPERA OMNIA",
-      "server": "Global",
-      "timezone": "Etc/UTC",
-      "dailyReset": "08:00",
-      "icon": "dissidia-ffoo"
     },
     {
       "game": "DRAGON BALL LEGENDS",
@@ -526,9 +443,9 @@
     },
     {
       "game": "DRAGON QUEST TACT",
-      "server": "Global",
-      "timezone": "America/Los_Angeles",
-      "dailyReset": "12:00",
+      "server": "JP",
+      "timezone": "Asia/Tokyo",
+      "dailyReset": "05:00",
       "icon": "dragon-quest-tact"
     },
     {
@@ -539,11 +456,39 @@
       "icon": "dream-girlfriend"
     },
     {
-      "game": "Dream Meister and the Recollected Black Fairy",
-      "server": "JP",
-      "timezone": "Asia/Tokyo",
+      "game": "Duet Night Abyss",
+      "server": "America",
+      "timezone": "Etc/GMT+5",
       "dailyReset": "05:00",
-      "icon": "dream-meister-atrbf"
+      "icon": "duet-night-abyss"
+    },
+    {
+      "game": "Duet Night Abyss",
+      "server": "Asia",
+      "timezone": "Etc/GMT-8",
+      "dailyReset": "05:00",
+      "icon": "duet-night-abyss"
+    },
+    {
+      "game": "Duet Night Abyss",
+      "server": "Europe",
+      "timezone": "Etc/GMT-1",
+      "dailyReset": "05:00",
+      "icon": "duet-night-abyss"
+    },
+    {
+      "game": "Duet Night Abyss",
+      "server": "HMT",
+      "timezone": "Etc/GMT-8",
+      "dailyReset": "05:00",
+      "icon": "duet-night-abyss"
+    },
+    {
+      "game": "Duet Night Abyss",
+      "server": "SEA",
+      "timezone": "Etc/GMT-8",
+      "dailyReset": "05:00",
+      "icon": "duet-night-abyss"
     },
     {
       "game": "Echocalypse",
@@ -553,25 +498,11 @@
       "icon": "echocalypse"
     },
     {
-      "game": "ECHOES of MANA",
+      "game": "Elpis: Fallen Star",
       "server": "Global",
       "timezone": "Etc/UTC",
-      "dailyReset": "04:00",
-      "icon": "echoes-of-mana"
-    },
-    {
-      "game": "Eiyuu Senki WWX",
-      "server": "EN",
-      "timezone": "America/Atikokan",
-      "dailyReset": "04:00",
-      "icon": "eiyu-senki-wwx"
-    },
-    {
-      "game": "Elune",
-      "server": "Global",
-      "timezone": "Etc/UTC",
-      "dailyReset": "00:00",
-      "icon": "elune"
+      "dailyReset": "05:00",
+      "icon": "elpis-fallen-star"
     },
     {
       "game": "Ensemble Stars!! Basic",
@@ -605,8 +536,9 @@
       "game": "Epic Seven",
       "server": "Europe",
       "timezone": "Europe/Paris",
-      "dailyReset": "05:00",
-      "icon": "epic-seven"
+      "dailyReset": "03:00",
+      "icon": "epic-seven",
+      "utcDailyReset": true
     },
     {
       "game": "Epic Seven",
@@ -623,11 +555,11 @@
       "icon": "epic-seven"
     },
     {
-      "game": "Eternal Tree",
-      "server": "JP",
-      "timezone": "Asia/Tokyo",
-      "dailyReset": "20:00",
-      "icon": "eternal-tree"
+      "game": "Etheria: Restart",
+      "server": "Global",
+      "timezone": "Etc/GMT+5",
+      "dailyReset": "05:00",
+      "icon": "etheria-restart"
     },
     {
       "game": "Eversoul",
@@ -642,13 +574,6 @@
       "timezone": "Etc/GMT-9",
       "dailyReset": "10:00",
       "icon": "evertale"
-    },
-    {
-      "game": "Exos Heroes",
-      "server": "Global",
-      "timezone": "Etc/UTC",
-      "dailyReset": "20:00",
-      "icon": "exos-heroes"
     },
     {
       "game": "Fate/Grand Order",
@@ -666,31 +591,10 @@
       "utcDailyReset": true
     },
     {
-      "game": "Figure Fantasy",
-      "server": "America",
-      "timezone": "Etc/GMT+4",
-      "dailyReset": "08:00",
-      "icon": "figure-fantasy"
-    },
-    {
-      "game": "Figure Fantasy",
-      "server": "Europe",
-      "timezone": "Etc/GMT-2",
-      "dailyReset": "06:00",
-      "icon": "figure-fantasy"
-    },
-    {
-      "game": "FINAL FANTASY BRAVE EXVIUS",
-      "server": "Global",
-      "timezone": "America/Los_Angeles",
-      "dailyReset": "00:00",
-      "icon": "ff-brave-exvius"
-    },
-    {
       "game": "FINAL FANTASY Record Keeper",
-      "server": "Global",
-      "timezone": "Etc/UTC",
-      "dailyReset": "08:00",
+      "server": "JP",
+      "timezone": "Asia/Tokyo",
+      "dailyReset": "05:00",
       "icon": "ff-record-keeper"
     },
     {
@@ -708,13 +612,6 @@
       "dailyReset": "15:00",
       "icon": "ff-xiv",
       "utcDailyReset": true
-    },
-    {
-      "game": "Final Gear",
-      "server": "CN",
-      "timezone": "Asia/Shanghai",
-      "dailyReset": "00:00",
-      "icon": "final-gear"
     },
     {
       "game": "Fire Emblem Heroes",
@@ -757,13 +654,6 @@
       "timezone": "Asia/Singapore",
       "dailyReset": "08:00",
       "icon": "gensokishi-online"
-    },
-    {
-      "game": "Girl Cafe Gun",
-      "server": "Global",
-      "timezone": "Etc/GMT+4",
-      "dailyReset": "04:00",
-      "icon": "girl-cafe-gun"
     },
     {
       "game": "Girls' Frontline",
@@ -872,11 +762,11 @@
       "icon": "grand-summoners"
     },
     {
-      "game": "Grimlight",
+      "game": "Grand Theft Auto Online",
       "server": "Global",
-      "timezone": "Etc/UTC",
-      "dailyReset": "04:00",
-      "icon": "grimlight"
+      "timezone": "Etc/GMT+8",
+      "dailyReset": "22:00",
+      "icon": "gta-online"
     },
     {
       "game": "Guardian Tales",
@@ -922,13 +812,6 @@
       "icon": "guild-wars-2"
     },
     {
-      "game": "GUNDAM BREAKER MOBILE",
-      "server": "JP & NA",
-      "timezone": "Asia/Tokyo",
-      "dailyReset": "05:00",
-      "icon": "gundam-breaker-mobile"
-    },
-    {
       "game": "GYEE",
       "server": "NA",
       "timezone": "Etc/GMT+4",
@@ -950,6 +833,48 @@
       "icon": "hatsune-miku-colorful-stage"
     },
     {
+      "game": "Heartopia",
+      "server": "America",
+      "timezone": "Etc/GMT+5",
+      "dailyReset": "06:00",
+      "icon": "heartopia"
+    },
+    {
+      "game": "Heartopia",
+      "server": "Asia",
+      "timezone": "Etc/GMT-9",
+      "dailyReset": "06:00",
+      "icon": "heartopia"
+    },
+    {
+      "game": "Heartopia",
+      "server": "Global",
+      "timezone": "Etc/GMT-1",
+      "dailyReset": "06:00",
+      "icon": "heartopia"
+    },
+    {
+      "game": "Heartopia",
+      "server": "SEA",
+      "timezone": "Etc/GMT-7",
+      "dailyReset": "06:00",
+      "icon": "heartopia"
+    },
+    {
+      "game": "Heartopia",
+      "server": "TW,HK,MO",
+      "timezone": "Etc/GMT-8",
+      "dailyReset": "06:00",
+      "icon": "heartopia"
+    },
+    {
+      "game": "Heaven Burns Red",
+      "server": "Global",
+      "timezone": "Etc/GMT+7",
+      "dailyReset": "00:00",
+      "icon": "heaven-burns-red"
+    },
+    {
       "game": "Heaven Burns Red",
       "server": "JP",
       "timezone": "Asia/Tokyo",
@@ -964,11 +889,11 @@
       "icon": "helios-rising-heroes"
     },
     {
-      "game": "Hero Cantare",
+      "game": "Hello Kitty Island Adventure",
       "server": "Global",
-      "timezone": "America/Los_Angeles",
-      "dailyReset": "00:00",
-      "icon": "hero-cantare"
+      "timezone": "Etc/GMT",
+      "dailyReset": "06:00",
+      "icon": "hello-kitty-island-adventure"
     },
     {
       "game": "Higan: Eruthyll",
@@ -976,13 +901,6 @@
       "timezone": "Etc/GMT+8",
       "dailyReset": "05:00",
       "icon": "higan-eruthyll"
-    },
-    {
-      "game": "HoneyWorks Premium Live",
-      "server": "JP",
-      "timezone": "Asia/Tokyo",
-      "dailyReset": "04:00",
-      "icon": "honey-works-premium-live"
     },
     {
       "game": "Honkai Impact 3rd",
@@ -1034,6 +952,13 @@
       "icon": "honkai-star-rail"
     },
     {
+      "game": "Horizon Walker",
+      "server": "Global",
+      "timezone": "Asia/Seoul",
+      "dailyReset": "10:00",
+      "icon": "horizon-walker"
+    },
+    {
       "game": "Hypnosis Mic -Alternative Rap Battle-",
       "server": "JP",
       "timezone": "Asia/Tokyo",
@@ -1076,11 +1001,88 @@
       "icon": "idolish7"
     },
     {
+      "game": "IDOLY PRIDE : Idol Manager",
+      "server": "Global",
+      "timezone": "America/Los_Angeles",
+      "dailyReset": "07:00",
+      "icon": "idoly-pride-idol-manager"
+    },
+    {
+      "game": "IDOLY PRIDE : Idol Manager",
+      "server": "JP",
+      "timezone": "Asia/Tokyo",
+      "dailyReset": "00:00",
+      "icon": "idoly-pride-idol-manager"
+    },
+    {
+      "game": "Ikemen Villains",
+      "server": "EN",
+      "timezone": "America/Los_Angeles",
+      "dailyReset": "00:00",
+      "icon": "ikemen-villains"
+    },
+    {
+      "game": "Infinity Nikki",
+      "server": "America",
+      "timezone": "Etc/GMT+7",
+      "dailyReset": "4:00",
+      "icon": "infinity-nikki"
+    },
+    {
+      "game": "Infinity Nikki",
+      "server": "Asia",
+      "timezone": "Etc/GMT-8",
+      "dailyReset": "4:00",
+      "icon": "infinity-nikki"
+    },
+    {
+      "game": "Infinity Nikki",
+      "server": "Europe",
+      "timezone": "Etc/GMT-2",
+      "dailyReset": "4:00",
+      "icon": "infinity-nikki"
+    },
+    {
       "game": "IRUNA Online",
       "server": "Global",
       "timezone": "Etc/GMT+7",
       "dailyReset": "22:00",
       "icon": "iruna-online"
+    },
+    {
+      "game": "Isekai:Slow Life",
+      "server": "Americas",
+      "timezone": "Etc/GMT+5",
+      "dailyReset": "00:00",
+      "icon": "isekai-slow-life"
+    },
+    {
+      "game": "Isekai:Slow Life",
+      "server": "Europe",
+      "timezone": "Etc/UTC",
+      "dailyReset": "00:00",
+      "icon": "isekai-slow-life"
+    },
+    {
+      "game": "Journeys in the Immortal Realm",
+      "server": "Global",
+      "timezone": "Etc/GMT+4",
+      "dailyReset": "00:00",
+      "icon": "journeys-in-the-immortal-realm"
+    },
+    {
+      "game": "Jujutsu Kaisen Phantom Parade",
+      "server": "Global",
+      "timezone": "Etc/GMT-9",
+      "dailyReset": "00:00",
+      "icon": "jjk-phantom-parade"
+    },
+    {
+      "game": "Kantai Collection",
+      "server": "JP",
+      "timezone": "Asia/Tokyo",
+      "dailyReset": "05:00",
+      "icon": "kantai-collection"
     },
     {
       "game": "Kemono Friends 3",
@@ -1102,13 +1104,6 @@
       "timezone": "Etc/GMT+7",
       "dailyReset": "21:00",
       "icon": "kings-raid"
-    },
-    {
-      "game": "KonoSuba: Fantastic Days",
-      "server": "Global",
-      "timezone": "Etc/UTC",
-      "dailyReset": "00:00",
-      "icon": "kono-suba-fantastic-days"
     },
     {
       "game": "Langrisser",
@@ -1154,6 +1149,13 @@
       "icon": "life-makeover"
     },
     {
+      "game": "Light and Night",
+      "server": "CN & TW",
+      "timezone": "Etc/GMT-8",
+      "dailyReset": "05:00",
+      "icon": "light-and-night"
+    },
+    {
       "game": "Limbus Company",
       "server": "Global",
       "timezone": "Asia/Seoul",
@@ -1161,11 +1163,32 @@
       "icon": "limbus-company"
     },
     {
+      "game": "Link! Like! Love Live!",
+      "server": "Global",
+      "timezone": "Asia/Tokyo",
+      "dailyReset": "04:00",
+      "icon": "link-like-love-live"
+    },
+    {
+      "game": "LIVE A HERO",
+      "server": "JP",
+      "timezone": "Asia/Tokyo",
+      "dailyReset": "00:00",
+      "icon": "live-a-hero"
+    },
+    {
       "game": "Looney Tunes World of Mayhem",
       "server": "Global",
       "timezone": "America/Los_Angeles",
       "dailyReset": "18:00",
       "icon": "looney-tunes-wom"
+    },
+    {
+      "game": "Lord of Nazarick",
+      "server": "Global",
+      "timezone": "Etc/GMT+2",
+      "dailyReset": "05:00",
+      "icon": "lord-of-nazarick"
     },
     {
       "game": "Lost Ark",
@@ -1208,6 +1231,13 @@
       "utcDailyReset": true
     },
     {
+      "game": "Lost Sword",
+      "server": "Global",
+      "timezone": "Etc/GMT-9",
+      "dailyReset": "00:00",
+      "icon": "lost-sword"
+    },
+    {
       "game": "Love and Deepspace",
       "server": "Asia",
       "timezone": "Etc/GMT-8",
@@ -1229,14 +1259,6 @@
       "icon": "love-and-deepspace"
     },
     {
-      "game": "Love Live! School Idol Festival 2 MIRACLE LIVE!",
-      "server": "JP",
-      "timezone": "Asia/Tokyo",
-      "dailyReset": "00:00",
-      "icon": "love-live-sif-2",
-      "menuName": "Love Live! SIF2"
-    },
-    {
       "game": "Love Nikki",
       "server": "EN",
       "timezone": "Etc/GMT+8",
@@ -1244,11 +1266,32 @@
       "icon": "love-nikki"
     },
     {
-      "game": "Magia Record",
-      "server": "JP",
+      "game": "Lovebrush Chronicles",
+      "server": "EN",
+      "timezone": "Etc/GMT-8",
+      "dailyReset": "04:00",
+      "icon": "lovebrush-chronicles"
+    },
+    {
+      "game": "Lust Goddess",
+      "server": "Global",
+      "timezone": "Etc/UTC",
+      "dailyReset": "18:00",
+      "icon": "lust-goddess"
+    },
+    {
+      "game": "Mabinogi",
+      "server": "NA",
+      "timezone": "America/Los_Angeles",
+      "dailyReset": "07:00",
+      "icon": "mabinogi"
+    },
+    {
+      "game": "Madoka Magica Magia Exedra",
+      "server": "Global",
       "timezone": "Asia/Tokyo",
-      "dailyReset": "00:00",
-      "icon": "magia-record"
+      "dailyReset": "05:00",
+      "icon": "magia-exedra"
     },
     {
       "game": "Magic: The Gathering Arena",
@@ -1263,6 +1306,13 @@
       "timezone": "Etc/GMT+7",
       "dailyReset": "14:00",
       "icon": "mahjong-soul"
+    },
+    {
+      "game": "MapleStory",
+      "server": "GMS",
+      "timezone": "Etc/UTC",
+      "dailyReset": "00:00",
+      "icon": "maplestory"
     },
     {
       "game": "MapleStory M",
@@ -1284,6 +1334,13 @@
       "timezone": "Etc/GMT-2",
       "dailyReset": "00:00",
       "icon": "maplestory-m"
+    },
+    {
+      "game": "Mecharashi",
+      "server": "Global",
+      "timezone": "Etc/GMT+7",
+      "dailyReset": "00:00",
+      "icon": "mecharashi"
     },
     {
       "game": "MementoMori",
@@ -1314,12 +1371,32 @@
       "icon": "mobile-legends-adventure"
     },
     {
-      "game": "My Hero Academia: The Strongest Hero",
-      "server": "EN",
-      "timezone": "America/Los_Angeles",
-      "dailyReset": "13:00",
-      "icon": "mha-the-strongest-hero",
-      "utcDailyReset": true
+      "game": "Mobile Legends: Bang Bang",
+      "server": "Global",
+      "timezone": "Etc/GMT+8",
+      "dailyReset": "00:00",
+      "icon": "mobile-legends-bang-bang"
+    },
+    {
+      "game": "MOBILE SUIT GUNDAM U.C. ENGAGE",
+      "server": "Global",
+      "timezone": "Asia/Tokyo",
+      "dailyReset": "11:00",
+      "icon": "mobile-suit-gundam-u-c-engage"
+    },
+    {
+      "game": "Morimens",
+      "server": "Global",
+      "timezone": "Etc/GMT-8",
+      "dailyReset": "09:00",
+      "icon": "morimens"
+    },
+    {
+      "game": "Muvluv Girls Garden",
+      "server": "JP",
+      "timezone": "Asia/Tokyo",
+      "dailyReset": "05:00",
+      "icon": "muvluv-girls-garden"
     },
     {
       "game": "MY HERO ULTRA IMPACT",
@@ -1329,18 +1406,18 @@
       "icon": "my-hero-ultra-impact"
     },
     {
+      "game": "MY HERO ULTRA RUMBLE",
+      "server": "Global",
+      "timezone": "Asia/Tokyo",
+      "dailyReset": "14:00",
+      "icon": "my-hero-ultra-rumble"
+    },
+    {
       "game": "Mythic Heroes",
       "server": "Global",
       "timezone": "Etc/UTC",
       "dailyReset": "00:00",
       "icon": "mythic-heroes"
-    },
-    {
-      "game": "NARUTO X BORUTO NINJA VOLTAGE",
-      "server": "Global",
-      "timezone": "Etc/UTC",
-      "dailyReset": "09:00",
-      "icon": "naruto-boruto-ninja-voltage"
     },
     {
       "game": "Neural Cloud",
@@ -1364,34 +1441,6 @@
       "icon": "ni-no-kuni-cross-worlds"
     },
     {
-      "game": "NieR Re[in]carnation",
-      "server": "Global",
-      "timezone": "Pacific/Pitcairn",
-      "dailyReset": "00:00",
-      "icon": "nier-reincarnation"
-    },
-    {
-      "game": "NieR Re[in]carnation",
-      "server": "JP",
-      "timezone": "Asia/Tokyo",
-      "dailyReset": "00:00",
-      "icon": "nier-reincarnation"
-    },
-    {
-      "game": "NieR Re[in]carnation",
-      "server": "SEA",
-      "timezone": "Etc/GMT-8",
-      "dailyReset": "00:00",
-      "icon": "nier-reincarnation"
-    },
-    {
-      "game": "Noah's Heart",
-      "server": "Global",
-      "timezone": "Etc/GMT+5",
-      "dailyReset": "00:00",
-      "icon": "noahs-heart"
-    },
-    {
       "game": "NU: carnival",
       "server": "EN",
       "timezone": "Etc/GMT-8",
@@ -1409,7 +1458,7 @@
       "game": "OCTOPATH TRAVELER: Champions of the Continent",
       "server": "EN",
       "timezone": "ETC/UTC",
-      "dailyReset": "09:00",
+      "dailyReset": "20:00",
       "icon": "octopath-traveler-cotc"
     },
     {
@@ -1441,11 +1490,25 @@
       "icon": "outerplane"
     },
     {
+      "game": "OZ Re:write",
+      "server": "JP",
+      "timezone": "Asia/Tokyo",
+      "dailyReset": "04:00",
+      "icon": "oz-rewrite"
+    },
+    {
       "game": "Paladins",
       "server": "NA",
       "timezone": "America/Los_Angeles",
       "dailyReset": "01:00",
       "icon": "paladins"
+    },
+    {
+      "game": "Palmon: Survival",
+      "server": "Global",
+      "timezone": "Etc/GMT+2",
+      "dailyReset": "04:00",
+      "icon": "palmon-survival"
     },
     {
       "game": "Path to Nowhere",
@@ -1469,11 +1532,53 @@
       "icon": "path-to-nowhere"
     },
     {
+      "game": "Persona5: The Phantom X",
+      "server": "CN",
+      "timezone": "Asia/Shanghai",
+      "dailyReset": "05:00",
+      "icon": "persona5-the-phantom-x-cn"
+    },
+    {
+      "game": "Persona5: The Phantom X",
+      "server": "EN & JP",
+      "timezone": "Etc/UTC",
+      "dailyReset": "20:00",
+      "icon": "persona5-the-phantom-x"
+    },
+    {
+      "game": "Persona5: The Phantom X",
+      "server": "KR",
+      "timezone": "Asia/Seoul",
+      "dailyReset": "05:00",
+      "icon": "persona5-the-phantom-x-kr"
+    },
+    {
+      "game": "Persona5: The Phantom X",
+      "server": "TW",
+      "timezone": "Asia/Taipei",
+      "dailyReset": "05:00",
+      "icon": "persona5-the-phantom-x-tw"
+    },
+    {
       "game": "Phantasy Star Online 2: New Genesis",
       "server": "Global",
       "timezone": "America/Los_Angeles",
       "dailyReset": "07:00",
       "icon": "phantasy-star-online-2-ng"
+    },
+    {
+      "game": "Pixel Heroes: Tales of Emond",
+      "server": "EU",
+      "timezone": "Etc/GMT-1",
+      "dailyReset": "05:00",
+      "icon": "pixel-heroes-tales-of-emond"
+    },
+    {
+      "game": "Pixel Heroes: Tales of Emond",
+      "server": "NA",
+      "timezone": "Etc/GMT+5",
+      "dailyReset": "05:00",
+      "icon": "pixel-heroes-tales-of-emond"
     },
     {
       "game": "Pokémon Masters EX",
@@ -1486,7 +1591,7 @@
       "game": "Pokémon TCG Live",
       "server": "Global",
       "timezone": "Etc/UTC",
-      "dailyReset": "00:00",
+      "dailyReset": "17:00",
       "icon": "pokemon-tcg-live"
     },
     {
@@ -1539,13 +1644,6 @@
       "icon": "project-sekai-colorful-stage"
     },
     {
-      "game": "Psychic Idle",
-      "server": "Global",
-      "timezone": "Asia/Seoul",
-      "dailyReset": "00:00",
-      "icon": "psychic-idle"
-    },
-    {
       "game": "PUBG MOBILE",
       "server": "Global",
       "timezone": "Etc/UTC",
@@ -1563,7 +1661,7 @@
       "game": "Punishing: Gray Raven",
       "server": "Global",
       "timezone": "Etc/UTC",
-      "dailyReset": "07:00",
+      "dailyReset": "05:00",
       "icon": "punishing-gray-raven"
     },
     {
@@ -1572,6 +1670,14 @@
       "timezone": "Asia/Tokyo",
       "dailyReset": "04:00",
       "icon": "punishing-gray-raven"
+    },
+    {
+      "game": "Puzzle & Dragons",
+      "server": "NA",
+      "timezone": "America/Los_Angeles",
+      "dailyReset": "12:00",
+      "icon": "puzzle-dragons",
+      "utcDailyReset": true
     },
     {
       "game": "Ragnarok M: Eternal Love",
@@ -1595,11 +1701,11 @@
       "icon": "raid-shadow-legends"
     },
     {
-      "game": "RED: Pride of Eden",
-      "server": "JP",
-      "timezone": "Asia/Tokyo",
+      "game": "Resonance Solstice",
+      "server": "Global",
+      "timezone": "Etc/UTC",
       "dailyReset": "05:00",
-      "icon": "red-pride-of-eden"
+      "icon": "resonance-solstice"
     },
     {
       "game": "Reverse: 1999",
@@ -1617,8 +1723,8 @@
     },
     {
       "game": "Revived Witch",
-      "server": "EN",
-      "timezone": "Etc/GMT+7",
+      "server": "CN",
+      "timezone": "Asia/Shanghai",
       "dailyReset": "04:00",
       "icon": "revived-witch"
     },
@@ -1630,6 +1736,13 @@
       "icon": "rhythm-hive"
     },
     {
+      "game": "Riichi City",
+      "server": "Global",
+      "timezone": "Etc/GMT-9",
+      "dailyReset": "05:00",
+      "icon": "riichi-city"
+    },
+    {
       "game": "Rise of Eros",
       "server": "Global",
       "timezone": "Etc/GMT-8",
@@ -1637,17 +1750,10 @@
       "icon": "rise-of-eros"
     },
     {
-      "game": "ROCKMAN X DiVE",
-      "server": "Taiwan",
-      "timezone": "Etc/GMT-8",
-      "dailyReset": "20:00",
-      "icon": "rockman-x-dive"
-    },
-    {
       "game": "Romancing SaGa Re;univerSe",
-      "server": "Global",
-      "timezone": "Etc/GMT-7",
-      "dailyReset": "08:00",
+      "server": "JP",
+      "timezone": "Asia/Tokyo",
+      "dailyReset": "04:00",
       "icon": "romancing-saga-re-universe"
     },
     {
@@ -1665,18 +1771,18 @@
       "icon": "saint-seiya-awakening-sea"
     },
     {
+      "game": "SD Gundam G Generation ETERNAL",
+      "server": "Global",
+      "timezone": "Asia/Tokyo",
+      "dailyReset": "01:00",
+      "icon": "sd-gundam-g-generation-eternal"
+    },
+    {
       "game": "Sdorica",
       "server": "Global",
       "timezone": "Etc/UTC",
       "dailyReset": "21:00",
       "icon": "sdorica"
-    },
-    {
-      "game": "Senki Zesshou Symphogear XD Unlimited",
-      "server": "JP",
-      "timezone": "Asia/Tokyo",
-      "dailyReset": "00:00",
-      "icon": "senki-zesshou-symphogear-xd-unlimited"
     },
     {
       "game": "SEOUL Apocalypse",
@@ -1693,25 +1799,39 @@
       "icon": "seven-knights-2"
     },
     {
-      "game": "Seven Mortal Sins X-TASY",
-      "server": "EN",
-      "timezone": "Etc/GMT+4",
-      "dailyReset": "04:00",
-      "icon": "seven-mortal-sins-x-tasy"
+      "game": "Seven Knights Idle Adventure",
+      "server": "Global",
+      "timezone": "Etc/UTC",
+      "dailyReset": "00:00",
+      "icon": "seven-knights-idle-adventure"
     },
     {
-      "game": "Shadowverse",
+      "game": "Seven Knights Re:BIRTH",
+      "server": "Global",
+      "timezone": "Etc/GMT-7",
+      "dailyReset": "07:00",
+      "icon": "seven-knights-rebirth"
+    },
+    {
+      "game": "Shadowverse CCG",
       "server": "Global",
       "timezone": "America/Los_Angeles",
       "dailyReset": "12:00",
-      "icon": "shadowverse"
+      "icon": "shadowverse-ccg"
     },
     {
-      "game": "Shadowverse",
+      "game": "Shadowverse CCG",
       "server": "JP",
       "timezone": "Asia/Tokyo",
       "dailyReset": "05:00",
-      "icon": "shadowverse"
+      "icon": "shadowverse-ccg"
+    },
+    {
+      "game": "Shadowverse: Worlds Beyond",
+      "server": "Global",
+      "timezone": "Etc/UTC",
+      "dailyReset": "20:00",
+      "icon": "shadowverse-worlds-beyond"
     },
     {
       "game": "SHIN MEGAMI TENSEI Liberation Dx2",
@@ -1722,13 +1842,6 @@
       "menuName": "SMT Liberation Dx2"
     },
     {
-      "game": "Shining Beyond",
-      "server": "Global",
-      "timezone": "Asia/Singapore",
-      "dailyReset": "00:00",
-      "icon": "shining-beyond"
-    },
-    {
       "game": "Shining Nikki",
       "server": "EN",
       "timezone": "Etc/GMT+7",
@@ -1736,24 +1849,24 @@
       "icon": "shining-nikki"
     },
     {
-      "game": "SINoALICE",
-      "server": "Global",
-      "timezone": "Etc/UTC",
-      "dailyReset": "05:00",
-      "icon": "sinoalice"
+      "game": "Silver and Blood",
+      "server": "APAC",
+      "timezone": "Etc/GMT-8",
+      "dailyReset": "09:00",
+      "icon": "silver-and-blood"
     },
     {
-      "game": "SINoALICE",
-      "server": "Japan",
-      "timezone": "Asia/Tokyo",
-      "dailyReset": "00:00",
-      "icon": "sinoalice"
+      "game": "Silver and Blood",
+      "server": "US & Other Regions",
+      "timezone": "Etc/GMT+8",
+      "dailyReset": "05:00",
+      "icon": "silver-and-blood"
     },
     {
       "game": "Skullgirls",
       "server": "Global",
       "timezone": "America/Los_Angeles",
-      "dailyReset": "12:00",
+      "dailyReset": "10:00",
       "icon": "skullgirls"
     },
     {
@@ -1785,9 +1898,16 @@
       "icon": "snowbreak-containment-zone"
     },
     {
-      "game": "Soul Tide",
+      "game": "Solo Leveling:Arise",
       "server": "Global",
-      "timezone": "Etc/GMT+7",
+      "timezone": "Etc/UTC",
+      "dailyReset": "00:00",
+      "icon": "solo-leveling-arise"
+    },
+    {
+      "game": "Soul Tide",
+      "server": "CN",
+      "timezone": "Asia/Shanghai",
       "dailyReset": "04:00",
       "icon": "soul-tide"
     },
@@ -1797,6 +1917,34 @@
       "timezone": "Etc/GMT",
       "dailyReset": "01:00",
       "icon": "soulworker"
+    },
+    {
+      "game": "StarSavior",
+      "server": "Global",
+      "timezone": "Etc/GMT-9",
+      "dailyReset": "04:00",
+      "icon": "starsavior"
+    },
+    {
+      "game": "STARSEED: Asnia Trigger",
+      "server": "Global",
+      "timezone": "Etc/UTC",
+      "dailyReset": "00:00",
+      "icon": "starseed-asnia-trigger"
+    },
+    {
+      "game": "Stella Sora",
+      "server": "Global",
+      "timezone": "Etc/GMT+7",
+      "dailyReset": "13:00",
+      "icon": "stella-sora"
+    },
+    {
+      "game": "Strinova",
+      "server": "Global",
+      "timezone": "Etc/UTC",
+      "dailyReset": "07:00",
+      "icon": "strinova"
     },
     {
       "game": "Summoners War",
@@ -1892,6 +2040,13 @@
       "menuName": "THE iDOLM@STER ML! TD"
     },
     {
+      "game": "The Legend of Neverland",
+      "server": "Global",
+      "timezone": "Etc/GMT+7",
+      "dailyReset": "04:00",
+      "icon": "the-legend-of-neverland"
+    },
+    {
       "game": "The Seven Deadly Sins: Grand Cross",
       "server": "Global",
       "timezone": "Etc/GMT+7",
@@ -1927,11 +2082,18 @@
       "icon": "tokyo-afterschool-summoners"
     },
     {
-      "game": "Tokyo NECRO: SUICIDE MISSION",
-      "server": "JP",
+      "game": "Tokyo Debunker",
+      "server": "Global",
       "timezone": "Asia/Tokyo",
-      "dailyReset": "04:00",
-      "icon": "tokyo-necro-suicide-mission"
+      "dailyReset": "00:00",
+      "icon": "tokyo-debunker"
+    },
+    {
+      "game": "Tom Clancy's The Division 2",
+      "server": "Global",
+      "timezone": "Etc/UTC",
+      "dailyReset": "00:00",
+      "icon": "the-division-2"
     },
     {
       "game": "Toontown Rewritten",
@@ -1948,11 +2110,25 @@
       "icon": "toram-online"
     },
     {
+      "game": "Touhou Gensou Eclipse",
+      "server": "JP",
+      "timezone": "Asia/Tokyo",
+      "dailyReset": "05:00",
+      "icon": "touhou-gensou-eclipse"
+    },
+    {
       "game": "Touhou LostWord",
       "server": "Global",
       "timezone": "Etc/UTC",
       "dailyReset": "00:00",
       "icon": "touhou-lost-word"
+    },
+    {
+      "game": "Touken Ranbu ONLINE",
+      "server": "JP",
+      "timezone": "Asia/Tokyo",
+      "dailyReset": "05:00",
+      "icon": "touken-ranbu-online"
     },
     {
       "game": "Tower of Fantasy",
@@ -1990,18 +2166,18 @@
       "icon": "tower-of-god-new-world"
     },
     {
-      "game": "Tower of God: The Great Journey",
-      "server": "KR",
-      "timezone": "Asia/Seoul",
-      "dailyReset": "00:00",
-      "icon": "tower-of-god-tgj"
-    },
-    {
       "game": "Tower of Saviors",
       "server": "CN & EN",
       "timezone": "Etc/GMT-8",
       "dailyReset": "00:00",
       "icon": "tower-of-saviors"
+    },
+    {
+      "game": "Trickcal: Chibi Go",
+      "server": "Global",
+      "timezone": "Etc/GMT-9",
+      "dailyReset": "04:00",
+      "icon": "trickcal-chibi-go"
     },
     {
       "game": "Ulala: Idle Adventure",
@@ -2011,10 +2187,17 @@
       "icon": "ulala-idle-adventure"
     },
     {
-      "game": "Uma Musume Pretty Derby",
+      "game": "Umamusume: Pretty Derby",
       "server": "JP",
       "timezone": "Asia/Tokyo",
       "dailyReset": "05:00",
+      "icon": "uma-musume-pretty-derby"
+    },
+    {
+      "game": "Umamusume: Pretty Derby",
+      "server": "Global",
+      "timezone": "Etc/UTC",
+      "dailyReset": "15:00",
       "icon": "uma-musume-pretty-derby"
     },
     {
@@ -2025,13 +2208,6 @@
       "icon": "valkyrie-connect"
     },
     {
-      "game": "Vanguard ZERO",
-      "server": "EN",
-      "timezone": "America/Los_Angeles",
-      "dailyReset": "00:00",
-      "icon": "vanguard-zero"
-    },
-    {
       "game": "Vikingard",
       "server": "America",
       "timezone": "Etc/GMT+6",
@@ -2040,9 +2216,9 @@
     },
     {
       "game": "WAR OF THE VISIONS FINAL FANTASY BRAVE EXVIUS",
-      "server": "Global",
-      "timezone": "America/Los_Angeles",
-      "dailyReset": "00:00",
+      "server": "JP",
+      "timezone": "Asia/Tokyo",
+      "dailyReset": "05:00",
       "icon": "war-of-the-visions-ffbe"
     },
     {
@@ -2067,6 +2243,20 @@
       "icon": "what-in-hell-is-bad"
     },
     {
+      "game": "Where Winds Meet",
+      "server": "Global",
+      "timezone": "Etc/UTC",
+      "dailyReset": "21:00",
+      "icon": "where-winds-meet"
+    },
+    {
+      "game": "Wizardry Variants Daphne",
+      "server": "Global",
+      "timezone": "Asia/Tokyo",
+      "dailyReset": "00:00",
+      "icon": "wizardry-variants-daphne"
+    },
+    {
       "game": "World Dai Star: Yume no Stellarium",
       "server": "JP",
       "timezone": "Asia/Tokyo",
@@ -2074,18 +2264,20 @@
       "icon": "world-dai-star"
     },
     {
-      "game": "World Flipper",
-      "server": "Global",
-      "timezone": "Etc/UTC",
-      "dailyReset": "20:00",
-      "icon": "world-flipper"
+      "game": "World of Warcraft",
+      "server": "Americas & Oceania",
+      "timezone": "America/Los_Angeles",
+      "dailyReset": "15:00",
+      "icon": "world-of-warcraft",
+      "utcDailyReset": true
     },
     {
-      "game": "World Flipper",
-      "server": "JP",
-      "timezone": "Asia/Tokyo",
-      "dailyReset": "05:00",
-      "icon": "world-flipper"
+      "game": "World of Warcraft",
+      "server": "Europe",
+      "timezone": "Europe/Brussels",
+      "dailyReset": "04:00",
+      "icon": "world-of-warcraft",
+      "utcDailyReset": true
     },
     {
       "game": "Wuthering Waves",
@@ -2123,6 +2315,13 @@
       "icon": "yu-gi-oh-duel-links"
     },
     {
+      "game": "Yu-Gi-Oh! Master Duel",
+      "server": "Global",
+      "timezone": "Asia/Tokyo",
+      "dailyReset": "03:00",
+      "icon": "yu-gi-oh-master-duel"
+    },
+    {
       "game": "Zenless Zone Zero",
       "server": "America",
       "timezone": "Etc/GMT+5",
@@ -2142,6 +2341,13 @@
       "timezone": "Etc/GMT-1",
       "dailyReset": "04:00",
       "icon": "zenless-zone-zero"
+    },
+    {
+      "game": "Zerowake GATES",
+      "server": "NA",
+      "timezone": "Asia/Seoul",
+      "dailyReset": "09:00",
+      "icon": "zerowake-gates"
     }
   ]
 }

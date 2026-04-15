@@ -84,6 +84,14 @@ loginRouter.post('/login', async (req: Request, res: Response) => {
             return res.status(400).json({ error: 'Email and password are required' });
         }
 
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({
+                error: 'Email format is invalid'
+            });
+        }
+
         // Find user
         const result = await database.query(
             'SELECT id, username, email, password_hash, timezone, role FROM users WHERE email = $1',

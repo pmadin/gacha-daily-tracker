@@ -82,7 +82,7 @@ class AutoImportService {
                         game.timezone,
                         game.dailyReset,
                         game.icon,
-                        'auto-import-backup',
+                        'game-time-master',
                         backup.lastUpdated
                     ]);
 

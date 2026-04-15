@@ -2,6 +2,7 @@ import express, { Router } from 'express';
 import database from '../../config/database';
 import { authenticateToken } from '../../middleware/auth';
 import gameDataService from "../../services/gameDataService";
+import TimezoneService from '../../services/timezoneService';
 
 const updateRouter: Router = express.Router();
 
@@ -150,9 +151,14 @@ updateRouter.patch('/games/:id', async (req, res) => {
         }
 
         if (timezone) {
+            const normalizedTimezone = TimezoneService.normalizeTimezone(timezone);
+
             updateFields.push(`timezone = $${paramIndex}`);
-            updateValues.push(timezone);
+            updateValues.push(normalizedTimezone);
             paramIndex++;
+
+            // Store for audit log later
+            req.body._normalizedTimezone = normalizedTimezone;
         }
 
         // Handle is_active explicitly - check for both boolean and string values
@@ -633,10 +639,10 @@ updateRouter.delete('/delete/game/:id', async (req, res) => {
  */
 updateRouter.post('/games/import', async (req, res) => {
     try {
-        const { forceRefresh = false } = req.body;
+        const { forceRefresh = false, fullReset = false } = req.body;
         const user = req.user!; // From auth middleware
 
-        console.log(`🔄 Starting optimized game data import by ${user.username}...`);
+        console.log(`🔄 Starting optimized game data import by ${user.username}... (fullReset: ${fullReset})`);
 
         // Check if this is first-time setup (empty database)
         const existingGamesResult = await database.query(
@@ -653,7 +659,7 @@ updateRouter.post('/games/import', async (req, res) => {
         console.log(`📊 Processing ${gameData.length} games with bulk insert...`);
 
         // For bulk insert, we need to track changes differently
-        // First, get current games to compare
+        // First, get current games to compare (only game-time-master source for counting)
         const currentGamesResult = await database.query(`
             SELECT name, server FROM games WHERE source = 'game-time-master'
         `);
@@ -681,12 +687,21 @@ updateRouter.post('/games/import', async (req, res) => {
         try {
             await client.query('BEGIN');
 
-            // Clear existing game-time-master data first (to handle deletions)
-            await client.query(`
-                UPDATE games 
-                SET is_active = false 
-                WHERE source = 'game-time-master'
-            `);
+            if (fullReset) {
+                // Deactivate ALL games regardless of source, giving a clean baseline
+                console.log('🧹 Full reset: deactivating all games before import...');
+                await client.query(`UPDATE games SET is_active = false`);
+                // All games are now inactive, so everything from source counts as new
+                imported = gameData.length;
+                updated = 0;
+            } else {
+                // Normal mode: only deactivate game-time-master source games
+                await client.query(`
+                    UPDATE games
+                    SET is_active = false
+                    WHERE source = 'game-time-master'
+                `);
+            }
 
             // Prepare bulk insert values with parameterized queries for safety
             const values: any[] = [];
@@ -737,7 +752,7 @@ updateRouter.post('/games/import', async (req, res) => {
             source: forceRefresh ? 'external' : 'cache/backup',
             timestamp: new Date().toISOString(),
             imported_by: user.username,
-            method: 'bulk_insert'
+            method: fullReset ? 'full_reset_bulk_insert' : 'bulk_insert'
         };
 
         // Determine appropriate status code and message
