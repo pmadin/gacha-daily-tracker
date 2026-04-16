@@ -1,662 +1,788 @@
 {
-	"info": {
-		"name": "Test Auth Edge Cases",
-		"description": "Edge case tests for registration and login validation",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-	},
-	"item": [
-		{
-			"name": "Registration Edge Cases",
-			"item": [
-				{
-					"name": "Test Register - Duplicate Username",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"// Use existing username",
-									"const timestamp = Date.now();",
-									"pm.request.body.raw = JSON.stringify({",
-									"    username: pm.globals.get('test_username') || 'test_user_1754082456666',",
-									"    email: `unique${timestamp}@example.com`,",
-									"    password: 'MySecure123!Pass',",
-									"    confirmPassword: 'MySecure123!Pass',",
-									"    registrationToken: 'e6b1228b6525d690bfc64ab355db000c1d9a49d921c97bbb9166a627d200c66437d2dfd53f2ea1d3ae2e173593732935c11b9418507a79fb6f39864ba6b83fc6'",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Should reject duplicate username",
-									"pm.test(\"Should return 400 for duplicate username\", () => {",
-									"    pm.response.to.have.status(400);",
-									"});",
-									"",
-									"// Test 2: Error message validation",
-									"pm.test(\"Error message should indicate username already exists\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('error');",
-									"    pm.expect(response.error).to.match(/username.*already.*exists|taken/i);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/auth/register",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "auth", "register"]
-						}
-					}
-				},
-				{
-					"name": "Test Register - Duplicate Email",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"// Use existing email",
-									"const timestamp = Date.now();",
-									"pm.request.body.raw = JSON.stringify({",
-									"    username: `unique_user_${timestamp}`,",
-									"    email: pm.globals.get('test_email') || 'test@example.com',",
-									"    password: 'MySecure123!Pass',",
-									"    confirmPassword: 'MySecure123!Pass',",
-									"    registrationToken: 'e6b1228b6525d690bfc64ab355db000c1d9a49d921c97bbb9166a627d200c66437d2dfd53f2ea1d3ae2e173593732935c11b9418507a79fb6f39864ba6b83fc6'",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Should reject duplicate email",
-									"pm.test(\"Should return 400 for duplicate email\", () => {",
-									"    pm.response.to.have.status(400);",
-									"});",
-									"",
-									"// Test 2: Error message validation",
-									"pm.test(\"Error message should indicate email already exists\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('error');",
-									"    pm.expect(response.error).to.match(/email.*already.*exists|use/i);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/auth/register",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "auth", "register"]
-						}
-					}
-				},
-				{
-					"name": "Test Register - Invalid Email Format",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"pm.request.body.raw = JSON.stringify({",
-									"    username: 'test_invalid_email',",
-									"    email: 'not-a-valid-email',",
-									"    password: 'MySecure123!Pass',",
-									"    confirmPassword: 'MySecure123!Pass',",
-									"    registrationToken: 'e6b1228b6525d690bfc64ab355db000c1d9a49d921c97bbb9166a627d200c66437d2dfd53f2ea1d3ae2e173593732935c11b9418507a79fb6f39864ba6b83fc6'",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Should reject invalid email",
-									"pm.test(\"Should return 400 for invalid email format\", () => {",
-									"    pm.response.to.have.status(400);",
-									"});",
-									"",
-									"// Test 2: Error message validation",
-									"pm.test(\"Error message should indicate invalid email\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('error');",
-									"    pm.expect(response.error).to.match(/email.*invalid|valid.*email/i);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/auth/register",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "auth", "register"]
-						}
-					}
-				},
-				{
-					"name": "Test Register - Weak Password",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"const timestamp = Date.now();",
-									"pm.request.body.raw = JSON.stringify({",
-									"    username: `weak_pass_${timestamp}`,",
-									"    email: `weakpass${timestamp}@example.com`,",
-									"    password: '123',",
-									"    confirmPassword: '123',",
-									"    registrationToken: 'e6b1228b6525d690bfc64ab355db000c1d9a49d921c97bbb9166a627d200c66437d2dfd53f2ea1d3ae2e173593732935c11b9418507a79fb6f39864ba6b83fc6'",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Should reject weak password",
-									"pm.test(\"Should return 400 for weak password\", () => {",
-									"    pm.response.to.have.status(400);",
-									"});",
-									"",
-									"// Test 2: Error message validation",
-									"pm.test(\"Error message should indicate password requirements\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('error');",
-									"    pm.expect(response.error).to.match(/password.*strong|minimum|requirements/i);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/auth/register",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "auth", "register"]
-						}
-					}
-				},
-				{
-					"name": "Test Register - Password Mismatch",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"const timestamp = Date.now();",
-									"pm.request.body.raw = JSON.stringify({",
-									"    username: `mismatch_${timestamp}`,",
-									"    email: `mismatch${timestamp}@example.com`,",
-									"    password: 'MySecure123!Pass',",
-									"    confirmPassword: 'DifferentPassword456!',",
-									"    registrationToken: 'e6b1228b6525d690bfc64ab355db000c1d9a49d921c97bbb9166a627d200c66437d2dfd53f2ea1d3ae2e173593732935c11b9418507a79fb6f39864ba6b83fc6'",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Should reject password mismatch",
-									"pm.test(\"Should return 400 for password mismatch\", () => {",
-									"    pm.response.to.have.status(400);",
-									"});",
-									"",
-									"// Test 2: Error message validation",
-									"pm.test(\"Error message should indicate passwords don't match\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('error');",
-									"    pm.expect(response.error).to.match(/password.*match/i);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/auth/register",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "auth", "register"]
-						}
-					}
-				},
-				{
-					"name": "Test Register - Missing Required Fields",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"// Missing password and confirmPassword",
-									"pm.request.body.raw = JSON.stringify({",
-									"    username: 'test_missing_fields',",
-									"    email: 'missing@example.com',",
-									"    registrationToken: 'e6b1228b6525d690bfc64ab355db000c1d9a49d921c97bbb9166a627d200c66437d2dfd53f2ea1d3ae2e173593732935c11b9418507a79fb6f39864ba6b83fc6'",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Should reject missing fields",
-									"pm.test(\"Should return 400 for missing required fields\", () => {",
-									"    pm.response.to.have.status(400);",
-									"});",
-									"",
-									"// Test 2: Error message validation",
-									"pm.test(\"Error message should indicate required fields\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('error');",
-									"    pm.expect(response.error).to.match(/required|password/i);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/auth/register",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "auth", "register"]
-						}
-					}
-				},
-				{
-					"name": "Test Register - Invalid Timezone (Auto-Corrected)",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"const timestamp = Date.now();",
-									"pm.request.body.raw = JSON.stringify({",
-									"    username: `invalid_tz_${timestamp}`,",
-									"    email: `invalidtz${timestamp}@example.com`,",
-									"    password: 'MySecure123!Pass',",
-									"    confirmPassword: 'MySecure123!Pass',",
-									"    timezone: 'InvalidTest/Timezone',",
-									"    registrationToken: 'e6b1228b6525d690bfc64ab355db000c1d9a49d921c97bbb9166a627d200c66437d2dfd53f2ea1d3ae2e173593732935c11b9418507a79fb6f39864ba6b83fc6'",
-									"});",
-									"",
-									"// Store username for potential cleanup",
-									"pm.collectionVariables.set('last_created_user', `invalid_tz_${timestamp}`);"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Registration succeeds with auto-corrected timezone",
-									"pm.test(\"Registration should succeed with fallback timezone (200 or 201)\", () => {",
-									"    const validCodes = [200, 201];",
-									"    pm.expect(validCodes).to.include(pm.response.code);",
-									"    console.log('✓ API accepts registration with invalid timezone (uses fallback)');",
-									"});",
-									"",
-									"// Test 2: Timezone auto-corrected to default",
-									"pm.test(\"Invalid timezone should be auto-corrected to America/Los_Angeles\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('user');",
-									"    pm.expect(response.user).to.have.property('timezone');",
-									"    pm.expect(response.user.timezone).to.equal('America/Los_Angeles');",
-									"    console.log('✓ Timezone auto-corrected: InvalidTest/Timezone → America/Los_Angeles');",
-									"});",
-									"",
-									"// Test 3: User created with correct data",
-									"pm.test(\"User should be created with other fields intact\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response.user).to.have.property('username');",
-									"    pm.expect(response.user).to.have.property('email');",
-									"    pm.expect(response.user.username).to.include('invalid_tz_');",
-									"});",
-									"",
-									"// Test 4: detected_timezone should be false (user provided timezone)",
-									"pm.test(\"Detected timezone flag should be false\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response.user).to.have.property('detected_timezone');",
-									"    pm.expect(response.user.detected_timezone).to.be.false;",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/auth/register",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "auth", "register"]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "Login Edge Cases",
-			"item": [
-				{
-					"name": "Test Login - Non-Existent User",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"pm.request.body.raw = JSON.stringify({",
-									"    email: 'nonexistent@example.com',",
-									"    password: 'SomePassword123!'",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Should return 401 for non-existent user",
-									"pm.test(\"Should return 401 for non-existent user\", () => {",
-									"    pm.response.to.have.status(401);",
-									"});",
-									"",
-									"// Test 2: Generic error message (security)",
-									"pm.test(\"Error message should be generic for security\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('error');",
-									"    pm.expect(response.error).to.equal('Invalid email or password');",
-									"    console.log('✓ Generic error message prevents user enumeration');",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/auth/login",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "auth", "login"]
-						}
-					}
-				},
-				{
-					"name": "Test Login - Invalid Email Format",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"pm.request.body.raw = JSON.stringify({",
-									"    email: 'not-an-email',",
-									"    password: 'SomePassword123!'",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Should return 400 for invalid email format",
-									"pm.test(\"Should return 400 for invalid email format\", () => {",
-									"    pm.response.to.have.status(400);",
-									"});",
-									"",
-									"// Test 2: Error message validation",
-									"pm.test(\"Error message should indicate invalid email\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('error');",
-									"    pm.expect(response.error).to.match(/email.*invalid|valid.*email/i);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/auth/login",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "auth", "login"]
-						}
-					}
-				},
-				{
-					"name": "Test Login - Missing Password",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"pm.request.body.raw = JSON.stringify({",
-									"    email: 'test@example.com'",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Should return 400 for missing password",
-									"pm.test(\"Should return 400 for missing password\", () => {",
-									"    pm.response.to.have.status(400);",
-									"});",
-									"",
-									"// Test 2: Error message validation",
-									"pm.test(\"Error message should indicate required field\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('error');",
-									"    pm.expect(response.error).to.match(/password.*required/i);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/auth/login",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "auth", "login"]
-						}
-					}
-				},
-				{
-					"name": "Test Login - Empty Credentials",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"pm.request.body.raw = JSON.stringify({",
-									"    email: '',",
-									"    password: ''",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Should return 400 for empty credentials",
-									"pm.test(\"Should return 400 for empty credentials\", () => {",
-									"    pm.response.to.have.status(400);",
-									"});",
-									"",
-									"// Test 2: Error message validation",
-									"pm.test(\"Error message should indicate required fields\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('error');",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/auth/login",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "auth", "login"]
-						}
-					}
-				}
-			]
-		}
-	]
+  "info": {
+    "_postman_id": "5250dacc-2762-4533-a3db-fa6f0bc17e80",
+    "name": "Test Auth Edge Cases",
+    "description": "Edge case tests for registration and login validation",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "44170125",
+    "_collection_link": "https://go.postman.co/collection/44170125-5250dacc-2762-4533-a3db-fa6f0bc17e80?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Registration Edge Cases",
+      "item": [
+        {
+          "name": "Test Register - Duplicate Username",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const timestamp = Date.now();",
+                  "const testUsername = `ci_dup_user_${timestamp}`;",
+                  "const testEmail = `ci_setup_${timestamp}@example.com`;",
+                  "const regToken = 'e6b1228b6525d690bfc64ab355db000c1d9a49d921c97bbb9166a627d200c66437d2dfd53f2ea1d3ae2e173593732935c11b9418507a79fb6f39864ba6b83fc6';",
+                  "const baseUrl = pm.environment.get(\"base_url\") || \"http://localhost:4000\";",
+                  "",
+                  "// Create the user first so we can test duplicate username",
+                  "pm.sendRequest({",
+                  "    url: baseUrl + \"/gdt/auth/register\",",
+                  "    method: \"POST\",",
+                  "    header: { \"Content-Type\": \"application/json\" },",
+                  "    body: {",
+                  "        mode: \"raw\",",
+                  "        raw: JSON.stringify({",
+                  "            username: testUsername,",
+                  "            email: testEmail,",
+                  "            password: \"MySecure123!Pass\",",
+                  "            confirmPassword: \"MySecure123!Pass\",",
+                  "            registrationToken: regToken",
+                  "        })",
+                  "    }",
+                  "}, (err, res) => {",
+                  "    console.log(\"Setup: created user\", testUsername, \"status:\", res ? res.code : err);",
+                  "    // Now set main request body to use duplicate username with different email",
+                  "    pm.request.body.raw = JSON.stringify({",
+                  "        username: testUsername,",
+                  "        email: `unique_${timestamp}@example.com`,",
+                  "        password: \"MySecure123!Pass\",",
+                  "        confirmPassword: \"MySecure123!Pass\",",
+                  "        registrationToken: regToken",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Should reject duplicate username",
+                  "pm.test(\"Should return 400 for duplicate username\", () => {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "// Test 2: Error message validation",
+                  "pm.test(\"Error message should indicate username already exists\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('error');",
+                  "    pm.expect(response.error).to.match(/username.*already.*exists|taken/i);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Register - Duplicate Email",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const timestamp = Date.now();",
+                  "const testUsername = `ci_dup_email_user_${timestamp}`;",
+                  "const testEmail = `ci_dup_email_${timestamp}@example.com`;",
+                  "const regToken = 'e6b1228b6525d690bfc64ab355db000c1d9a49d921c97bbb9166a627d200c66437d2dfd53f2ea1d3ae2e173593732935c11b9418507a79fb6f39864ba6b83fc6';",
+                  "const baseUrl = pm.environment.get(\"base_url\") || \"http://localhost:4000\";",
+                  "",
+                  "// Create the user first so we can test duplicate email",
+                  "pm.sendRequest({",
+                  "    url: baseUrl + \"/gdt/auth/register\",",
+                  "    method: \"POST\",",
+                  "    header: { \"Content-Type\": \"application/json\" },",
+                  "    body: {",
+                  "        mode: \"raw\",",
+                  "        raw: JSON.stringify({",
+                  "            username: testUsername,",
+                  "            email: testEmail,",
+                  "            password: \"MySecure123!Pass\",",
+                  "            confirmPassword: \"MySecure123!Pass\",",
+                  "            registrationToken: regToken",
+                  "        })",
+                  "    }",
+                  "}, (err, res) => {",
+                  "    console.log(\"Setup: created user with email\", testEmail, \"status:\", res ? res.code : err);",
+                  "    // Now set main request body to use duplicate email with different username",
+                  "    pm.request.body.raw = JSON.stringify({",
+                  "        username: `unique_user_${timestamp}`,",
+                  "        email: testEmail,",
+                  "        password: \"MySecure123!Pass\",",
+                  "        confirmPassword: \"MySecure123!Pass\",",
+                  "        registrationToken: regToken",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Should reject duplicate email",
+                  "pm.test(\"Should return 400 for duplicate email\", () => {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "// Test 2: Error message validation",
+                  "pm.test(\"Error message should indicate email already exists\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('error');",
+                  "    pm.expect(response.error).to.match(/email.*already.*exists|use/i);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Register - Invalid Email Format",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.request.body.raw = JSON.stringify({",
+                  "    username: 'test_invalid_email',",
+                  "    email: 'not-a-valid-email',",
+                  "    password: 'MySecure123!Pass',",
+                  "    confirmPassword: 'MySecure123!Pass',",
+                  "    registrationToken: 'e6b1228b6525d690bfc64ab355db000c1d9a49d921c97bbb9166a627d200c66437d2dfd53f2ea1d3ae2e173593732935c11b9418507a79fb6f39864ba6b83fc6'",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Should reject invalid email",
+                  "pm.test(\"Should return 400 for invalid email format\", () => {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "// Test 2: Error message validation",
+                  "pm.test(\"Error message should indicate invalid email\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('error');",
+                  "    pm.expect(response.error).to.match(/email.*invalid|valid.*email/i);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Register - Weak Password",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const timestamp = Date.now();",
+                  "pm.request.body.raw = JSON.stringify({",
+                  "    username: `weak_pass_${timestamp}`,",
+                  "    email: `weakpass${timestamp}@example.com`,",
+                  "    password: '123',",
+                  "    confirmPassword: '123',",
+                  "    registrationToken: 'e6b1228b6525d690bfc64ab355db000c1d9a49d921c97bbb9166a627d200c66437d2dfd53f2ea1d3ae2e173593732935c11b9418507a79fb6f39864ba6b83fc6'",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Should reject weak password",
+                  "pm.test(\"Should return 400 for weak password\", () => {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "// Test 2: Error message validation",
+                  "pm.test(\"Error message should indicate password requirements\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('error');",
+                  "    pm.expect(response.error).to.match(/password.*(strong|minimum|requirements|at least|characters)/i);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Register - Password Mismatch",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const timestamp = Date.now();",
+                  "pm.request.body.raw = JSON.stringify({",
+                  "    username: `mismatch_${timestamp}`,",
+                  "    email: `mismatch${timestamp}@example.com`,",
+                  "    password: 'MySecure123!Pass',",
+                  "    confirmPassword: 'DifferentPassword456!',",
+                  "    registrationToken: 'e6b1228b6525d690bfc64ab355db000c1d9a49d921c97bbb9166a627d200c66437d2dfd53f2ea1d3ae2e173593732935c11b9418507a79fb6f39864ba6b83fc6'",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Should reject password mismatch",
+                  "pm.test(\"Should return 400 for password mismatch\", () => {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "// Test 2: Error message validation",
+                  "pm.test(\"Error message should indicate passwords don't match\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('error');",
+                  "    pm.expect(response.error).to.match(/password.*match/i);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Register - Missing Required Fields",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Missing password and confirmPassword",
+                  "pm.request.body.raw = JSON.stringify({",
+                  "    username: 'test_missing_fields',",
+                  "    email: 'missing@example.com',",
+                  "    registrationToken: 'e6b1228b6525d690bfc64ab355db000c1d9a49d921c97bbb9166a627d200c66437d2dfd53f2ea1d3ae2e173593732935c11b9418507a79fb6f39864ba6b83fc6'",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Should reject missing fields",
+                  "pm.test(\"Should return 400 for missing required fields\", () => {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "// Test 2: Error message validation",
+                  "pm.test(\"Error message should indicate required fields\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('error');",
+                  "    pm.expect(response.error).to.match(/required|password/i);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Register - Invalid Timezone (Auto-Corrected)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const timestamp = Date.now();",
+                  "pm.request.body.raw = JSON.stringify({",
+                  "    username: `invalid_tz_${timestamp}`,",
+                  "    email: `invalidtz${timestamp}@example.com`,",
+                  "    password: 'MySecure123!Pass',",
+                  "    confirmPassword: 'MySecure123!Pass',",
+                  "    timezone: 'InvalidTest/Timezone',",
+                  "    registrationToken: 'e6b1228b6525d690bfc64ab355db000c1d9a49d921c97bbb9166a627d200c66437d2dfd53f2ea1d3ae2e173593732935c11b9418507a79fb6f39864ba6b83fc6'",
+                  "});",
+                  "",
+                  "// Store username for potential cleanup",
+                  "pm.collectionVariables.set('last_created_user', `invalid_tz_${timestamp}`);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Registration succeeds with auto-corrected timezone",
+                  "pm.test(\"Registration should succeed with fallback timezone (200 or 201)\", () => {",
+                  "    const validCodes = [200, 201];",
+                  "    pm.expect(validCodes).to.include(pm.response.code);",
+                  "    console.log('✓ API accepts registration with invalid timezone (uses fallback)');",
+                  "});",
+                  "",
+                  "// Test 2: Timezone auto-corrected to default",
+                  "pm.test(\"Invalid timezone should be auto-corrected to America/Los_Angeles\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('user');",
+                  "    pm.expect(response.user).to.have.property('timezone');",
+                  "    pm.expect(response.user.timezone).to.equal('America/Los_Angeles');",
+                  "    console.log('✓ Timezone auto-corrected: InvalidTest/Timezone → America/Los_Angeles');",
+                  "});",
+                  "",
+                  "// Test 3: User created with correct data",
+                  "pm.test(\"User should be created with other fields intact\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.user).to.have.property('username');",
+                  "    pm.expect(response.user).to.have.property('email');",
+                  "    pm.expect(response.user.username).to.include('invalid_tz_');",
+                  "});",
+                  "",
+                  "// Test 4: detected_timezone should be false (user provided timezone)",
+                  "pm.test(\"Detected timezone flag should be false\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.user).to.have.property('detected_timezone');",
+                  "    pm.expect(response.user.detected_timezone).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Login Edge Cases",
+      "item": [
+        {
+          "name": "Test Login - Non-Existent User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.request.body.raw = JSON.stringify({",
+                  "    email: 'nonexistent@example.com',",
+                  "    password: 'SomePassword123!'",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Should return 401 for non-existent user",
+                  "pm.test(\"Should return 401 for non-existent user\", () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "// Test 2: Generic error message (security)",
+                  "pm.test(\"Error message should be generic for security\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('error');",
+                  "    pm.expect(response.error).to.equal('Invalid email or password');",
+                  "    console.log('✓ Generic error message prevents user enumeration');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Login - Invalid Email Format",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.request.body.raw = JSON.stringify({",
+                  "    email: 'not-an-email',",
+                  "    password: 'SomePassword123!'",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Should return 400 for invalid email format",
+                  "pm.test(\"Should return 400 for invalid email format\", () => {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "// Test 2: Error message validation",
+                  "pm.test(\"Error message should indicate invalid email\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('error');",
+                  "    pm.expect(response.error).to.match(/email.*invalid|valid.*email/i);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Login - Missing Password",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.request.body.raw = JSON.stringify({",
+                  "    email: 'test@example.com'",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Should return 400 for missing password",
+                  "pm.test(\"Should return 400 for missing password\", () => {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "// Test 2: Error message validation",
+                  "pm.test(\"Error message should indicate required field\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('error');",
+                  "    pm.expect(response.error).to.match(/password.*required/i);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Login - Empty Credentials",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.request.body.raw = JSON.stringify({",
+                  "    email: '',",
+                  "    password: ''",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Should return 400 for empty credentials",
+                  "pm.test(\"Should return 400 for empty credentials\", () => {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "// Test 2: Error message validation",
+                  "pm.test(\"Error message should indicate required fields\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('error');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
 }

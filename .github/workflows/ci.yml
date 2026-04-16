@@ -1,0 +1,93 @@
+name: CI
+
+# Runs on every push to dev or main, and on PRs targeting main
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    # Spin up a local Postgres alongside the test runner
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: gacha_tracker
+          POSTGRES_USER: developer
+          POSTGRES_PASSWORD: devpassword
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Apply the database schema (same SQL file used by Docker locally)
+      - name: Apply database schema
+        env:
+          PGPASSWORD: devpassword
+        run: psql -h localhost -U developer -d gacha_tracker -f database/init/01-schema.sql
+
+      - name: Build TypeScript
+        run: npm run build
+
+      # Start the API in the background; auto-import will seed game data on startup
+      - name: Start API server
+        env:
+          DATABASE_URL: postgresql://developer:devpassword@localhost:5432/gacha_tracker
+          NODE_ENV: development
+          PORT: 4000
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          PASSWORD_PEPPER: ${{ secrets.PASSWORD_PEPPER }}
+          REGISTRATION_TOKEN: ${{ secrets.REGISTRATION_TOKEN }}
+          GAME_DATA_SOURCE_URL: https://raw.githubusercontent.com/cicerakes/Game-Time-Master/refs/heads/master/game-data.js
+          GAME_DATA_FALLBACK_PATH: ./data/game-data-backup.js
+        run: node dist/index.js &
+
+      # Poll the health endpoint until the API is ready (up to 30s)
+      - name: Wait for API to be ready
+        run: |
+          echo "Waiting for API..."
+          for i in {1..15}; do
+            if curl -sf http://localhost:4000/gdt/health > /dev/null; then
+              echo "API is ready!"
+              exit 0
+            fi
+            echo "Attempt $i — not ready yet, retrying in 2s..."
+            sleep 2
+          done
+          echo "API failed to start in time"
+          exit 1
+
+      - name: Install Newman
+        run: npm install -g newman
+
+      # --- Test Collections ---
+
+      - name: "Test: Public Endpoints (health, status, games)"
+        run: |
+          newman run "test/postman/Test Public Endpoints.postman_collection.json" \
+            --environment "test/postman/Local-gacha-daily-tracker.postman_environment.json" \
+            --reporters cli
+
+      - name: "Test: Auth Edge Cases (registration + login validation)"
+        run: |
+          newman run "test/postman/Test Auth Edge Cases.postman_collection.json" \
+            --environment "test/postman/Local-gacha-daily-tracker.postman_environment.json" \
+            --reporters cli
