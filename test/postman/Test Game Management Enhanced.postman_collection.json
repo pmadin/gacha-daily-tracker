@@ -1,528 +1,602 @@
 {
-	"info": {
-		"name": "Test Game Management Enhanced",
-		"description": "Additional game management tests for soft-delete, restore, and import scenarios",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-	},
-	"item": [
-		{
-			"name": "Soft Delete & Restore Tests",
-			"item": [
-				{
-					"name": "Test Soft Delete Game (is_active: false)",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"// Soft delete by setting is_active to false",
-									"pm.request.body.raw = JSON.stringify({",
-									"    is_active: false,",
-									"    reason: 'Testing soft delete functionality'",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Soft delete successful",
-									"pm.test(\"Should successfully soft delete game\", () => {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"// Test 2: Response indicates soft delete",
-									"pm.test(\"Response should indicate soft delete operation\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('operation');",
-									"    pm.expect(response.operation).to.match(/soft.*delete|deactivat/i);",
-									"});",
-									"",
-									"// Test 3: Game is_active is false",
-									"pm.test(\"Game should be marked as inactive\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response.game).to.have.property('is_active');",
-									"    pm.expect(response.game.is_active).to.be.false;",
-									"    console.log('✓ Game soft deleted (is_active = false)');",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/update/games/109",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "update", "games", "109"]
-						}
-					}
-				},
-				{
-					"name": "Test Restore Game (is_active: true)",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"// Restore by setting is_active to true",
-									"pm.request.body.raw = JSON.stringify({",
-									"    is_active: true,",
-									"    reason: 'Testing restore functionality'",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Restore successful",
-									"pm.test(\"Should successfully restore game\", () => {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"// Test 2: Response indicates restore",
-									"pm.test(\"Response should indicate restore operation\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('operation');",
-									"    pm.expect(response.operation).to.match(/restor/i);",
-									"});",
-									"",
-									"// Test 3: Game is_active is true",
-									"pm.test(\"Game should be marked as active\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response.game).to.have.property('is_active');",
-									"    pm.expect(response.game.is_active).to.be.true;",
-									"    console.log('✓ Game restored (is_active = true)');",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/update/games/109",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "update", "games", "109"]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "Delete Endpoint Tests",
-			"item": [
-				{
-					"name": "Test Delete Non-Existent Game",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"pm.request.body.raw = JSON.stringify({",
-									"    reason: 'Testing deletion of non-existent game',",
-									"    permanent: true",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Should return 404",
-									"pm.test(\"Should return 404 for non-existent game\", () => {",
-									"    pm.response.to.have.status(404);",
-									"});",
-									"",
-									"// Test 2: Error message validation",
-									"pm.test(\"Error message should indicate game not found\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('error');",
-									"    pm.expect(response.error).to.equal('Game not found');",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/update/delete/game/9999",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "update", "delete", "game", "9999"]
-						}
-					}
-				},
-				{
-					"name": "Test Delete Without Reason (Optional)",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"// Empty body or no reason",
-									"pm.request.body.raw = JSON.stringify({",
-									"    permanent: false",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Delete should work without reason (it's optional)",
-									"pm.test(\"Delete should work even without reason field\", () => {",
-									"    // Could be 200 if reason is optional, or 400 if required",
-									"    const validCodes = [200, 400];",
-									"    pm.expect(validCodes).to.include(pm.response.code);",
-									"});",
-									"",
-									"// Test 2: If successful, verify operation type",
-									"if (pm.response.code === 200) {",
-									"    pm.test(\"Should indicate deletion type\", () => {",
-									"        const response = pm.response.json();",
-									"        pm.expect(response).to.have.property('deletion_type');",
-									"    });",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/update/delete/game/240",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "update", "delete", "game", "240"]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "Import Tests",
-			"item": [
-				{
-					"name": "Test Import with Force Refresh",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"pm.request.body.raw = JSON.stringify({",
-									"    forceRefresh: true",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Import successful",
-									"pm.test(\"Import with force refresh should succeed\", () => {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"// Test 2: Response structure",
-									"pm.test(\"Response should contain import statistics\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('imported');",
-									"    pm.expect(response).to.have.property('updated');",
-									"    pm.expect(response).to.have.property('total');",
-									"    pm.expect(response).to.have.property('source');",
-									"});",
-									"",
-									"// Test 3: Source should be remote when forceRefresh is true",
-									"pm.test(\"Source should be remote with forceRefresh\", () => {",
-									"    const response = pm.response.json();",
-									"    // Source could be 'remote', 'github', or similar",
-									"    pm.expect(response.source).to.not.equal('cache/backup');",
-									"    console.log(`Import source: ${response.source}`);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/update/games/import",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "update", "games", "import"]
-						}
-					}
-				},
-				{
-					"name": "Test Import Without Auth",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"pm.request.body.raw = JSON.stringify({",
-									"    forceRefresh: false",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Should return 401 without authentication",
-									"pm.test(\"Should return 401 without JWT token\", () => {",
-									"    pm.response.to.have.status(401);",
-									"});",
-									"",
-									"// Test 2: Error message validation",
-									"pm.test(\"Error message should indicate authentication required\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('error');",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/update/games/import",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "update", "games", "import"]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "Update Validation Tests",
-			"item": [
-				{
-					"name": "Test Update - Invalid Timezone Format (Auto-Corrected)",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"pm.request.body.raw = JSON.stringify({",
-									"    timezone: 'NotAValidTimezone/Format',",
-									"    reason: 'Testing timezone auto-correction on game update'",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Update succeeds with auto-corrected timezone",
-									"pm.test(\"Game update should succeed with fallback timezone\", () => {",
-									"    pm.response.to.have.status(200);",
-									"    console.log('✓ API accepts game update with invalid timezone (uses fallback)');",
-									"});",
-									"",
-									"// Test 2: Timezone auto-corrected to default",
-									"pm.test(\"Invalid timezone should be auto-corrected to America/Los_Angeles\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('game');",
-									"    pm.expect(response.game).to.have.property('timezone');",
-									"    pm.expect(response.game.timezone).to.equal('America/Los_Angeles');",
-									"    console.log('✓ Game timezone auto-corrected: NotAValidTimezone/Format → America/Los_Angeles');",
-									"});",
-									"",
-									"// Test 3: Audit trail present",
-									"pm.test(\"Audit trail should show timezone change\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('changes_made');",
-									"    pm.expect(response.changes_made).to.have.property('timezone');",
-									"    console.log(`Change: ${response.changes_made.timezone}`);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/update/games/109",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "update", "games", "109"]
-						}
-					}
-				},
-				{
-					"name": "Test Update - Audit Trail Verification",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"pm.request.body.raw = JSON.stringify({",
-									"    daily_reset: '05:00',",
-									"    reason: 'Audit trail test - verifying logging'",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Update successful",
-									"pm.test(\"Update should be successful\", () => {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"// Test 2: Audit trail fields present",
-									"pm.test(\"Response should contain audit trail information\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('updated_by');",
-									"    pm.expect(response).to.have.property('update_reason');",
-									"    pm.expect(response).to.have.property('changes_made');",
-									"    ",
-									"    pm.expect(response.updated_by).to.be.a('string').and.not.be.empty;",
-									"    pm.expect(response.update_reason).to.equal('Audit trail test - verifying logging');",
-									"    ",
-									"    console.log(`✓ Audit trail: Updated by ${response.updated_by}`);",
-									"    console.log(`✓ Reason: ${response.update_reason}`);",
-									"});",
-									"",
-									"// Test 3: Changes tracked",
-									"pm.test(\"Changes should be tracked with before/after values\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response.changes_made).to.have.property('daily_reset');",
-									"    pm.expect(response.changes_made.daily_reset).to.include('→');",
-									"    console.log(`✓ Change: ${response.changes_made.daily_reset}`);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/update/games/109",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "update", "games", "109"]
-						}
-					}
-				}
-			]
-		}
-	],
-	"auth": {
-		"type": "bearer",
-		"bearer": [
-			{
-				"key": "token",
-				"value": "{{auth}}",
-				"type": "string"
-			}
-		]
-	}
+  "info": {
+    "_postman_id": "1cdd114d-3285-4bfe-9aa8-a2f3add21bcd",
+    "name": "Test Game Management Enhanced",
+    "description": "Additional game management tests for soft-delete, restore, and import scenarios",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "44170125",
+    "_collection_link": "https://go.postman.co/collection/44170125-1cdd114d-3285-4bfe-9aa8-a2f3add21bcd?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Soft Delete & Restore Tests",
+      "item": [
+        {
+          "name": "Test Soft Delete Game (is_active: false)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Soft delete by setting is_active to false",
+                  "pm.request.body.raw = JSON.stringify({",
+                  "    is_active: false,",
+                  "    reason: 'Testing soft delete functionality'",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Soft delete successful",
+                  "pm.test(\"Should successfully soft delete game\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Test 2: Response indicates soft delete",
+                  "pm.test(\"Response should indicate soft delete operation\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('operation');",
+                  "    pm.expect(response.operation).to.match(/soft.*delete|deactivat/i);",
+                  "});",
+                  "",
+                  "// Test 3: Game is_active is false",
+                  "pm.test(\"Game should be marked as inactive\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.game).to.have.property('is_active');",
+                  "    pm.expect(response.game.is_active).to.be.false;",
+                  "    console.log('✓ Game soft deleted (is_active = false)');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/update/games/109",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "update",
+                "games",
+                "109"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Restore Game (is_active: true)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Restore by setting is_active to true",
+                  "pm.request.body.raw = JSON.stringify({",
+                  "    is_active: true,",
+                  "    reason: 'Testing restore functionality'",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Restore successful",
+                  "pm.test(\"Should successfully restore game\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Test 2: Response indicates restore",
+                  "pm.test(\"Response should indicate restore operation\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('operation');",
+                  "    pm.expect(response.operation).to.match(/restor/i);",
+                  "});",
+                  "",
+                  "// Test 3: Game is_active is true",
+                  "pm.test(\"Game should be marked as active\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.game).to.have.property('is_active');",
+                  "    pm.expect(response.game.is_active).to.be.true;",
+                  "    console.log('✓ Game restored (is_active = true)');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/update/games/109",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "update",
+                "games",
+                "109"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Delete Endpoint Tests",
+      "item": [
+        {
+          "name": "Test Delete Non-Existent Game",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.request.body.raw = JSON.stringify({",
+                  "    reason: 'Testing deletion of non-existent game',",
+                  "    permanent: true",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Should return 404",
+                  "pm.test(\"Should return 404 for non-existent game\", () => {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "// Test 2: Error message validation",
+                  "pm.test(\"Error message should indicate game not found\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('error');",
+                  "    pm.expect(response.error).to.equal('Game not found');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/update/delete/game/9999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "update",
+                "delete",
+                "game",
+                "9999"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Delete Without Reason (Optional)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Empty body or no reason",
+                  "pm.request.body.raw = JSON.stringify({",
+                  "    permanent: false",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Delete should work without reason (it's optional)",
+                  "pm.test(\"Delete should work even without reason field\", () => {",
+                  "    // Could be 200 if reason is optional, or 400 if required",
+                  "    const validCodes = [200, 400];",
+                  "    pm.expect(validCodes).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "// Test 2: If successful, verify operation type",
+                  "if (pm.response.code === 200) {",
+                  "    pm.test(\"Should indicate deletion type\", () => {",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response).to.have.property('deletion_type');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/update/delete/game/240",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "update",
+                "delete",
+                "game",
+                "240"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Import Tests",
+      "item": [
+        {
+          "name": "Test Import with Force Refresh",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.request.body.raw = JSON.stringify({",
+                  "    forceRefresh: true,",
+                  "    fullReset: true",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Import successful",
+                  "pm.test(\"Import with force refresh should succeed\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Test 2: Response structure",
+                  "pm.test(\"Response should contain import statistics\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('imported');",
+                  "    pm.expect(response).to.have.property('updated');",
+                  "    pm.expect(response).to.have.property('total');",
+                  "    pm.expect(response).to.have.property('source');",
+                  "});",
+                  "",
+                  "// Test 3: Source should be remote when forceRefresh is true",
+                  "pm.test(\"Source should be remote with forceRefresh\", () => {",
+                  "    const response = pm.response.json();",
+                  "    // Source could be 'remote', 'github', or similar",
+                  "    pm.expect(response.source).to.not.equal('cache/backup');",
+                  "    console.log(`Import source: ${response.source}`);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/update/games/import",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "update",
+                "games",
+                "import"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Import Without Auth",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.request.body.raw = JSON.stringify({",
+                  "    forceRefresh: false",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Should return 401 without authentication",
+                  "pm.test(\"Should return 401 without JWT token\", () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "// Test 2: Error message validation",
+                  "pm.test(\"Error message should indicate authentication required\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('error');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/update/games/import",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "update",
+                "games",
+                "import"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Update Validation Tests",
+      "item": [
+        {
+          "name": "Test Update - Invalid Timezone Format (Auto-Corrected)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.request.body.raw = JSON.stringify({",
+                  "    timezone: 'NotAValidTimezone/Format',",
+                  "    reason: 'Testing timezone auto-correction on game update'",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Update succeeds with auto-corrected timezone",
+                  "pm.test(\"Game update should succeed with fallback timezone\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    console.log('✓ API accepts game update with invalid timezone (uses fallback)');",
+                  "});",
+                  "",
+                  "// Test 2: Timezone auto-corrected to default",
+                  "pm.test(\"Invalid timezone should be auto-corrected to America/Los_Angeles\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('game');",
+                  "    pm.expect(response.game).to.have.property('timezone');",
+                  "    pm.expect(response.game.timezone).to.equal('America/Los_Angeles');",
+                  "    console.log('✓ Game timezone auto-corrected: NotAValidTimezone/Format → America/Los_Angeles');",
+                  "});",
+                  "",
+                  "// Test 3: Audit trail present",
+                  "pm.test(\"Audit trail should show timezone change\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('changes_made');",
+                  "    pm.expect(response.changes_made).to.have.property('timezone');",
+                  "    console.log(`Change: ${response.changes_made.timezone}`);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/update/games/109",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "update",
+                "games",
+                "109"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Update - Audit Trail Verification",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.request.body.raw = JSON.stringify({",
+                  "    daily_reset: '05:00',",
+                  "    reason: 'Audit trail test - verifying logging'",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Update successful",
+                  "pm.test(\"Update should be successful\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Test 2: Audit trail fields present",
+                  "pm.test(\"Response should contain audit trail information\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('updated_by');",
+                  "    pm.expect(response).to.have.property('update_reason');",
+                  "    pm.expect(response).to.have.property('changes_made');",
+                  "    ",
+                  "    pm.expect(response.updated_by).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(response.update_reason).to.equal('Audit trail test - verifying logging');",
+                  "    ",
+                  "    console.log(`✓ Audit trail: Updated by ${response.updated_by}`);",
+                  "    console.log(`✓ Reason: ${response.update_reason}`);",
+                  "});",
+                  "",
+                  "// Test 3: Changes tracked",
+                  "pm.test(\"Changes should be tracked with before/after values\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.changes_made).to.have.property('daily_reset');",
+                  "    pm.expect(response.changes_made.daily_reset).to.include('→');",
+                  "    console.log(`✓ Change: ${response.changes_made.daily_reset}`);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/update/games/109",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "update",
+                "games",
+                "109"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth}}",
+        "type": "string"
+      }
+    ]
+  }
 }
