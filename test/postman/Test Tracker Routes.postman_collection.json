@@ -1,0 +1,502 @@
+{
+	"info": {
+		"_postman_id": "tracker-routes-001",
+		"name": "Test Tracker Routes",
+		"description": "Tests for /gdt/tracker/* endpoints. Uses {{regular_user_token}} (role 1 user). Runs in order: add → complete → unmark → bulk → cleanup. Game IDs 1, 2, 3 are assumed to exist after a game import.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{ "key": "game_id_1", "value": "1" },
+		{ "key": "game_id_2", "value": "2" },
+		{ "key": "game_id_3", "value": "3" }
+	],
+	"item": [
+		{
+			"name": "1. Get My Games (should be empty or existing list)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Returns 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test('Response has games array and total', function () {",
+							"    const json = pm.response.json();",
+							"    pm.expect(json).to.have.property('games').that.is.an('array');",
+							"    pm.expect(json).to.have.property('total').that.is.a('number');",
+							"    pm.expect(json.total).to.eql(json.games.length);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [{ "key": "Authorization", "value": "Bearer {{regular_user_token}}" }],
+				"url": { "raw": "{{base_url}}/gdt/tracker/games", "host": ["{{base_url}}"], "path": ["gdt", "tracker", "games"] }
+			}
+		},
+		{
+			"name": "2. Add Game to List",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Returns 201', function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"pm.test('Response has user_game and game info', function () {",
+							"    const json = pm.response.json();",
+							"    pm.expect(json).to.have.property('user_game');",
+							"    pm.expect(json).to.have.property('game');",
+							"    pm.expect(json.game.id).to.eql(parseInt(pm.collectionVariables.get('game_id_1')));",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [{ "key": "Authorization", "value": "Bearer {{regular_user_token}}" }],
+				"url": { "raw": "{{base_url}}/gdt/tracker/games/{{game_id_1}}", "host": ["{{base_url}}"], "path": ["gdt", "tracker", "games", "{{game_id_1}}"] }
+			}
+		},
+		{
+			"name": "3. Add Same Game Again (should be 409)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Returns 409 conflict', function () {",
+							"    pm.response.to.have.status(409);",
+							"});",
+							"pm.test('Error message mentions already tracking', function () {",
+							"    const json = pm.response.json();",
+							"    pm.expect(json.error).to.match(/already/i);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [{ "key": "Authorization", "value": "Bearer {{regular_user_token}}" }],
+				"url": { "raw": "{{base_url}}/gdt/tracker/games/{{game_id_1}}", "host": ["{{base_url}}"], "path": ["gdt", "tracker", "games", "{{game_id_1}}"] }
+			}
+		},
+		{
+			"name": "4. Add Non-Existent Game (should be 404)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Returns 404', function () {",
+							"    pm.response.to.have.status(404);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [{ "key": "Authorization", "value": "Bearer {{regular_user_token}}" }],
+				"url": { "raw": "{{base_url}}/gdt/tracker/games/99999", "host": ["{{base_url}}"], "path": ["gdt", "tracker", "games", "99999"] }
+			}
+		},
+		{
+			"name": "5. Verify Game in List (completed_today = false)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Returns 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test('Tracked game is in list with correct fields', function () {",
+							"    const json = pm.response.json();",
+							"    const gameId = parseInt(pm.collectionVariables.get('game_id_1'));",
+							"    const tracked = json.games.find(g => g.game_id === gameId);",
+							"    pm.expect(tracked).to.exist;",
+							"    pm.expect(tracked.completed_today).to.be.false;",
+							"    pm.expect(tracked).to.have.property('daily_reset');",
+							"    pm.expect(tracked).to.have.property('timezone');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [{ "key": "Authorization", "value": "Bearer {{regular_user_token}}" }],
+				"url": { "raw": "{{base_url}}/gdt/tracker/games", "host": ["{{base_url}}"], "path": ["gdt", "tracker", "games"] }
+			}
+		},
+		{
+			"name": "6. Mark Daily Complete",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Returns 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test('Response has date field', function () {",
+							"    const json = pm.response.json();",
+							"    pm.expect(json).to.have.property('date');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [{ "key": "Authorization", "value": "Bearer {{regular_user_token}}" }],
+				"url": { "raw": "{{base_url}}/gdt/tracker/games/{{game_id_1}}/complete", "host": ["{{base_url}}"], "path": ["gdt", "tracker", "games", "{{game_id_1}}", "complete"] }
+			}
+		},
+		{
+			"name": "7. Mark Complete Again (idempotent — should still be 200)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Returns 200 (idempotent)', function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [{ "key": "Authorization", "value": "Bearer {{regular_user_token}}" }],
+				"url": { "raw": "{{base_url}}/gdt/tracker/games/{{game_id_1}}/complete", "host": ["{{base_url}}"], "path": ["gdt", "tracker", "games", "{{game_id_1}}", "complete"] }
+			}
+		},
+		{
+			"name": "8. Mark Non-Tracked Game Complete (should be 404)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Returns 404', function () {",
+							"    pm.response.to.have.status(404);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [{ "key": "Authorization", "value": "Bearer {{regular_user_token}}" }],
+				"url": { "raw": "{{base_url}}/gdt/tracker/games/99999/complete", "host": ["{{base_url}}"], "path": ["gdt", "tracker", "games", "99999", "complete"] }
+			}
+		},
+		{
+			"name": "9. Verify completed_today = true",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Returns 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test('Game shows completed_today = true', function () {",
+							"    const json = pm.response.json();",
+							"    const gameId = parseInt(pm.collectionVariables.get('game_id_1'));",
+							"    const tracked = json.games.find(g => g.game_id === gameId);",
+							"    pm.expect(tracked).to.exist;",
+							"    pm.expect(tracked.completed_today).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [{ "key": "Authorization", "value": "Bearer {{regular_user_token}}" }],
+				"url": { "raw": "{{base_url}}/gdt/tracker/games", "host": ["{{base_url}}"], "path": ["gdt", "tracker", "games"] }
+			}
+		},
+		{
+			"name": "10. Unmark Daily",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Returns 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [{ "key": "Authorization", "value": "Bearer {{regular_user_token}}" }],
+				"url": { "raw": "{{base_url}}/gdt/tracker/games/{{game_id_1}}/complete", "host": ["{{base_url}}"], "path": ["gdt", "tracker", "games", "{{game_id_1}}", "complete"] }
+			}
+		},
+		{
+			"name": "11. Verify completed_today = false after unmark",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Returns 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test('Game shows completed_today = false', function () {",
+							"    const json = pm.response.json();",
+							"    const gameId = parseInt(pm.collectionVariables.get('game_id_1'));",
+							"    const tracked = json.games.find(g => g.game_id === gameId);",
+							"    pm.expect(tracked.completed_today).to.be.false;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [{ "key": "Authorization", "value": "Bearer {{regular_user_token}}" }],
+				"url": { "raw": "{{base_url}}/gdt/tracker/games", "host": ["{{base_url}}"], "path": ["gdt", "tracker", "games"] }
+			}
+		},
+		{
+			"name": "12. Bulk Add Games (2 valid + 1 invalid)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Returns 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test('added = 2, invalid_ids includes 99999', function () {",
+							"    const json = pm.response.json();",
+							"    pm.expect(json.added).to.eql(2);",
+							"    pm.expect(json.invalid_ids).to.include(99999);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Authorization", "value": "Bearer {{regular_user_token}}" },
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"gameIds\": [{{game_id_2}}, {{game_id_3}}, 99999]\n}"
+				},
+				"url": { "raw": "{{base_url}}/gdt/tracker/games/bulk", "host": ["{{base_url}}"], "path": ["gdt", "tracker", "games", "bulk"] }
+			}
+		},
+		{
+			"name": "13. Bulk Add with Empty Array (should be 400)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Returns 400', function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Authorization", "value": "Bearer {{regular_user_token}}" },
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": { "mode": "raw", "raw": "{\n\t\"gameIds\": []\n}" },
+				"url": { "raw": "{{base_url}}/gdt/tracker/games/bulk", "host": ["{{base_url}}"], "path": ["gdt", "tracker", "games", "bulk"] }
+			}
+		},
+		{
+			"name": "14. Verify 3 Games Now Tracked",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Returns 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test('Total is at least 3', function () {",
+							"    const json = pm.response.json();",
+							"    pm.expect(json.total).to.be.at.least(3);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [{ "key": "Authorization", "value": "Bearer {{regular_user_token}}" }],
+				"url": { "raw": "{{base_url}}/gdt/tracker/games", "host": ["{{base_url}}"], "path": ["gdt", "tracker", "games"] }
+			}
+		},
+		{
+			"name": "15. Remove Non-Tracked Game (should be 404)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Returns 404', function () {",
+							"    pm.response.to.have.status(404);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [{ "key": "Authorization", "value": "Bearer {{regular_user_token}}" }],
+				"url": { "raw": "{{base_url}}/gdt/tracker/games/99999", "host": ["{{base_url}}"], "path": ["gdt", "tracker", "games", "99999"] }
+			}
+		},
+		{
+			"name": "16. Cleanup — Remove Game 1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Returns 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [{ "key": "Authorization", "value": "Bearer {{regular_user_token}}" }],
+				"url": { "raw": "{{base_url}}/gdt/tracker/games/{{game_id_1}}", "host": ["{{base_url}}"], "path": ["gdt", "tracker", "games", "{{game_id_1}}"] }
+			}
+		},
+		{
+			"name": "17. Cleanup — Remove Game 2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Returns 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [{ "key": "Authorization", "value": "Bearer {{regular_user_token}}" }],
+				"url": { "raw": "{{base_url}}/gdt/tracker/games/{{game_id_2}}", "host": ["{{base_url}}"], "path": ["gdt", "tracker", "games", "{{game_id_2}}"] }
+			}
+		},
+		{
+			"name": "18. Cleanup — Remove Game 3",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Returns 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [{ "key": "Authorization", "value": "Bearer {{regular_user_token}}" }],
+				"url": { "raw": "{{base_url}}/gdt/tracker/games/{{game_id_3}}", "host": ["{{base_url}}"], "path": ["gdt", "tracker", "games", "{{game_id_3}}"] }
+			}
+		},
+		{
+			"name": "19. Verify List is Empty After Cleanup",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Returns 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test('List is empty', function () {",
+							"    const json = pm.response.json();",
+							"    pm.expect(json.total).to.eql(0);",
+							"    pm.expect(json.games).to.be.empty;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [{ "key": "Authorization", "value": "Bearer {{regular_user_token}}" }],
+				"url": { "raw": "{{base_url}}/gdt/tracker/games", "host": ["{{base_url}}"], "path": ["gdt", "tracker", "games"] }
+			}
+		},
+		{
+			"name": "20. No Auth (should be 401)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Returns 401 without token', function () {",
+							"    pm.response.to.have.status(401);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": { "raw": "{{base_url}}/gdt/tracker/games", "host": ["{{base_url}}"], "path": ["gdt", "tracker", "games"] }
+			}
+		}
+	]
+}
