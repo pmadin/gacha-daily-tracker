@@ -91,3 +91,12 @@ jobs:
           newman run "test/postman/Test Auth Edge Cases.postman_collection.json" \
             --environment "test/postman/Local-gacha-daily-tracker.postman_environment.json" \
             --reporters cli
+
+      - name: "Test: CI Auth Flow (register → login → authenticated routes → cleanup)"
+        env:
+          REGISTRATION_TOKEN: ${{ secrets.REGISTRATION_TOKEN }}
+        run: |
+          newman run "test/postman/Test CI Auth Flow.postman_collection.json" \
+            --environment "test/postman/Local-gacha-daily-tracker.postman_environment.json" \
+            --env-var "registration_token=$REGISTRATION_TOKEN" \
+            --reporters cli

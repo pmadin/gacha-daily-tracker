@@ -40,6 +40,58 @@ const profileRoutes: Router = express.Router();
  *       400:
  *         description: Invalid input
  */
+/**
+ * @swagger
+ * /gdt/auth/profile:
+ *   get:
+ *     summary: Get user profile
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Retrieve the authenticated user's profile information
+ *     responses:
+ *       200:
+ *         description: Profile retrieved successfully
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: User not found
+ */
+profileRoutes.get('/profile', async (req: Request, res: Response) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ error: 'No token provided' });
+        }
+
+        const token = authHeader.substring(7);
+        const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET || 'fallback-secret-change-in-production'
+        ) as any;
+
+        const result = await database.query(
+            `SELECT id, username, email, timezone, first_name, last_name, phone, role, created_at
+             FROM users WHERE id = $1`,
+            [decoded.userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json({ user: result.rows[0] });
+
+    } catch (error: unknown) {
+        if (error instanceof jwt.JsonWebTokenError) {
+            return res.status(401).json({ error: 'Invalid token' });
+        }
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        console.error('Profile fetch error:', errorMessage);
+        res.status(500).json({ error: 'Failed to fetch profile' });
+    }
+});
+
 profileRoutes.put('/profile', async (req: Request, res: Response) => {
     try {
         // Get token from header

@@ -5,7 +5,8 @@
       "Bash(nul)",
       "Bash(docker-compose down:*)",
       "Bash(docker-compose up:*)",
-      "Bash(node -e \"const data = require\\('./data/game-data-backup.json'\\); console.log\\('Total games in backup:', Array.isArray\\(data\\) ? data.length : Object.keys\\(data\\).length\\)\")"
+      "Bash(node -e \"const data = require\\('./data/game-data-backup.json'\\); console.log\\('Total games in backup:', Array.isArray\\(data\\) ? data.length : Object.keys\\(data\\).length\\)\")",
+      "Bash(node *)"
     ],
     "deny": [],
     "ask": []
