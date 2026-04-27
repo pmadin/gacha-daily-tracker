@@ -9,6 +9,7 @@ import { authRoutes } from './routes/auth';
 import { timezoneRoutes } from './routes/timezone';
 import { roleRouter } from './routes/closed/roles';
 import { updateRouter} from './routes/closed/close';
+import { trackerRouter } from './routes/tracker/tracker';
 import autoImportService from './services/autoImportService';
 import { specs, swaggerUi, swaggerOptions } from './config/swagger';
 
@@ -121,6 +122,7 @@ app.use('/gdt/timezones', timezoneRoutes);
 app.use('/gdt/auth', authRoutes);
 app.use('/gdt/admin', roleRouter);
 app.use('/gdt/update', updateRouter);
+app.use('/gdt/tracker', trackerRouter);
 
 /**
  * @swagger
