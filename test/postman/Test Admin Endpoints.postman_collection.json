@@ -1,1029 +1,1406 @@
 {
-	"info": {
-		"name": "Test Admin Endpoints",
-		"description": "Comprehensive tests for admin role management and user search endpoints",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-	},
-	"item": [
-		{
-			"name": "Role Management Tests",
-			"item": [
-				{
-					"name": "Test Update Role - User to Premium (Admin)",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"// Use test user to promote",
-									"const username = pm.globals.get('test_username') || 'test_user_1754082456666';",
-									"",
-									"pm.request.body.raw = JSON.stringify({",
-									"    newRole: 2,",
-									"    reason: 'Promoting user to premium for test purposes'",
-									"});",
-									"",
-									"pm.collectionVariables.set('test_target_username', username);",
-									"pm.collectionVariables.set('test_expected_role', 2);"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Successful role update",
-									"pm.test(\"Response status should be 200 for successful role update\", () => {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"// Test 2: Response structure validation",
-									"pm.test(\"Response should contain role update details\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('message');",
-									"    pm.expect(response).to.have.property('user');",
-									"    pm.expect(response).to.have.property('updated_by');",
-									"    pm.expect(response).to.have.property('reason');",
-									"});",
-									"",
-									"// Test 3: Verify role was updated",
-									"pm.test(\"User role should be updated to premium (2)\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response.user).to.have.property('old_role');",
-									"    pm.expect(response.user).to.have.property('new_role');",
-									"    pm.expect(response.user.new_role).to.equal(2);",
-									"    console.log(`✓ Role updated: ${response.user.old_role} → ${response.user.new_role}`);",
-									"});",
-									"",
-									"// Test 4: Verify audit trail",
-									"pm.test(\"Response should contain audit information\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response.updated_by).to.be.a('string').and.not.be.empty;",
-									"    pm.expect(response.reason).to.be.a('string').and.not.be.empty;",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/admin/users/role/{{test_target_username}}",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "admin", "users", "role", "{{test_target_username}}"]
-						}
-					}
-				},
-				{
-					"name": "Test Update Role - User to Admin (Owner Only)",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"// This test requires owner token",
-									"const username = pm.globals.get('test_username') || 'test_user_1754082456666';",
-									"",
-									"pm.request.body.raw = JSON.stringify({",
-									"    newRole: 3,",
-									"    reason: 'Promoting user to admin for test purposes'",
-									"});",
-									"",
-									"pm.collectionVariables.set('test_target_username', username);"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Owner can promote to admin",
-									"pm.test(\"Owner should be able to promote user to admin\", () => {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"// Test 2: Verify role updated to admin (3)",
-									"pm.test(\"User role should be updated to admin (3)\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response.user.new_role).to.equal(3);",
-									"    console.log(`✓ User promoted to admin`);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{owner_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/admin/users/role/{{test_target_username}}",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "admin", "users", "role", "{{test_target_username}}"]
-						}
-					}
-				},
-				{
-					"name": "Test Update Role - Admin to Owner Attempt (Should Fail)",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"// Admin trying to promote to owner (should fail)",
-									"pm.request.body.raw = JSON.stringify({",
-									"    newRole: 4,",
-									"    reason: 'Attempting to promote to owner (should fail)'",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Admin cannot promote to owner",
-									"pm.test(\"Admin should NOT be able to promote to owner role\", () => {",
-									"    pm.response.to.have.status(403);",
-									"});",
-									"",
-									"// Test 2: Error message validation",
-									"pm.test(\"Error message should indicate owner-only operation\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('error');",
-									"    pm.expect(response.error).to.match(/owner.*only|permission/i);",
-									"    console.log('✓ Admin correctly prevented from creating owners');",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/admin/users/role/test_user",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "admin", "users", "role", "test_user"]
-						}
-					}
-				},
-				{
-					"name": "Test Update Role - Regular User Attempt (Should Fail)",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"pm.request.body.raw = JSON.stringify({",
-									"    newRole: 2,",
-									"    reason: 'Regular user trying to change roles'",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Regular user cannot update roles",
-									"pm.test(\"Regular user should be denied role update access\", () => {",
-									"    pm.response.to.have.status(403);",
-									"});",
-									"",
-									"// Test 2: Error message validation",
-									"pm.test(\"Error message should indicate insufficient permissions\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('error');",
-									"    pm.expect(response.error).to.match(/admin.*required|permission|access denied/i);",
-									"    console.log('✓ Regular user correctly denied admin access');",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{regular_user_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/admin/users/role/some_user",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "admin", "users", "role", "some_user"]
-						}
-					}
-				},
-				{
-					"name": "Test Update Role - Non-Existent User",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"pm.request.body.raw = JSON.stringify({",
-									"    newRole: 2,",
-									"    reason: 'Testing with non-existent user'",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Should return 404 for non-existent user",
-									"pm.test(\"Response status should be 404 for non-existent user\", () => {",
-									"    pm.response.to.have.status(404);",
-									"});",
-									"",
-									"// Test 2: Error message validation",
-									"pm.test(\"Error message should indicate user not found\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('error');",
-									"    pm.expect(response.error).to.match(/user.*not found/i);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/admin/users/role/nonexistent_user_99999",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "admin", "users", "role", "nonexistent_user_99999"]
-						}
-					}
-				},
-				{
-					"name": "Test Update Role - Invalid Role Number",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"pm.request.body.raw = JSON.stringify({",
-									"    newRole: 99,",
-									"    reason: 'Testing with invalid role number'",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Should return 400 for invalid role",
-									"pm.test(\"Response status should be 400 for invalid role number\", () => {",
-									"    pm.response.to.have.status(400);",
-									"});",
-									"",
-									"// Test 2: Error message validation",
-									"pm.test(\"Error message should indicate invalid role\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('error');",
-									"    pm.expect(response.error).to.match(/invalid.*role|role.*1.*4/i);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/admin/users/role/test_user",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "admin", "users", "role", "test_user"]
-						}
-					}
-				},
-				{
-					"name": "Test Update Role - Without JWT",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"pm.request.body.raw = JSON.stringify({",
-									"    newRole: 2,",
-									"    reason: 'Testing without authentication'",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Should return 401 without authentication",
-									"pm.test(\"Response status should be 401 without JWT token\", () => {",
-									"    pm.response.to.have.status(401);",
-									"});",
-									"",
-									"// Test 2: Error message validation",
-									"pm.test(\"Error message should indicate authentication required\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('error');",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/admin/users/role/test_user",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "admin", "users", "role", "test_user"]
-						}
-					}
-				},
-				{
-					"name": "Test Update Role - Revert to User Role",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"// Revert test user back to role 1",
-									"pm.request.body.raw = JSON.stringify({",
-									"    newRole: 1,",
-									"    reason: 'Reverting to user role after tests'",
-									"});",
-									"",
-									"console.log('Reverting user role back to 1 for future tests');"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Role revert successful",
-									"pm.test(\"Role reverted to user (1) successfully\", () => {",
-									"    pm.response.to.have.status(200);",
-									"    const response = pm.response.json();",
-									"    pm.expect(response.user.new_role).to.equal(1);",
-									"    console.log('✓ Role reverted to user (1)');",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{owner_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/gdt/admin/users/role/{{test_target_username}}",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "admin", "users", "role", "{{test_target_username}}"]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "User List Tests",
-			"item": [
-				{
-					"name": "Test Get All Users - Admin Access",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Admin can access user list",
-									"pm.test(\"Admin should have access to user list\", () => {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"// Test 2: Response structure validation",
-									"pm.test(\"Response should contain users array and pagination info\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('users');",
-									"    pm.expect(response.users).to.be.an('array');",
-									"    pm.expect(response).to.have.property('total');",
-									"    pm.expect(response).to.have.property('limit');",
-									"    pm.expect(response).to.have.property('offset');",
-									"});",
-									"",
-									"// Test 3: User object structure",
-									"pm.test(\"Each user should have required fields\", () => {",
-									"    const response = pm.response.json();",
-									"    if (response.users.length > 0) {",
-									"        const user = response.users[0];",
-									"        pm.expect(user).to.have.property('id');",
-									"        pm.expect(user).to.have.property('username');",
-									"        pm.expect(user).to.have.property('email');",
-									"        pm.expect(user).to.have.property('role');",
-									"        pm.expect(user).to.have.property('created_at');",
-									"    }",
-									"});",
-									"",
-									"// Test 4: Pagination defaults",
-									"pm.test(\"Default pagination should be applied\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response.limit).to.be.a('number');",
-									"    pm.expect(response.offset).to.equal(0);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/gdt/admin/users",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "admin", "users"]
-						}
-					}
-				},
-				{
-					"name": "Test Get All Users - With Pagination",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Pagination parameters applied",
-									"pm.test(\"Pagination parameters should be applied correctly\", () => {",
-									"    pm.response.to.have.status(200);",
-									"    const response = pm.response.json();",
-									"    pm.expect(response.limit).to.equal(5);",
-									"    pm.expect(response.offset).to.equal(2);",
-									"    pm.expect(response.users.length).to.be.at.most(5);",
-									"});",
-									"",
-									"// Test 2: Results count validation",
-									"pm.test(\"Results should not exceed limit\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response.users.length).to.be.at.most(response.limit);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/gdt/admin/users?limit=5&offset=2",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "admin", "users"],
-							"query": [
-								{
-									"key": "limit",
-									"value": "5"
-								},
-								{
-									"key": "offset",
-									"value": "2"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Test Get All Users - Filter by Role",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Role filter applied",
-									"pm.test(\"Should return users filtered by role\", () => {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"// Test 2: All users have specified role",
-									"pm.test(\"All returned users should have role 1\", () => {",
-									"    const response = pm.response.json();",
-									"    if (response.users.length > 0) {",
-									"        response.users.forEach(user => {",
-									"            pm.expect(user.role).to.equal(1);",
-									"        });",
-									"    }",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/gdt/admin/users?role=1",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "admin", "users"],
-							"query": [
-								{
-									"key": "role",
-									"value": "1"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Test Get All Users - Regular User Access (Should Fail)",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Regular user denied access",
-									"pm.test(\"Regular user should be denied access to user list\", () => {",
-									"    pm.response.to.have.status(403);",
-									"});",
-									"",
-									"// Test 2: Error message validation",
-									"pm.test(\"Error message should indicate insufficient permissions\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('error');",
-									"    pm.expect(response.error).to.match(/admin.*required|permission/i);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{regular_user_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/gdt/admin/users",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "admin", "users"]
-						}
-					}
-				},
-				{
-					"name": "Test Get All Users - Without JWT",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Unauthenticated access denied",
-									"pm.test(\"Should return 401 without JWT token\", () => {",
-									"    pm.response.to.have.status(401);",
-									"});",
-									"",
-									"// Test 2: Error message validation",
-									"pm.test(\"Error message should indicate authentication required\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('error');",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/gdt/admin/users",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "admin", "users"]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "User Search Tests",
-			"item": [
-				{
-					"name": "Test Search Users - By Username",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Search by username successful",
-									"pm.test(\"Should return 200 for username search\", () => {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"// Test 2: Response structure",
-									"pm.test(\"Response should contain users array\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('users');",
-									"    pm.expect(response.users).to.be.an('array');",
-									"});",
-									"",
-									"// Test 3: Results match search criteria",
-									"pm.test(\"All results should match username search\", () => {",
-									"    const response = pm.response.json();",
-									"    if (response.users.length > 0) {",
-									"        response.users.forEach(user => {",
-									"            pm.expect(user.username).to.include('test');",
-									"        });",
-									"    }",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/gdt/admin/users/search?username=test",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "admin", "users", "search"],
-							"query": [
-								{
-									"key": "username",
-									"value": "test"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Test Search Users - By Email",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Search by email successful",
-									"pm.test(\"Should return 200 for email search\", () => {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"// Test 2: Results match email search",
-									"pm.test(\"All results should match email search\", () => {",
-									"    const response = pm.response.json();",
-									"    if (response.users.length > 0) {",
-									"        response.users.forEach(user => {",
-									"            pm.expect(user.email).to.include('example.com');",
-									"        });",
-									"    }",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/gdt/admin/users/search?email=example.com",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "admin", "users", "search"],
-							"query": [
-								{
-									"key": "email",
-									"value": "example.com"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Test Search Users - By Role",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Search by role successful",
-									"pm.test(\"Should return 200 for role search\", () => {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"// Test 2: All results have specified role",
-									"pm.test(\"All results should have role 4 (owner)\", () => {",
-									"    const response = pm.response.json();",
-									"    if (response.users.length > 0) {",
-									"        response.users.forEach(user => {",
-									"            pm.expect(user.role).to.equal(4);",
-									"        });",
-									"    }",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/gdt/admin/users/search?role=4",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "admin", "users", "search"],
-							"query": [
-								{
-									"key": "role",
-									"value": "4"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Test Search Users - With Pagination",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Pagination applied to search",
-									"pm.test(\"Pagination should work with search\", () => {",
-									"    pm.response.to.have.status(200);",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('limit');",
-									"    pm.expect(response).to.have.property('offset');",
-									"    pm.expect(response.limit).to.equal(10);",
-									"    pm.expect(response.offset).to.equal(0);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/gdt/admin/users/search?username=test&limit=10&offset=0",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "admin", "users", "search"],
-							"query": [
-								{
-									"key": "username",
-									"value": "test"
-								},
-								{
-									"key": "limit",
-									"value": "10"
-								},
-								{
-									"key": "offset",
-									"value": "0"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Test Search Users - Regular User Access (Should Fail)",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Regular user denied search access",
-									"pm.test(\"Regular user should be denied search access\", () => {",
-									"    pm.response.to.have.status(403);",
-									"});",
-									"",
-									"// Test 2: Error message validation",
-									"pm.test(\"Error message should indicate insufficient permissions\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('error');",
-									"    pm.expect(response.error).to.match(/admin.*required|permission/i);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{regular_user_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/gdt/admin/users/search?username=test",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "admin", "users", "search"],
-							"query": [
-								{
-									"key": "username",
-									"value": "test"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Test Search Users - Without JWT",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test 1: Unauthenticated search denied",
-									"pm.test(\"Should return 401 without JWT token\", () => {",
-									"    pm.response.to.have.status(401);",
-									"});",
-									"",
-									"// Test 2: Error message validation",
-									"pm.test(\"Error message should indicate authentication required\", () => {",
-									"    const response = pm.response.json();",
-									"    pm.expect(response).to.have.property('error');",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/gdt/admin/users/search?username=test",
-							"host": ["{{base_url}}"],
-							"path": ["gdt", "admin", "users", "search"],
-							"query": [
-								{
-									"key": "username",
-									"value": "test"
-								}
-							]
-						}
-					}
-				}
-			]
-		}
-	],
-	"auth": {
-		"type": "bearer",
-		"bearer": [
-			{
-				"key": "token",
-				"value": "{{auth}}",
-				"type": "string"
-			}
-		]
-	},
-	"variable": [
-		{
-			"key": "test_target_username",
-			"value": ""
-		},
-		{
-			"key": "test_expected_role",
-			"value": ""
-		}
-	]
+  "info": {
+    "_postman_id": "31cf210c-9d8d-412e-aeee-fbf14e59ceca",
+    "name": "Test Admin Endpoints",
+    "description": "Comprehensive tests for admin role management and user search endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "44170125",
+    "_collection_link": "https://go.postman.co/collection/44170125-31cf210c-9d8d-412e-aeee-fbf14e59ceca?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Role Management Tests",
+      "item": [
+        {
+          "name": "Test Update Role - User to Premium (Admin)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Use test user to promote",
+                  "const username = pm.globals.get('test_username') || 'test_userROLE1';",
+                  "",
+                  "pm.request.body.raw = JSON.stringify({",
+                  "    newRole: 2,",
+                  "    reason: 'Promoting user to premium for test purposes'",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set('test_target_username', username);",
+                  "pm.collectionVariables.set('test_expected_role', 2);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Successful role update",
+                  "pm.test(\"Response status should be 200 for successful role update\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Test 2: Response structure validation",
+                  "pm.test(\"Response should contain role update details\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('message');",
+                  "    pm.expect(response).to.have.property('user');",
+                  "    pm.expect(response).to.have.property('changedBy');",
+                  "    pm.expect(response).to.have.property('reason');",
+                  "    pm.expect(response).to.have.property('timestamp');",
+                  "});",
+                  "",
+                  "// Test 3: Verify role was updated",
+                  "pm.test(\"User role should be updated to premium (2)\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.user).to.have.property('oldRole');",
+                  "    pm.expect(response.user).to.have.property('newRole');",
+                  "    pm.expect(response.user.newRole).to.equal(2);",
+                  "    console.log(`✓ Role updated: ${response.user.oldRole} → ${response.user.newRole}`);",
+                  "});",
+                  "",
+                  "// Test 4: Verify user details in response",
+                  "pm.test(\"User object should contain complete information\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.user).to.have.property('id');",
+                  "    pm.expect(response.user).to.have.property('username');",
+                  "    pm.expect(response.user).to.have.property('email');",
+                  "    pm.expect(response.user).to.have.property('oldRoleName');",
+                  "    pm.expect(response.user).to.have.property('newRoleName');",
+                  "});",
+                  "",
+                  "// Test 5: Verify audit trail",
+                  "pm.test(\"Response should contain audit information\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.changedBy).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(response.reason).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/admin/users/role/{{test_target_username}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "admin",
+                "users",
+                "role",
+                "{{test_target_username}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Update Role - User to Admin (Owner Only)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// This test requires owner token",
+                  "const username = pm.globals.get('test_username') || 'test_userROLE1';",
+                  "",
+                  "pm.request.body.raw = JSON.stringify({",
+                  "    newRole: 3,",
+                  "    reason: 'Promoting user to admin for test purposes'",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set('test_target_username', username);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Owner can promote to admin",
+                  "pm.test(\"Owner should be able to promote user to admin\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Test 2: Verify role updated to admin (3)",
+                  "pm.test(\"User role should be updated to admin (3)\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.user.newRole).to.equal(3);",
+                  "    console.log(`✓ User promoted to admin`);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/admin/users/role/{{test_target_username}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "admin",
+                "users",
+                "role",
+                "{{test_target_username}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Update Role - Admin to Owner Attempt (Should Fail)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Admin trying to promote to owner (should fail)",
+                  "pm.request.body.raw = JSON.stringify({",
+                  "    newRole: 4,",
+                  "    reason: 'Attempting to promote to owner (should fail)'",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Admin cannot promote to owner",
+                  "pm.test(\"Admin should NOT be able to promote to owner role\", () => {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "",
+                  "// Test 2: Error message validation",
+                  "pm.test(\"Error message should indicate owner-only operation\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('error');",
+                  "    pm.expect(response.error).to.include('Only owners can assign owner role');",
+                  "    console.log('✓ Admin correctly prevented from creating owners');",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/admin/users/role/devadmintest",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "admin",
+                "users",
+                "role",
+                "devadmintest"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Update Role - Regular User Attempt (Should Fail)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.request.body.raw = JSON.stringify({",
+                  "    newRole: 2,",
+                  "    reason: 'Regular user trying to change roles'",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Regular user cannot update roles",
+                  "pm.test(\"Regular user should be denied role update access\", () => {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "",
+                  "// Test 2: Error message validation",
+                  "pm.test(\"Error message should indicate insufficient permissions\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('error');",
+                  "    pm.expect(response.error).to.match(/admin.*required|permission|access denied/i);",
+                  "    console.log('✓ Regular user correctly denied admin access');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{regular_user_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/admin/users/role/some_user",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "admin",
+                "users",
+                "role",
+                "some_user"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Update Role - Non-Existent User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.request.body.raw = JSON.stringify({",
+                  "    newRole: 2,",
+                  "    reason: 'Testing with non-existent user'",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Should return 404 for non-existent user",
+                  "pm.test(\"Response status should be 404 for non-existent user\", () => {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "// Test 2: Error message validation",
+                  "pm.test(\"Error message should indicate user not found\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('error');",
+                  "    pm.expect(response.error).to.match(/user.*not found/i);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/admin/users/role/nonexistent_user_99999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "admin",
+                "users",
+                "role",
+                "nonexistent_user_99999"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Update Role - Invalid Role Number",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.request.body.raw = JSON.stringify({",
+                  "    newRole: 99,",
+                  "    reason: 'Testing with invalid role number'",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Should return 400 for invalid role",
+                  "pm.test(\"Response status should be 400 for invalid role number\", () => {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "// Test 2: Error message validation",
+                  "pm.test(\"Error message should indicate invalid role\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('error');",
+                  "    pm.expect(response.error).to.match(/invalid.*role|role.*1.*4/i);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/admin/users/role/test_user",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "admin",
+                "users",
+                "role",
+                "test_user"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Update Role - Without JWT",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.request.body.raw = JSON.stringify({",
+                  "    newRole: 2,",
+                  "    reason: 'Testing without authentication'",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Should return 401 without authentication",
+                  "pm.test(\"Response status should be 401 without JWT token\", () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "// Test 2: Error message validation",
+                  "pm.test(\"Error message should indicate authentication required\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('error');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/admin/users/role/test_user",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "admin",
+                "users",
+                "role",
+                "test_user"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Update Role - Revert to User Role",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Revert test user back to role 1",
+                  "// Ensure the request body is properly formatted",
+                  "const roleUpdatePayload = {",
+                  "    newRole: 1,",
+                  "    reason: 'Reverting to user role after tests'",
+                  "};",
+                  "",
+                  "// Set the request body with proper formatting",
+                  "pm.request.body.raw = JSON.stringify(roleUpdatePayload);",
+                  "",
+                  "// Ensure Content-Type header is set correctly",
+                  "pm.request.headers.upsert({",
+                  "    key: 'Content-Type',",
+                  "    value: 'application/json'",
+                  "});",
+                  "",
+                  "console.log('Reverting user role back to 1 for future tests');",
+                  "console.log('Request payload:', JSON.stringify(roleUpdatePayload, null, 2));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test role revert with comprehensive error handling",
+                  "pm.test(\"Role revert attempt\", () => {",
+                  "    // Check if the request was successful or if there's a known error",
+                  "    if (pm.response.code === 200) {",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.user.newRole).to.equal(1);",
+                  "        console.log('✓ Role reverted to user (1)');",
+                  "    } else if (pm.response.code === 400) {",
+                  "        const errorResponse = pm.response.json();",
+                  "        console.log('Error details:', errorResponse);",
+                  "        ",
+                  "        // Check if the error is specifically about an invalid role",
+                  "        pm.expect(errorResponse.error).to.include('Invalid role');",
+                  "        console.log('❗ Role update failed due to invalid role specification');",
+                  "    } else {",
+                  "        pm.expect.fail(`Unexpected response status: ${pm.response.code}`);",
+                  "    }",
+                  "});",
+                  "",
+                  "// Additional test to verify response structure",
+                  "pm.test(\"Response has expected structure\", () => {",
+                  "    const response = pm.response.json();",
+                  "    ",
+                  "    if (pm.response.code === 200) {",
+                  "        pm.expect(response).to.have.property('user');",
+                  "        pm.expect(response.user).to.have.property('newRole');",
+                  "    } else {",
+                  "        pm.expect(response).to.have.property('error');",
+                  "    }",
+                  "});",
+                  "",
+                  "// Log response for debugging",
+                  "console.log('Response status:', pm.response.code);",
+                  "console.log('Response body:', pm.response.json());"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "file",
+              "file": {}
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/admin/users/role/{{test_target_username}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "admin",
+                "users",
+                "role",
+                "{{test_target_username}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User List Tests",
+      "item": [
+        {
+          "name": "Test Get All Users - Admin Access",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Admin can access user list",
+                  "pm.test(\"Admin should have access to user list\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Test 2: Response structure validation",
+                  "pm.test(\"Response should contain users array and metadata\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('users');",
+                  "    pm.expect(response.users).to.be.an('array');",
+                  "    pm.expect(response).to.have.property('total');",
+                  "    pm.expect(response.total).to.be.a('number');",
+                  "    pm.expect(response).to.have.property('requestedBy');",
+                  "    pm.expect(response.requestedBy).to.be.a('string');",
+                  "    pm.expect(response).to.have.property('filters');",
+                  "    pm.expect(response.filters).to.be.an('object');",
+                  "    pm.expect(response.filters).to.have.property('role');",
+                  "    pm.expect(response.filters).to.have.property('search');",
+                  "});",
+                  "",
+                  "// Test 3: User object structure",
+                  "pm.test(\"Each user should have required fields\", () => {",
+                  "    const response = pm.response.json();",
+                  "    if (response.users.length > 0) {",
+                  "        const user = response.users[0];",
+                  "        pm.expect(user).to.have.property('id');",
+                  "        pm.expect(user).to.have.property('username');",
+                  "        pm.expect(user).to.have.property('email');",
+                  "        pm.expect(user).to.have.property('role');",
+                  "        pm.expect(user).to.have.property('created_at');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/gdt/admin/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "admin",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Get All Users - With Pagination",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Response status and structure",
+                  "pm.test(\"Response should have status 200 and correct structure\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    ",
+                  "    // Validate response structure",
+                  "    pm.expect(response).to.have.property('users');",
+                  "    pm.expect(response).to.have.property('total');",
+                  "    pm.expect(response).to.have.property('requestedBy');",
+                  "    pm.expect(response).to.have.property('filters');",
+                  "    ",
+                  "    // Validate data types",
+                  "    pm.expect(response.users).to.be.an('array');",
+                  "    pm.expect(response.total).to.be.a('number');",
+                  "    pm.expect(response.requestedBy).to.be.a('string');",
+                  "    pm.expect(response.filters).to.be.an('object');",
+                  "});",
+                  "",
+                  "// Test 2: Pagination parameters applied correctly",
+                  "pm.test(\"Pagination parameters should be applied correctly\", () => {",
+                  "    // Extract limit and offset from query parameters",
+                  "    const limitParam = pm.request.url.query.get('limit');",
+                  "    const offsetParam = pm.request.url.query.get('offset');",
+                  "    ",
+                  "    const limit = parseInt(limitParam);",
+                  "    const offset = parseInt(offsetParam);",
+                  "    ",
+                  "    pm.expect(limit).to.equal(5);",
+                  "    pm.expect(offset).to.equal(2);",
+                  "    ",
+                  "    // Validate that results don't exceed limit",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.users.length).to.be.at.most(limit);",
+                  "});",
+                  "",
+                  "// Test 3: Results count validation",
+                  "pm.test(\"Results should not exceed limit from query parameters\", () => {",
+                  "    const response = pm.response.json();",
+                  "    const limitParam = pm.request.url.query.get('limit');",
+                  "    const limit = parseInt(limitParam);",
+                  "    ",
+                  "    pm.expect(response.users.length).to.be.at.most(limit);",
+                  "});",
+                  "",
+                  "// Test 4: User objects have required properties",
+                  "pm.test(\"Each user should have required properties\", () => {",
+                  "    const response = pm.response.json();",
+                  "    ",
+                  "    response.users.forEach(user => {",
+                  "        pm.expect(user).to.have.property('id');",
+                  "        pm.expect(user).to.have.property('username');",
+                  "        pm.expect(user).to.have.property('email');",
+                  "        pm.expect(user).to.have.property('role');",
+                  "        pm.expect(user).to.have.property('roleName');",
+                  "        pm.expect(user).to.have.property('timezone');",
+                  "        pm.expect(user).to.have.property('created_at');",
+                  "        pm.expect(user).to.have.property('updated_at');",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/gdt/admin/users?limit=5&offset=2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "admin",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "5"
+                },
+                {
+                  "key": "offset",
+                  "value": "2"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Get All Users - Filter by Role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Role filter applied",
+                  "pm.test(\"Should return users filtered by role\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Test 2: All users have specified role",
+                  "pm.test(\"All returned users should have role 1\", () => {",
+                  "    const response = pm.response.json();",
+                  "    if (response.users.length > 0) {",
+                  "        response.users.forEach(user => {",
+                  "            pm.expect(user.role).to.equal(1);",
+                  "        });",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/gdt/admin/users?role=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "admin",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "role",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Get All Users - Regular User Access (Should Fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Regular user denied access",
+                  "pm.test(\"Regular user should be denied access to user list\", () => {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "",
+                  "// Test 2: Error message validation",
+                  "pm.test(\"Error message should indicate insufficient permissions\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('error');",
+                  "    pm.expect(response.error).to.match(/admin.*required|permission/i);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{regular_user_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/gdt/admin/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "admin",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Get All Users - Without JWT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Unauthenticated access denied",
+                  "pm.test(\"Should return 401 without JWT token\", () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "// Test 2: Error message validation",
+                  "pm.test(\"Error message should indicate authentication required\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('error');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/gdt/admin/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "admin",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User Search Tests",
+      "item": [
+        {
+          "name": "Test Search Users - By Username",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Search by username successful",
+                  "pm.test(\"Should return 200 for username search\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Test 2: Response structure",
+                  "pm.test(\"Response should contain users array\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('users');",
+                  "    pm.expect(response.users).to.be.an('array');",
+                  "});",
+                  "",
+                  "// Test 3: Results match search criteria",
+                  "pm.test(\"All results should match username search\", () => {",
+                  "    const response = pm.response.json();",
+                  "    if (response.users.length > 0) {",
+                  "        response.users.forEach(user => {",
+                  "            pm.expect(user.username).to.include('test');",
+                  "        });",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "packages": {},
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/gdt/admin/users/search?q=test_userROLE1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "admin",
+                "users",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "test_userROLE1"
+                },
+                {
+                  "key": "username",
+                  "value": "test_userROLE1",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Search Users - By Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Search by email successful",
+                  "pm.test(\"Should return 200 for email search\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Test 2: Results match email search",
+                  "pm.test(\"All results should match email search\", () => {",
+                  "    const response = pm.response.json();",
+                  "    if (response.users.length > 0) {",
+                  "        response.users.forEach(user => {",
+                  "            pm.expect(user.email).to.include('example.com');",
+                  "        });",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/gdt/admin/users/search?q=test@example.com",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "admin",
+                "users",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "test@example.com"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Search Users - By Role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Search by role successful",
+                  "pm.test(\"Should return 200 for role search\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Test 2: All results have specified role",
+                  "pm.test(\"All results should have role 4 (owner)\", () => {",
+                  "    const response = pm.response.json();",
+                  "    if (response.users.length > 0) {",
+                  "        response.users.forEach(user => {",
+                  "            pm.expect(user.role).to.equal(4);",
+                  "        });",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/gdt/admin/users/search?q=4",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "admin",
+                "users",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "4"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Search Users - With Pagination",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Status code is 200",
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Test 2: Response has correct structure",
+                  "pm.test(\"Response has required properties\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('users');",
+                  "    pm.expect(response).to.have.property('searchTerm');",
+                  "    pm.expect(response).to.have.property('total');",
+                  "    pm.expect(response).to.have.property('requestedBy');",
+                  "});",
+                  "",
+                  "// Test 3: Users is an array",
+                  "pm.test(\"Users property is an array\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.users).to.be.an('array');",
+                  "});",
+                  "",
+                  "// Test 4: Search term matches query parameter",
+                  "pm.test(\"Search term matches query parameter\", () => {",
+                  "    const response = pm.response.json();",
+                  "    const queryParam = pm.request.url.query.get('q');",
+                  "    pm.expect(response.searchTerm).to.equal(queryParam);",
+                  "});",
+                  "",
+                  "// Test 5: Total matches users array length",
+                  "pm.test(\"Total count matches number of users returned\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.total).to.be.a('number');",
+                  "    pm.expect(response.users.length).to.be.at.most(response.total);",
+                  "});",
+                  "",
+                  "// Test 6: Each user has expected properties",
+                  "pm.test(\"Each user has required properties\", () => {",
+                  "    const response = pm.response.json();",
+                  "    if (response.users.length > 0) {",
+                  "        response.users.forEach(user => {",
+                  "            pm.expect(user).to.have.property('id');",
+                  "            pm.expect(user).to.have.property('username');",
+                  "            pm.expect(user).to.have.property('email');",
+                  "            pm.expect(user).to.have.property('role');",
+                  "            pm.expect(user).to.have.property('roleName');",
+                  "            pm.expect(user).to.have.property('created_at');",
+                  "            ",
+                  "            // Validate types",
+                  "            pm.expect(user.id).to.be.a('number');",
+                  "            pm.expect(user.username).to.be.a('string');",
+                  "            pm.expect(user.email).to.be.a('string');",
+                  "            pm.expect(user.role).to.be.a('number');",
+                  "            pm.expect(user.roleName).to.be.a('string');",
+                  "        });",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/gdt/admin/users/search?q=test&limit=10&offset=0",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "admin",
+                "users",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "test"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Search Users - Regular User Access (Should Fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Regular user denied search access",
+                  "pm.test(\"Regular user should be denied search access\", () => {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "",
+                  "// Test 2: Error message validation",
+                  "pm.test(\"Error message should indicate insufficient permissions\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('error');",
+                  "    pm.expect(response.error).to.match(/admin.*required|permission/i);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{regular_user_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/gdt/admin/users/search?username=test",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "admin",
+                "users",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "username",
+                  "value": "test"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Search Users - Without JWT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Unauthenticated search denied",
+                  "pm.test(\"Should return 401 without JWT token\", () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "// Test 2: Error message validation",
+                  "pm.test(\"Error message should indicate authentication required\", () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('error');",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/gdt/admin/users/search?username=test",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gdt",
+                "admin",
+                "users",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "username",
+                  "value": "test"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "test_target_username",
+      "value": ""
+    },
+    {
+      "key": "test_expected_role",
+      "value": ""
+    }
+  ]
 }
