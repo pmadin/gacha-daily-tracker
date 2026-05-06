@@ -25,7 +25,14 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
         <div className="flex items-center gap-6">
-          <Link href="/" className="text-base font-bold tracking-tight text-white">
+          <Link href="/" className="flex items-center gap-2 text-base font-bold tracking-tight text-white">
+            <svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <rect width="32" height="32" rx="7" fill="#7c3aed"/>
+              <polygon points="16,5 7,14 16,17" fill="white" opacity="0.75"/>
+              <polygon points="16,5 25,14 16,17" fill="white" opacity="0.97"/>
+              <polygon points="7,14 16,27 16,17"  fill="white" opacity="0.40"/>
+              <polygon points="25,14 16,17 16,27" fill="white" opacity="0.62"/>
+            </svg>
             Gacha<span className="text-violet-400">Daily</span>
           </Link>
           <nav className="flex items-center gap-4">
