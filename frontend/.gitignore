@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# downloaded game icons (run scripts/download-icons.js locally)
+/public/icons/*.gif
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

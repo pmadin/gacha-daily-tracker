@@ -419,7 +419,7 @@ app.get('/gdt/', (req, res) => {
         <div class="footer">
             <p>Built with ❤️ for the gacha gaming community</p>
             <p style="margin-top: 10px; font-size: 0.8rem;">
-                <a href="https://github.com/yourusername/gacha-daily-tracker" style="color: rgba(255,255,255,0.8);">View on GitHub</a> | 
+                <a href="https://github.com/pmadin/gacha-daily-tracker" style="color: rgba(255,255,255,0.8);">View on GitHub</a> | 
                 <a href="/gdt/api-docs" style="color: rgba(255,255,255,0.8);">API Docs</a> | 
                 <a href="/gdt/status" style="color: rgba(255,255,255,0.8);">Status</a>
             </p>
@@ -867,7 +867,12 @@ app.get('/gdt/status', (req, res) => {
 
         <div class="footer">
             <p>Last updated: <span id="lastUpdated">Never</span></p>
-            <p>Powered by Heroku • Built with HTML & CSS</p>
+            <p style="margin-top: 10px;">
+                <a href="/gdt/api-docs" style="color: rgba(255,255,255,0.8); text-decoration: none; margin: 0 8px;">API Docs</a> •
+                <a href="/gdt/" style="color: rgba(255,255,255,0.8); text-decoration: none; margin: 0 8px;">Home</a> •
+                <a href="https://github.com/pmadin/gacha-daily-tracker" target="_blank" style="color: rgba(255,255,255,0.8); text-decoration: none; margin: 0 8px;">GitHub</a>
+            </p>
+            <p style="margin-top: 8px; font-size: 0.8rem; opacity: 0.6;">Powered by Heroku</p>
         </div>
     </div>
     <!-- External JavaScript file to avoid CSP issues -->

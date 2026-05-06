@@ -1,6 +1,8 @@
 {
   "lastUpdated": "2026-04-15T20:18:02.687Z",
   "source": "https://raw.githubusercontent.com/cicerakes/Game-Time-Master/refs/heads/master/game-data.js",
+  "attribution": "Based on Game-Time-Master by cicerakes (https://github.com/cicerakes/Game-Time-Master), licensed under GPL-3.0",
+  "modifications": "Converted from game-data.js (JavaScript module) to JSON by pmadin. Added wrapper metadata fields (lastUpdated, source, gameCount, attribution, modifications). Game records (name, server, timezone, dailyReset, icon) are unmodified from upstream.",
   "gameCount": 332,
   "data": [
     {
