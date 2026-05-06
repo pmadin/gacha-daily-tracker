@@ -7,7 +7,12 @@
       "Bash(docker-compose up:*)",
       "Bash(node -e \"const data = require\\('./data/game-data-backup.json'\\); console.log\\('Total games in backup:', Array.isArray\\(data\\) ? data.length : Object.keys\\(data\\).length\\)\")",
       "Bash(node *)",
-      "Bash(npx create-next-app@latest frontend --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\")"
+      "Bash(npx create-next-app@latest frontend --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\")",
+      "PowerShell(Get-NetTCPConnection *)",
+      "Bash(git add *)",
+      "Bash(npx tsc *)",
+      "Bash(Get-ChildItem -Path \"F:\\\\University\\\\My Personal Programs\\\\gacha_tracker\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)"
     ],
     "deny": [],
     "ask": []
