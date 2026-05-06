@@ -12,7 +12,9 @@
       "Bash(git add *)",
       "Bash(npx tsc *)",
       "Bash(Get-ChildItem -Path \"F:\\\\University\\\\My Personal Programs\\\\gacha_tracker\" -Recurse -Directory)",
-      "Bash(Select-Object -ExpandProperty FullName)"
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(git rm *)",
+      "Bash(git commit -m ' *)"
     ],
     "deny": [],
     "ask": []
