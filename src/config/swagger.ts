@@ -22,7 +22,7 @@ const options = {
       `,
             contact: {
                 name: 'Gacha Daily Tracker',
-                url: 'https://github.com/yourusername/gacha-daily-tracker',
+                url: process.env.FRONTEND_URL ?? 'https://github.com/pmadin/gacha-daily-tracker',
             },
             license: {
                 name: 'MIT',
