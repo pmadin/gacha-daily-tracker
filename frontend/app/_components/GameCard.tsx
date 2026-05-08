@@ -1,6 +1,7 @@
 'use client';
 
 import type { Game } from '../_lib/api';
+import { displayServer } from '../_lib/servers';
 
 interface Props {
   game: Game;
@@ -33,9 +34,9 @@ export default function GameCard({ game, isTracked, onAdd, onRemove }: Props) {
         </div>
         <span
           title={game.server}
-          className="max-w-[6rem] shrink-0 truncate rounded-full bg-zinc-800 px-2 py-0.5 text-xs font-medium text-zinc-400"
+          className="shrink-0 rounded-full bg-zinc-800 px-2 py-0.5 text-xs font-medium text-zinc-400"
         >
-          {game.server}
+          {displayServer(game.server)}
         </span>
       </div>
 

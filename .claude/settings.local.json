@@ -14,7 +14,10 @@
       "Bash(Get-ChildItem -Path \"F:\\\\University\\\\My Personal Programs\\\\gacha_tracker\" -Recurse -Directory)",
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(git rm *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(npm install *)",
+      "Bash(Get-ChildItem *)",
+      "Bash(Select-Object FullName)"
     ],
     "deny": [],
     "ask": []

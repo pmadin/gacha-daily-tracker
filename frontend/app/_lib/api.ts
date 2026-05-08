@@ -21,6 +21,7 @@ export interface TrackedGame {
   is_enabled: boolean;
   completed_today: boolean;
   added_at: string;
+  display_order: number;
 }
 
 export interface GamesResponse {
@@ -49,8 +50,8 @@ export interface GamesParams {
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...init?.headers },
     ...init,
+    headers: { 'Content-Type': 'application/json', ...init?.headers },
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -97,8 +98,12 @@ export async function register(
   });
 }
 
-export async function fetchTrackerGames(token: string): Promise<{ games: TrackedGame[]; total: number }> {
+export async function fetchTrackerGames(token: string): Promise<{ games: TrackedGame[]; total: number; streak: number }> {
   return apiFetch('/gdt/tracker/games', { headers: authHeader(token) });
+}
+
+export async function checkStreak(token: string): Promise<{ streak: number }> {
+  return apiFetch('/gdt/tracker/streak', { method: 'POST', headers: authHeader(token) });
 }
 
 export async function addTrackerGame(token: string, gameId: number): Promise<void> {
@@ -117,6 +122,26 @@ export async function unmarkComplete(token: string, gameId: number): Promise<voi
   await apiFetch(`/gdt/tracker/games/${gameId}/complete`, { method: 'DELETE', headers: authHeader(token) });
 }
 
+export interface PopularGame {
+  id: number;
+  name: string;
+  server: string;
+  icon_name: string;
+  add_count: number;
+}
+
+export async function fetchPopularGames(limit = 10): Promise<{ games: PopularGame[] }> {
+  return apiFetch(`/gdt/games/popular?limit=${limit}`);
+}
+
+export async function deleteAccount(token: string, identifier: string, password: string): Promise<void> {
+  await apiFetch('/gdt/auth/account', {
+    method: 'DELETE',
+    headers: authHeader(token),
+    body: JSON.stringify({ identifier, password }),
+  });
+}
+
 export async function bulkAddGames(
   token: string,
   gameIds: number[],
@@ -125,5 +150,16 @@ export async function bulkAddGames(
     method: 'POST',
     headers: authHeader(token),
     body: JSON.stringify({ gameIds }),
+  });
+}
+
+export async function saveGameOrder(
+  token: string,
+  orders: { game_id: number; order_index: number }[],
+): Promise<void> {
+  await apiFetch('/gdt/tracker/order', {
+    method: 'PUT',
+    headers: authHeader(token),
+    body: JSON.stringify({ orders }),
   });
 }

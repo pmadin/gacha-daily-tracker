@@ -4,6 +4,8 @@ import './globals.css';
 import { AuthProvider } from './_context/AuthContext';
 import Navbar from './_components/Navbar';
 import Footer from './_components/Footer';
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist' });
 
@@ -21,6 +23,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main className="flex-1">{children}</main>
           <Footer />
         </AuthProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

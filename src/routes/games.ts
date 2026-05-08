@@ -81,6 +81,24 @@ router.get('/servers/list', async (req, res) => {
     }
 });
 
+router.get('/popular', async (req, res) => {
+    try {
+        const limit = Math.min(Math.max(1, parseInt(req.query.limit as string) || 10), 50);
+        const result = await database.query(
+            `SELECT id, name, server, icon_name, add_count
+             FROM games
+             WHERE is_active = true
+             ORDER BY add_count DESC, name ASC
+             LIMIT $1`,
+            [limit]
+        );
+        res.json({ games: result.rows });
+    } catch (error) {
+        console.error('Error fetching popular games:', error);
+        res.status(500).json({ error: 'Failed to fetch popular games' });
+    }
+});
+
 /**
  * @swagger
  * /gdt/games:
@@ -319,9 +337,16 @@ router.get('/', async (req, res) => {
         }
 
         if (server) {
-            filterConditions.push(`server = $${paramIndex}`);
-            params.push(server);
-            paramIndex++;
+            const serverList = (server as string).split(',').map((s: string) => s.trim()).filter(Boolean);
+            if (serverList.length === 1) {
+                filterConditions.push(`server = $${paramIndex}`);
+                params.push(serverList[0]);
+                paramIndex++;
+            } else if (serverList.length > 1) {
+                filterConditions.push(`server = ANY($${paramIndex}::text[])`);
+                params.push(serverList);
+                paramIndex++;
+            }
         }
 
         if (timezone) {
@@ -385,9 +410,16 @@ router.get('/', async (req, res) => {
         }
 
         if (server) {
-            countFilterConditions.push(`server = $${countParamIndex}`);
-            countParams.push(server);
-            countParamIndex++;
+            const countServerList = (server as string).split(',').map((s: string) => s.trim()).filter(Boolean);
+            if (countServerList.length === 1) {
+                countFilterConditions.push(`server = $${countParamIndex}`);
+                countParams.push(countServerList[0]);
+                countParamIndex++;
+            } else if (countServerList.length > 1) {
+                countFilterConditions.push(`server = ANY($${countParamIndex}::text[])`);
+                countParams.push(countServerList);
+                countParamIndex++;
+            }
         }
 
         if (timezone) {

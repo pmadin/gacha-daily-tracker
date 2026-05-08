@@ -60,10 +60,11 @@ trackerRouter.get('/games', async (req, res) => {
 
         const result = await database.query(`
             SELECT
-                ug.id          AS user_game_id,
+                ug.id             AS user_game_id,
                 ug.is_enabled,
-                ug.created_at  AS added_at,
-                g.id           AS game_id,
+                ug.created_at     AS added_at,
+                ug.display_order,
+                g.id              AS game_id,
                 g.name,
                 g.server,
                 g.timezone,
@@ -77,12 +78,18 @@ trackerRouter.get('/games', async (req, res) => {
                 AND dc.game_id = ug.game_id
                 AND dc.completion_date = CURRENT_DATE
             WHERE ug.user_id = $1
-            ORDER BY g.name
+            ORDER BY ug.display_order ASC, g.name ASC
         `, [userId]);
+
+        const streakResult = await database.query(
+            'SELECT streak_count FROM users WHERE id = $1',
+            [userId]
+        );
 
         res.json({
             games: result.rows,
-            total: result.rows.length
+            total: result.rows.length,
+            streak: streakResult.rows[0]?.streak_count ?? 0,
         });
 
     } catch (error: unknown) {
@@ -180,12 +187,21 @@ trackerRouter.post('/games/bulk', async (req, res) => {
         const insertResult = await database.query(
             `INSERT INTO user_games (user_id, game_id)
              VALUES ${placeholders}
-             ON CONFLICT (user_id, game_id) DO NOTHING`,
+             ON CONFLICT (user_id, game_id) DO NOTHING
+             RETURNING game_id`,
             values
         );
 
-        const added = insertResult.rowCount ?? 0;
+        const insertedIds = insertResult.rows.map(r => r.game_id);
+        const added = insertedIds.length;
         const alreadyTracked = activeIds.length - added;
+
+        if (added > 0) {
+            await database.query(
+                `UPDATE games SET add_count = add_count + 1 WHERE id = ANY($1::int[])`,
+                [insertedIds]
+            );
+        }
 
         res.json({
             added,
@@ -254,6 +270,11 @@ trackerRouter.post('/games/:gameId', async (req, res) => {
         if (result.rows.length === 0) {
             return res.status(409).json({ error: 'Already tracking this game' });
         }
+
+        await database.query(
+            'UPDATE games SET add_count = add_count + 1 WHERE id = $1',
+            [gameId]
+        );
 
         const game = gameCheck.rows[0];
         res.status(201).json({
@@ -417,6 +438,131 @@ trackerRouter.delete('/games/:gameId/complete', async (req, res) => {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
         console.error('Error unmarking daily:', errorMessage);
         res.status(500).json({ error: 'Failed to unmark daily' });
+    }
+});
+
+/**
+ * @swagger
+ * /gdt/tracker/order:
+ *   put:
+ *     summary: Save custom game order
+ *     tags: [Tracker]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [orders]
+ *             properties:
+ *               orders:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     game_id:
+ *                       type: integer
+ *                     order_index:
+ *                       type: integer
+ *     responses:
+ *       200:
+ *         description: Order saved
+ *       400:
+ *         description: Invalid request body
+ *       401:
+ *         description: Authentication required
+ */
+/**
+ * @swagger
+ * /gdt/tracker/streak:
+ *   post:
+ *     summary: Record daily completion streak
+ *     tags: [Tracker]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Call when all tracked games are marked complete for the day. Idempotent — safe to call multiple times on the same day.
+ *     responses:
+ *       200:
+ *         description: Current streak count
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 streak:
+ *                   type: integer
+ *       401:
+ *         description: Authentication required
+ */
+trackerRouter.post('/streak', async (req, res) => {
+    try {
+        const { userId } = req.user!;
+
+        const result = await database.query(`
+            UPDATE users
+            SET
+                streak_count = CASE
+                    WHEN streak_last_date = CURRENT_DATE     THEN streak_count
+                    WHEN streak_last_date = CURRENT_DATE - 1 THEN streak_count + 1
+                    ELSE 1
+                END,
+                streak_last_date = CASE
+                    WHEN streak_last_date = CURRENT_DATE THEN streak_last_date
+                    ELSE CURRENT_DATE
+                END
+            WHERE id = $1
+            RETURNING streak_count
+        `, [userId]);
+
+        if (!result.rows[0]) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json({ streak: result.rows[0].streak_count });
+
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        console.error('Error updating streak:', errorMessage);
+        res.status(500).json({ error: 'Failed to update streak' });
+    }
+});
+
+trackerRouter.put('/order', async (req, res) => {
+    const client = await database.getClient();
+    try {
+        const { userId } = req.user!;
+        const { orders } = req.body;
+
+        if (!Array.isArray(orders) || orders.length === 0) {
+            client.release();
+            return res.status(400).json({ error: 'orders must be a non-empty array' });
+        }
+
+        await client.query('BEGIN');
+        for (const { game_id, order_index } of orders) {
+            if (!Number.isInteger(game_id) || game_id <= 0 || !Number.isInteger(order_index) || order_index < 0) {
+                await client.query('ROLLBACK');
+                client.release();
+                return res.status(400).json({ error: 'Invalid game_id or order_index' });
+            }
+            await client.query(
+                'UPDATE user_games SET display_order = $1 WHERE user_id = $2 AND game_id = $3',
+                [order_index, userId, game_id]
+            );
+        }
+        await client.query('COMMIT');
+
+        res.json({ message: 'Order saved' });
+
+    } catch (error: unknown) {
+        await client.query('ROLLBACK').catch(() => {});
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        console.error('Error saving game order:', errorMessage);
+        res.status(500).json({ error: 'Failed to save order' });
+    } finally {
+        client.release();
     }
 });
 

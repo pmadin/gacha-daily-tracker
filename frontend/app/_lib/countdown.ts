@@ -41,6 +41,12 @@ export function msToCountdown(ms: number): CountdownParts {
   return { hours, minutes, seconds, totalMs: ms };
 }
 
+export function getLocalResetTime(timezone: string, dailyReset: string): string {
+  const ms = getNextResetMs(timezone, dailyReset);
+  const resetDate = new Date(Date.now() + ms);
+  return resetDate.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
 export function formatCountdown(parts: CountdownParts): string {
   const h = String(parts.hours).padStart(2, '0');
   const m = String(parts.minutes).padStart(2, '0');

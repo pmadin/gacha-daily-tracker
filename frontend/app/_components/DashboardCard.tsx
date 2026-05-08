@@ -1,6 +1,8 @@
 'use client';
 
 import CountdownTimer from './CountdownTimer';
+import { displayServer } from '../_lib/servers';
+import { getLocalResetTime } from '../_lib/countdown';
 
 export interface DashboardGame {
   game_id: number;
@@ -16,9 +18,12 @@ interface Props {
   game: DashboardGame;
   onToggleComplete: (gameId: number, completed: boolean) => void;
   onRemove: (gameId: number) => void;
+  dragHandle?: React.ReactNode;
 }
 
-export default function DashboardCard({ game, onToggleComplete, onRemove }: Props) {
+export default function DashboardCard({ game, onToggleComplete, onRemove, dragHandle }: Props) {
+  const resetAt = game.completed_today ? null : getLocalResetTime(game.timezone, game.daily_reset);
+
   return (
     <div
       className={`flex items-center gap-4 rounded-xl border px-4 py-3 transition-colors ${
@@ -27,6 +32,8 @@ export default function DashboardCard({ game, onToggleComplete, onRemove }: Prop
           : 'border-zinc-800 bg-zinc-900'
       }`}
     >
+      {dragHandle}
+
       <button
         onClick={() => onToggleComplete(game.game_id, !game.completed_today)}
         className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
@@ -56,16 +63,18 @@ export default function DashboardCard({ game, onToggleComplete, onRemove }: Prop
         <span className={`text-sm font-medium leading-snug ${game.completed_today ? 'text-zinc-400 line-through' : 'text-white'}`}>
           {game.name}
         </span>
-        <span className="text-xs text-zinc-500">{game.server}</span>
+        <span className="text-xs text-zinc-500">{displayServer(game.server)}</span>
       </div>
 
       <div className="flex flex-col items-end gap-0.5">
         {game.completed_today ? (
           <span className="text-xs font-medium text-emerald-500">Done</span>
         ) : (
-          <CountdownTimer timezone={game.timezone} dailyReset={game.daily_reset} />
+          <>
+            <CountdownTimer timezone={game.timezone} dailyReset={game.daily_reset} />
+            <span className="text-xs text-zinc-600">resets {resetAt}</span>
+          </>
         )}
-        <span className="text-xs text-zinc-600">until reset</span>
       </div>
 
       <button
