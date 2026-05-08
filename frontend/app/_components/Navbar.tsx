@@ -1,20 +1,31 @@
 'use client';
 
 import Link from 'next/link';
+import { useRef, useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '../_context/AuthContext';
 
 export default function Navbar() {
   const { user, logout, isLoading } = useAuth();
   const pathname = usePathname();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleOutsideClick(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
 
   const navLink = (href: string, label: string) => (
     <Link
       href={href}
       className={`text-sm font-medium transition-colors ${
-        pathname === href
-          ? 'text-white'
-          : 'text-zinc-400 hover:text-white'
+        pathname === href ? 'text-white' : 'text-zinc-400 hover:text-white'
       }`}
     >
       {label}
@@ -36,22 +47,41 @@ export default function Navbar() {
             Gacha<span className="text-violet-400">Daily</span>
           </Link>
           <nav className="flex items-center gap-4">
-            {navLink('/', 'Games')}
+            {navLink('/games', 'Games')}
             {navLink('/dashboard', 'My List')}
           </nav>
         </div>
 
         <div className="flex items-center gap-3">
           {isLoading ? null : user ? (
-            <>
-              <span className="text-sm text-zinc-400">{user.username}</span>
+            <div className="relative" ref={dropdownRef}>
               <button
-                onClick={logout}
-                className="rounded-md border border-zinc-700 px-3 py-1.5 text-sm text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white"
+                onClick={() => setDropdownOpen(o => !o)}
+                className="flex items-center gap-1 text-sm text-zinc-400 transition-colors hover:text-white"
               >
-                Sign out
+                {user.username}
+                <svg width="10" height="10" viewBox="0 0 10 10" className="mt-0.5 opacity-50" fill="currentColor">
+                  <path d="M1 3l4 4 4-4"/>
+                </svg>
               </button>
-            </>
+              {dropdownOpen && (
+                <div className="absolute right-0 top-full mt-2 w-36 rounded-lg border border-zinc-700 bg-zinc-900 py-1 shadow-xl">
+                  <Link
+                    href="/profile"
+                    onClick={() => setDropdownOpen(false)}
+                    className="block px-4 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-white"
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    onClick={() => { logout(); setDropdownOpen(false); }}
+                    className="w-full px-4 py-2 text-left text-sm text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-white"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <>
               <Link

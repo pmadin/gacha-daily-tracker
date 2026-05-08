@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../_context/AuthContext';
 import { getAnonGameIds, clearAnonGames } from '../_lib/storage';
-import { bulkAddGames } from '../_lib/api';
 
 const PASSWORD_RULES = [
   { label: 'At least 15 characters',        test: (p: string) => p.length >= 15 },
@@ -35,20 +34,19 @@ export default function RegisterPage() {
     setError('');
     setLoading(true);
     try {
+      const anonGameIds = getAnonGameIds();
+
       const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password, confirmPassword: confirm }),
+        body: JSON.stringify({ username, email, password, confirmPassword: confirm, anonGameIds }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Registration failed');
 
       authLogin(data.token, data.user);
 
-      const anonGames = getAnonGameIds();
-      if (anonGames.length > 0) {
-        try { await bulkAddGames(data.token, anonGames); clearAnonGames(); } catch { /* non-fatal — keep localStorage as fallback */ }
-      }
+      if (data.synced) clearAnonGames();
 
       router.push('/dashboard');
     } catch (err: unknown) {

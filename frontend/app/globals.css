@@ -9,3 +9,26 @@ body {
   background: var(--background);
   color: var(--foreground);
 }
+
+/* Hide native scrollbar while keeping scroll functionality */
+.scroll-x-custom {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scroll-x-custom::-webkit-scrollbar {
+  display: none;
+}
+
+/* Infinite marquee scroll */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation-name: marquee;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.animate-marquee:hover {
+  animation-play-state: paused;
+}

@@ -73,6 +73,38 @@ export function unmarkAnonComplete(gameId: number): void {
   ));
 }
 
+// --- Anon streak ---
+
+const STREAK_KEY = 'gdt_streak';
+
+interface StreakData {
+  count: number;
+  lastDate: string | null;
+}
+
+function readStreak(): StreakData {
+  try {
+    return JSON.parse(localStorage.getItem(STREAK_KEY) ?? 'null') ?? { count: 0, lastDate: null };
+  } catch {
+    return { count: 0, lastDate: null };
+  }
+}
+
+export function getAnonStreak(): number {
+  return readStreak().count;
+}
+
+export function updateAnonStreak(): number {
+  const streak = readStreak();
+  const todayStr = today();
+  if (streak.lastDate === todayStr) return streak.count;
+  const d = new Date(); d.setDate(d.getDate() - 1);
+  const yesterday = d.toISOString().split('T')[0];
+  const newCount = streak.lastDate === yesterday ? streak.count + 1 : 1;
+  localStorage.setItem(STREAK_KEY, JSON.stringify({ count: newCount, lastDate: todayStr }));
+  return newCount;
+}
+
 // --- Auth token/user ---
 
 export function getToken(): string | null {
