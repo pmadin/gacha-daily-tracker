@@ -85,9 +85,12 @@ router.get('/popular', async (req, res) => {
     try {
         const limit = Math.min(Math.max(1, parseInt(req.query.limit as string) || 10), 50);
         const result = await database.query(
-            `SELECT id, name, server, icon_name, add_count
-             FROM games
-             WHERE is_active = true
+            `SELECT * FROM (
+                SELECT DISTINCT ON (name) id, name, server, icon_name, add_count
+                FROM games
+                WHERE is_active = true
+                ORDER BY name, add_count DESC
+             ) AS top_games
              ORDER BY add_count DESC, name ASC
              LIMIT $1`,
             [limit]

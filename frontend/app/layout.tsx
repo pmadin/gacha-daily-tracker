@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Geist } from 'next/font/google';
+import { Geist, Plus_Jakarta_Sans, JetBrains_Mono, Noto_Sans_JP } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from './_context/AuthContext';
 import Navbar from './_components/Navbar';
@@ -8,6 +8,9 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist' });
+const plusJakartaSans = Plus_Jakarta_Sans({ subsets: ['latin'], variable: '--font-display' });
+const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrains-mono' });
+const notoSansJP = Noto_Sans_JP({ subsets: ['latin'], variable: '--font-noto-jp' });
 
 export const metadata: Metadata = {
   title: 'Gacha Daily Tracker',
@@ -16,8 +19,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geist.variable} h-full`}>
-      <body className="flex min-h-full flex-col bg-zinc-950 font-sans antialiased">
+    <html lang="en" className={`${geist.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable} ${notoSansJP.variable} h-full`}>
+      <body className="flex min-h-full flex-col antialiased">
         <AuthProvider>
           <Navbar />
           <main className="flex-1">{children}</main>

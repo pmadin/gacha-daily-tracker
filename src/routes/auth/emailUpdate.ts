@@ -180,8 +180,7 @@ emailRouter.patch('/update-email', async (req: Request, res: Response) => {
 
         const updatedUser = updateResult.rows[0];
 
-        // Security audit log
-        console.log(`📧 Email updated for user: ${user.username} (${user.email} -> ${newEmail})`);
+        console.log('User email updated successfully');
 
         res.json({
             message: 'Email updated successfully',
