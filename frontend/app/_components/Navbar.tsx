@@ -24,19 +24,33 @@ export default function Navbar() {
   const navLink = (href: string, label: string) => (
     <Link
       href={href}
-      className={`text-sm font-medium transition-colors ${
-        pathname === href ? 'text-white' : 'text-zinc-400 hover:text-white'
-      }`}
+      style={{
+        fontFamily: 'var(--font-display)',
+        fontWeight: 500,
+        fontSize: 14,
+        color: pathname === href ? 'var(--text)' : 'var(--text3)',
+        textDecoration: 'none',
+        transition: 'color 0.15s',
+      }}
     >
       {label}
     </Link>
   );
 
+  const initials = user ? user.username.slice(0, 1).toUpperCase() : '';
+
   return (
-    <header className="sticky top-0 z-50 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur">
+    <header
+      className="sticky top-0 z-50 backdrop-blur"
+      style={{ borderBottom: '1px solid var(--border)', background: 'rgba(10,10,15,0.88)' }}
+    >
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
         <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-2 text-base font-bold tracking-tight text-white">
+          <Link
+            href="/"
+            className="flex items-center gap-2"
+            style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 15, color: 'var(--text)', textDecoration: 'none' }}
+          >
             <svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
               <rect width="32" height="32" rx="7" fill="#7c3aed"/>
               <polygon points="16,5 7,14 16,17" fill="white" opacity="0.75"/>
@@ -44,7 +58,7 @@ export default function Navbar() {
               <polygon points="7,14 16,27 16,17"  fill="white" opacity="0.40"/>
               <polygon points="25,14 16,17 16,27" fill="white" opacity="0.62"/>
             </svg>
-            Gacha<span className="text-violet-400">Daily</span>
+            Gacha<span style={{ color: 'var(--purple-bright)' }}>Daily</span>
           </Link>
           <nav className="flex items-center gap-4">
             {navLink('/games', 'Games')}
@@ -57,25 +71,43 @@ export default function Navbar() {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen(o => !o)}
-                className="flex items-center gap-1 text-sm text-zinc-400 transition-colors hover:text-white"
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, var(--purple), var(--cyan))',
+                  color: 'white',
+                  fontWeight: 700,
+                  fontSize: 13,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-display)',
+                  flexShrink: 0,
+                }}
+                title={user.username}
               >
-                {user.username}
-                <svg width="10" height="10" viewBox="0 0 10 10" className="mt-0.5 opacity-50" fill="currentColor">
-                  <path d="M1 3l4 4 4-4"/>
-                </svg>
+                {initials}
               </button>
               {dropdownOpen && (
-                <div className="absolute right-0 top-full mt-2 w-36 rounded-lg border border-zinc-700 bg-zinc-900 py-1 shadow-xl">
+                <div
+                  className="absolute right-0 top-full mt-2 w-36 py-1 shadow-xl"
+                  style={{ borderRadius: 10, border: '1px solid var(--border2)', background: 'var(--bg2)' }}
+                >
                   <Link
                     href="/profile"
                     onClick={() => setDropdownOpen(false)}
-                    className="block px-4 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-white"
+                    className="block px-4 py-2 text-sm transition-colors hover:bg-zinc-800"
+                    style={{ color: 'var(--text2)', textDecoration: 'none' }}
                   >
                     Profile
                   </Link>
                   <button
                     onClick={() => { logout(); setDropdownOpen(false); }}
-                    className="w-full px-4 py-2 text-left text-sm text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-white"
+                    className="w-full px-4 py-2 text-left text-sm transition-colors hover:bg-zinc-800"
+                    style={{ color: 'var(--text2)' }}
                   >
                     Sign out
                   </button>
@@ -86,13 +118,32 @@ export default function Navbar() {
             <>
               <Link
                 href="/login"
-                className="text-sm text-zinc-400 transition-colors hover:text-white"
+                style={{
+                  border: '1px solid var(--border2)',
+                  color: 'var(--text2)',
+                  borderRadius: 8,
+                  padding: '6px 14px',
+                  fontFamily: 'var(--font-display)',
+                  fontWeight: 500,
+                  fontSize: 13,
+                  textDecoration: 'none',
+                  transition: 'border-color 0.15s, color 0.15s',
+                }}
               >
                 Sign in
               </Link>
               <Link
                 href="/register"
-                className="rounded-md bg-violet-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-violet-500"
+                style={{
+                  background: 'var(--purple)',
+                  color: 'white',
+                  borderRadius: 8,
+                  padding: '6px 14px',
+                  fontFamily: 'var(--font-display)',
+                  fontWeight: 600,
+                  fontSize: 13,
+                  textDecoration: 'none',
+                }}
               >
                 Sign up
               </Link>

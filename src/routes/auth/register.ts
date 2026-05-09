@@ -205,9 +205,7 @@ registerRouter.post('/register', async (req: Request, res: Response) => {
 
         const user = result.rows[0];
 
-        // Security audit log
-        console.log(`🔐 New user registered: ${username} (${email}) with enhanced security`);
-        console.log(`   Timezone: ${userTimezone} (${wasDetected ? 'auto-detected' : 'user-provided'})`);
+        console.log('User registered successfully');
 
         res.status(201).json({
             message: 'User created successfully',
