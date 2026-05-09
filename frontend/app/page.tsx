@@ -131,6 +131,14 @@ export default function HomePage() {
   const loading = authLoading || myGamesLoading;
 
   const popContext: 'logged-out' | 'empty' | 'has-games' =
+    !isLoggedIn ? 'logged-out' : hasGames ? 'has-games' : 'empty';
+
+  if (loading) {
+    return <div style={{ minHeight: 'calc(100vh - 56px)', background: 'var(--bg)' }} />;
+  }
+  const loading = authLoading || myGamesLoading;
+
+  const popContext: 'logged-out' | 'empty' | 'has-games' =
     hasGames ? 'has-games' : isLoggedIn ? 'empty' : 'logged-out';
 
   if (loading) {
@@ -138,6 +146,13 @@ export default function HomePage() {
   }
 
   return (
+    <>
+      {/* State-dependent top section */}
+      {!isLoggedIn ? (
+        <MarketingHero />
+      ) : hasGames ? (
+        <div className="mx-auto max-w-6xl px-4 pt-8 pb-2">
+          <GamesTray games={myGames} onToggle={handleToggle} />
     <>
       {/* State-dependent top section:
           - anon, no games  → MarketingHero
@@ -148,6 +163,11 @@ export default function HomePage() {
         <div className="mx-auto max-w-6xl px-4 pt-8 pb-2">
           <GamesTray games={myGames} onToggle={handleToggle} />
         </div>
+      ) : (
+        <div className="mx-auto max-w-6xl px-4 pt-8 pb-2">
+          <EmptyDashboard />
+        </div>
+      )}
       ) : isLoggedIn ? (
         <div className="mx-auto max-w-6xl px-4 pt-8 pb-2">
           <EmptyDashboard />
