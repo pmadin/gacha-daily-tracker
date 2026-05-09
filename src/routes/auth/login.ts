@@ -131,8 +131,7 @@ loginRouter.post('/login', async (req: Request, res: Response) => {
             }
         );
 
-        // Security audit log
-        console.log(`🔓 User logged in: ${user.username} (${user.email})`);
+        console.log('User login successful');
 
         res.json({
             message: 'Login successful',

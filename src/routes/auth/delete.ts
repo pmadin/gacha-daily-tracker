@@ -211,8 +211,7 @@ deleteRouter.delete('/account', async (req: Request, res: Response) => {
         // Commit transaction
         await client.query('COMMIT');
 
-        // Log the deletion for audit purposes
-        console.log(`🗑️  User account deleted: ${user.username} (${user.email})`);
+        console.log('User account deleted successfully');
         console.log(`   Cascade deleted: ${stats.games_count} games, ${stats.completions_count} completions, ${stats.reminders_count} reminders`);
 
         // Return success with user details

@@ -17,7 +17,8 @@
       "Bash(git commit -m ' *)",
       "Bash(npm install *)",
       "Bash(Get-ChildItem *)",
-      "Bash(Select-Object FullName)"
+      "Bash(Select-Object FullName)",
+      "Bash(xargs grep -l \"localhost\")"
     ],
     "deny": [],
     "ask": []

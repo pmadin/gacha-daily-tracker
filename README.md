@@ -1,8 +1,10 @@
 # Gacha Daily Tracker API
 
-REST API and web frontend for tracking daily tasks across 330+ gacha games with timezone-aware reset timers.
+REST API and web frontend for tracking daily tasks across 345 gacha games with timezone-aware reset timers.
 
-**Status:** In active development · Backend on Heroku · Frontend on Vercel
+**Live:** [gachadailytracker.com](https://gachadailytracker.com)
+
+**Status:** V2 complete · Backend on Heroku · Frontend on Vercel
 
 ---
 
@@ -15,7 +17,7 @@ REST API and web frontend for tracking daily tasks across 330+ gacha games with 
 | Database | PostgreSQL (Docker locally, Heroku Postgres remotely) |
 | Auth | JWT + bcrypt + pepper |
 | API Docs | Swagger / OpenAPI 3.0 |
-| Frontend | Next.js 16 / React 19 / Tailwind CSS |
+| Frontend | Next.js 16 / React 19 / Tailwind v4 |
 | Game Data | [cicerakes/Game-Time-Master](https://github.com/cicerakes/Game-Time-Master) (GPL-3.0) |
 
 ---
@@ -221,114 +223,12 @@ npm run dev                         # http://localhost:3000
 
 ---
 
-## NPM Scripts
-
-```bash
-npm run local       # local Docker DB (.env)
-npm run dev         # remote Heroku DB (.env.development)
-npm run prod        # production (.env.production)
-npm run build       # compile TypeScript → dist/
-npm start           # run compiled dist/
-
-npm run db-reset    # restart Docker postgres container
-npm run format:write  # auto-format with Prettier
-npm run lint        # ESLint
-```
-
----
-
 ## Scripts
 
 | Script | Purpose |
 |--------|---------|
 | `scripts/download-icons.js` | Downloads 96×96 GIF game icons from Game-Time-Master into `frontend/public/icons/` |
 | `scripts/download-game-data.js` | Re-fetches the game list from upstream and updates `data/game-data-backup.json` |
-
----
-
-## Database Commands
-
-### Local Docker
-
-```bash
-# Connect to local Docker postgres
-docker exec -it gacha_tracker_db psql -U developer -d gacha_tracker
-
-# Start / stop container
-docker-compose up -d
-docker-compose down
-
-# Useful psql commands
-\dt                          # list all tables
-SELECT * FROM table_name;    # query a table
-SELECT COUNT(*) FROM games WHERE is_active = true;
-```
-
-### Remote Heroku
-
-```bash
-# Connect to Heroku postgres
-heroku pg:psql -a gachadailytracker
-
-# Same psql commands apply once connected
-\dt
-SELECT * FROM table_name;
-```
-
----
-
-## API Endpoints
-
-Base path: `/gdt`
-
-### Public (no auth)
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/games` | List games — supports filters: `name`, `search`, `server`, `timezone`, `reset_time`, `limit`, `offset`, `sort_by`, `order`, `includeDeleted`, `deletedOnly` |
-| GET | `/games/:id` | Get game by ID |
-| GET | `/games/deleted` | List soft-deleted games |
-| GET | `/games/servers/list` | Server regions with game counts |
-| GET | `/timezones` | All supported timezones grouped by region |
-| GET | `/timezones/detect` | Auto-detect timezone from headers/IP |
-| GET | `/health` | Database + backup file health check |
-| GET | `/status` | HTML status page |
-
-### Auth
-
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/auth/register` | Register (`username`, `email`, `password`, `confirmPassword`, `registrationToken`) |
-| POST | `/auth/login` | Login → returns JWT (30-day) |
-| PUT | `/auth/profile` | Update profile (`timezone`, `first_name`, `last_name`, `phone`) |
-| PATCH | `/auth/update-password` | Change password |
-| PATCH | `/auth/update-email` | Change email |
-| DELETE | `/auth/account` | Delete account (irreversible) |
-
-### Game Management (JWT required)
-
-| Method | Path | Description |
-|--------|------|-------------|
-| PATCH | `/update/games/:id` | Update game (`daily_reset`, `timezone`, `is_active`, `reason`) |
-| POST | `/update/add/game` | Add new game |
-| DELETE | `/update/delete/game/:id` | Soft or permanent delete (`permanent: true/false`) |
-| POST | `/update/games/import` | Import from GitHub source |
-
-**Import body options:**
-```json
-{ "forceRefresh": true }           // bypass 24h cache, fetch fresh from GitHub
-{ "fullReset": true, "forceRefresh": true }  // deactivate all games first, then reimport
-```
-
-### Admin (role 3+ required)
-
-| Method | Path | Description |
-|--------|------|-------------|
-| PATCH | `/admin/users/role/:username` | Update user role (`newRole`: 1-4, `reason`) |
-| GET | `/admin/users` | List all users (paginated) |
-| GET | `/admin/users/search` | Search users |
-
-**Role system:** 1=User · 2=Premium · 3=Admin · 4=Owner
 
 ---
 

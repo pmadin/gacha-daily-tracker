@@ -5,28 +5,29 @@ const options = {
     definition: {
         openapi: '3.0.0',
         info: {
-            title: '🎮 Gacha Daily Tracker API',
+            title: 'Gacha Daily Tracker API',
             version: '1.0.0',
             description: `
-        A modern API for tracking daily tasks and reset times across multiple gacha games.
-        
-        Never miss your dailies again! This API helps you track reset times, manage reminders, 
-        and stay on top of your gacha game routine across multiple servers and timezones.
-        
-        ## Features
-        - 🕐 Real-time reset tracking for 300+ gacha games
-        - 🌍 Multi-timezone support
-        - 📱 Custom reminder settings
-        - 📊 Completion tracking and statistics
-        - 🔄 Automatic data sync from community sources
-      `,
+A REST API for tracking daily reset times across 330+ gacha games.
+
+Never miss your dailies again! Track reset times across multiple servers
+and timezones, manage your personal game list, and stay on top of your
+daily routine.
+
+## Features
+- Real-time reset tracking for 330+ gacha games
+- Multi-timezone support via IANA timezone database
+- JWT authentication with bcrypt + HMAC pepper
+- Anonymous tracking — no account required
+- Full OpenAPI 3.0 documentation
+`,
             contact: {
                 name: 'Gacha Daily Tracker',
-                url: process.env.FRONTEND_URL ?? 'https://github.com/pmadin/gacha-daily-tracker',
+                url: 'https://github.com/pmadin/GachaDailyTracker',
             },
             license: {
-                name: 'MIT',
-                url: 'https://opensource.org/licenses/MIT',
+                name: 'GPL-3.0',
+                url: 'https://opensource.org/licenses/GPL-3.0',
             },
         },
         components: {

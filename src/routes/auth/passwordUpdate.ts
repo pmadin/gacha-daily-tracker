@@ -192,8 +192,7 @@ passwordRouter.patch('/update-password', async (req: Request, res: Response) => 
         // Commit transaction
         await client.query('COMMIT');
 
-        // Security audit log
-        console.log(`🔐 Password updated for user: ${user.username} (${user.email})`);
+        console.log('User password updated successfully');
 
         res.json({
             message: 'Password updated successfully',
