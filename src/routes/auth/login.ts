@@ -1,21 +1,10 @@
 import express, { Request, Response, Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
 import database from '../../config/database';
+import { addPepper, JWT_SECRET } from '../../utils/crypto';
 
 const loginRouter: Router = express.Router();
-
-// Pepper: A secret value added to all passwords (stored in environment)
-const PEPPER = process.env.PASSWORD_PEPPER || 'fallback-pepper-change-in-production';
-
-/**
- * Enhanced password hashing with salt + pepper
- */
-function addPepper(password: string): string {
-    // Combine password with pepper using HMAC
-    return crypto.createHmac('sha256', PEPPER).update(password).digest('hex');
-}
 
 /**
  * @swagger
@@ -123,7 +112,7 @@ loginRouter.post('/login', async (req: Request, res: Response) => {
                 role: user.role,
                 iat: Math.floor(Date.now() / 1000) // Issued at time
             },
-            process.env.JWT_SECRET || 'fallback-secret-change-in-production',
+            JWT_SECRET,
             {
                 expiresIn: '30d',
                 issuer: 'gacha-daily-tracker',

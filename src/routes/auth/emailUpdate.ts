@@ -1,22 +1,11 @@
 import express, { Request, Response, Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
 import validator from 'validator';
 import database from '../../config/database';
+import { addPepper, JWT_SECRET } from '../../utils/crypto';
 
 const emailRouter: Router = express.Router();
-
-// Pepper: A secret value added to all passwords (stored in environment)
-const PEPPER = process.env.PASSWORD_PEPPER || 'fallback-pepper-change-in-production';
-
-/**
- * Enhanced password hashing with salt + pepper
- */
-function addPepper(password: string): string {
-    // Combine password with pepper using HMAC
-    return crypto.createHmac('sha256', PEPPER).update(password).digest('hex');
-}
 
 /**
  * @swagger
@@ -96,7 +85,7 @@ emailRouter.patch('/update-email', async (req: Request, res: Response) => {
         try {
             decoded = jwt.verify(
                 token, 
-                process.env.JWT_SECRET || 'fallback-secret-change-in-production'
+                JWT_SECRET
             );
         } catch (error) {
             return res.status(401).json({ error: 'Invalid or expired token' });

@@ -2,6 +2,7 @@ import express, { Router, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import database from '../../config/database';
 import TimezoneService from '../../services/timezoneService';
+import { JWT_SECRET } from '../../utils/crypto';
 
 const profileRoutes: Router = express.Router();
 
@@ -67,7 +68,7 @@ profileRoutes.get('/profile', async (req: Request, res: Response) => {
         const token = authHeader.substring(7);
         const decoded = jwt.verify(
             token,
-            process.env.JWT_SECRET || 'fallback-secret-change-in-production'
+            JWT_SECRET
         ) as any;
 
         const result = await database.query(
@@ -103,7 +104,7 @@ profileRoutes.put('/profile', async (req: Request, res: Response) => {
         const token = authHeader.substring(7);
         const decoded = jwt.verify(
             token,
-            process.env.JWT_SECRET || 'fallback-secret-change-in-production'
+            JWT_SECRET
         ) as any;
 
         const { timezone, first_name, last_name, phone } = req.body;
