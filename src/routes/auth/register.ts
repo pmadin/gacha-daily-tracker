@@ -1,22 +1,11 @@
 import express, { Request, Response, Router } from 'express';
 import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
 import validator from 'validator';
 import database from '../../config/database';
 import TimezoneService from '../../services/timezoneService';
+import { addPepper } from '../../utils/crypto';
 
 const registerRouter: Router = express.Router();
-
-// Pepper: A secret value added to all passwords (stored in environment)
-const PEPPER = process.env.PASSWORD_PEPPER || 'fallback-pepper-change-in-production';
-
-/**
- * Enhanced password hashing with salt + pepper
- */
-function addPepper(password: string): string {
-    // Combine password with pepper using HMAC
-    return crypto.createHmac('sha256', PEPPER).update(password).digest('hex');
-}
 
 /**
  * @swagger

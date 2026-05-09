@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../utils/crypto';
 
 // Extend Express Request type to include user
 declare global {
@@ -27,7 +28,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     }
 
     try {
-        const secret = process.env.JWT_SECRET || 'fallback-secret';
+        const secret = JWT_SECRET;
         const decoded = jwt.verify(token, secret) as any;
 
         req.user = {
@@ -63,7 +64,7 @@ export const optionalAuth = (req: Request, res: Response, next: NextFunction) =>
     }
 
     try {
-        const secret = process.env.JWT_SECRET || 'fallback-secret';
+        const secret = JWT_SECRET;
         const decoded = jwt.verify(token, secret) as any;
 
         req.user = {

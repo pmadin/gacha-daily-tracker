@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import database from '../config/database';
+import { JWT_SECRET } from '../utils/crypto';
 
 // Role Enums for consistency
 export const ROLES = {
@@ -32,7 +33,7 @@ export const requireAdmin = async (req: Request, res: Response, next: NextFuncti
         try {
             decoded = jwt.verify(
                 token,
-                process.env.JWT_SECRET || 'fallback-secret-change-in-production'
+                JWT_SECRET
             );
         } catch (jwtError) {
             return res.status(401).json({
