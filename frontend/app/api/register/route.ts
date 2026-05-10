@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     const loginRes = await fetch(`${API_URL}/gdt/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: registrationFields.email, password: registrationFields.password }),
+      body: JSON.stringify({ identifier: registrationFields.email, password: registrationFields.password }),
     });
 
     const loginData = await loginRes.json();

@@ -313,8 +313,8 @@ const customCss = `
 
 const swaggerOptions = {
     customCss,
-    customSiteTitle: '🎮 Gacha Daily Tracker API',
-    customfavIcon: '/favicon.ico',
+    customSiteTitle: 'Gacha Daily Tracker API',
+    customfavIcon: '/public/images/favicon.svg',
     swaggerOptions: {
         persistAuthorization: true,
         displayRequestDuration: true,
@@ -329,9 +329,9 @@ const swaggerOptions = {
         validatorUrl: null, // Disable schema validation
     },
     customHead: `
-        <link rel="icon" type="image/x-icon" href="/favicon.ico">
         <link rel="icon" type="image/svg+xml" href="/public/images/favicon.svg">
         <link rel="icon" type="image/png" sizes="96x96" href="/public/images/favicon-96x96.png">
+        <link rel="icon" type="image/x-icon" href="/favicon.ico">
         <link rel="apple-touch-icon" sizes="180x180" href="/public/images/apple-touch-icon.png">
         <link rel="manifest" href="/site.webmanifest">
         <meta name="msapplication-TileColor" content="#667eea">

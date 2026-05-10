@@ -76,7 +76,13 @@ trackerRouter.get('/games', async (req, res) => {
             LEFT JOIN daily_completions dc
                 ON dc.user_id = ug.user_id
                 AND dc.game_id = ug.game_id
-                AND dc.completion_date = CURRENT_DATE
+                AND dc.completion_date = (
+                    CASE
+                        WHEN (CURRENT_TIMESTAMP AT TIME ZONE g.timezone)::time >= g.daily_reset
+                        THEN (CURRENT_TIMESTAMP AT TIME ZONE g.timezone)::date
+                        ELSE (CURRENT_TIMESTAMP AT TIME ZONE g.timezone)::date - 1
+                    END
+                )
             WHERE ug.user_id = $1
             ORDER BY ug.display_order ASC, g.name ASC
         `, [userId]);
@@ -382,7 +388,16 @@ trackerRouter.post('/games/:gameId/complete', async (req, res) => {
 
         await database.query(
             `INSERT INTO daily_completions (user_id, game_id, completion_date)
-             VALUES ($1, $2, CURRENT_DATE)
+             VALUES (
+                 $1,
+                 $2,
+                 (SELECT CASE
+                     WHEN (CURRENT_TIMESTAMP AT TIME ZONE timezone)::time >= daily_reset
+                     THEN (CURRENT_TIMESTAMP AT TIME ZONE timezone)::date
+                     ELSE (CURRENT_TIMESTAMP AT TIME ZONE timezone)::date - 1
+                  END
+                  FROM games WHERE id = $2)
+             )
              ON CONFLICT (user_id, game_id, completion_date) DO NOTHING`,
             [userId, gameId]
         );
@@ -428,7 +443,15 @@ trackerRouter.delete('/games/:gameId/complete', async (req, res) => {
 
         await database.query(
             `DELETE FROM daily_completions
-             WHERE user_id = $1 AND game_id = $2 AND completion_date = CURRENT_DATE`,
+             WHERE user_id = $1 AND game_id = $2
+             AND completion_date = (
+                 SELECT CASE
+                     WHEN (CURRENT_TIMESTAMP AT TIME ZONE timezone)::time >= daily_reset
+                     THEN (CURRENT_TIMESTAMP AT TIME ZONE timezone)::date
+                     ELSE (CURRENT_TIMESTAMP AT TIME ZONE timezone)::date - 1
+                 END
+                 FROM games WHERE id = $2
+             )`,
             [userId, gameId]
         );
 

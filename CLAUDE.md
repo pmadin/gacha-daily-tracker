@@ -2,7 +2,7 @@
 
 Daily-reset tracker for 330+ gacha games. Users browse a game list, add games to a personal list, and mark daily completions. Anonymous use via localStorage; optional account creation syncs data to the DB.
 
-**Current state:** V2 complete. Backend on Heroku, frontend deployed to Vercel on `main`.
+**Current state:** V2.5. Backend on Heroku, frontend deployed to Vercel on `main`. V2.5 was a UI/frontend redesign pass — no new features, mainly performance, CLS fixes, and bug fixes.
 
 ---
 
@@ -47,7 +47,7 @@ gacha_tracker/
 
 **Pages:**
 - `/` (`app/page.tsx`) — Home: "My Games" horizontal scroll (marquee when >9 games), "Popular Games" top-10 list, About section.
-- `/games` (`app/games/page.tsx`) — Game browser: search, server group filter (canonical groups via `servers.ts`), paginated grid with `Pagination` component.
+- `/games` — **Hybrid SSR.** `app/games/page.tsx` is an async Server Component that fetches the first 48 games at render time and passes them as `initialGames`/`initialTotal` props to `app/games/GamesClient.tsx` (the `'use client'` component that owns all search/filter/pagination state). The skeleton only shows on subsequent page/filter changes, not on first load.
 - `/dashboard` (`app/dashboard/page.tsx`) — My List: sort by reset/alpha/custom (drag with @dnd-kit), streak display, progress bar, confetti on all-complete.
 - `/profile` (`app/profile/page.tsx`) — Account info + delete account (client-side identifier validation, 403 → "Incorrect password").
 - `/login`, `/register` — Auth forms.
@@ -65,6 +65,7 @@ gacha_tracker/
 - `gdt_anon_list` — anon tracked games (`AnonEntry[]`)
 - `gdt_token` / `gdt_user` — auth persistence
 - `gdt_order` — custom dashboard sort order (`number[]` of game_ids)
+- `gdt_sort` — persisted dashboard sort preference (`'reset' | 'alpha' | 'custom'`); read on mount, written on every sort change
 - `gdt_streak` — anon streak `{ count, lastDate }` (ISO date string)
 - `gdt_confetti_date` — ISO date of last confetti fire (prevents re-trigger)
 
@@ -141,11 +142,28 @@ heroku pg:psql -a gachadailytracker
 - **Anon storage stores full Game objects**, not just IDs — avoids a pagination lookup problem where games beyond the first 48 results couldn't be found by ID alone.
 - **`AuthContext.isLoading`** flag prevents race conditions on mount; always gate effects on `!authLoading`.
 - **`apiFetch` header order matters** — `...init` must spread BEFORE `headers: { 'Content-Type', ...init?.headers }` so Content-Type is never overwritten by the caller's auth header object.
-- **Streak update happens in `handleToggleComplete`**, not a `useEffect` — avoids false triggers on page load or auth state change when anon games happen to be all-complete.
+- **Streak update happens in both `handleToggleComplete` (dashboard) and `handleToggle` (home page)**, not a `useEffect` — avoids false triggers on load. Both pages call `checkStreak`/`updateAnonStreak` and fire confetti when the last game is marked done.
 - **Confetti deduplication** uses `localStorage('gdt_confetti_date')` (not a ref) so it survives page refreshes.
 - **Register proxy** (`frontend/app/api/register/route.ts`): backend register returns `{ message, user }` with no JWT, so the proxy calls login automatically and also bulk-syncs anon games server-to-server (bypasses CORS). Client clears anon games only if `synced === true`.
 - **`PUT /tracker/order` uses `database.getClient()`** for the transaction loop — `database.query()` gets a different connection per call, so BEGIN/COMMIT/ROLLBACK would be on separate connections and have no effect.
 - **Custom sort order**: loaded from localStorage on mount via `useEffect` (not lazy `useState` — avoids SSR crash). If no saved order, seeded from DB `display_order` on first load for logged-in users.
 - **Server filter** in games route accepts comma-separated values (`server=JP,KR`) mapped from canonical `SERVER_GROUPS`. Empty-after-filter arrays are ignored (no filter applied) rather than returning zero results.
 - **`useMemo([games, sortBy])`** for dashboard sort keeps sort from re-running on every countdown tick.
-- **Marquee scroll** on home page activates when >9 tracked games: uses `inline-flex` (not `flex`) so `translateX(-50%)` references content width, not viewport width. Cards are doubled in the DOM for seamless loop.
+- **Marquee scroll** on home page activates when >9 tracked games: uses `inline-flex` (not `flex`) so `translateX(-50%)` references content width, not viewport width. Cards are doubled in the DOM for seamless loop. Duration = `sorted.length * 3` seconds.
+- **Icon img CLS fix**: every game icon `<img>` is wrapped in a fixed-size `<div>` (matching width/height) with `style={{ aspectRatio: '1/1' }}` on the img so `onError` src-swaps don't cause layout shift.
+- **Home page CLS fix**: while auth resolves, the top section renders a `min-height: 220px` animate-pulse skeleton instead of a blank div so the Popular Games and Features sections below never shift position.
+- **`/games` GamesClient skip-first-load**: a `useRef(initialGames.length > 0)` flag skips the mount `useEffect` fetch when SSR already provided data, preventing a redundant duplicate API call on hydration.
+
+---
+
+## Backend bug fixes (V2.5)
+
+- **Game-timezone-aware `completion_date`** (fixed in `tracker.ts`): all three completion queries (`GET /tracker/games` LEFT JOIN, `POST /complete` INSERT, `DELETE /complete`) now compute the **game-local period date** instead of using `CURRENT_DATE` (UTC). Formula: if current time in the game's timezone ≥ `daily_reset` → use today's local date; else → yesterday's local date. This fixes a bug where completing games just before their reset (e.g., at 3 AM for a 4 AM reset) kept them marked done after the reset fired, since both timestamps shared the same UTC calendar date.
+
+---
+
+## Favicon / API docs
+
+- `src/public/favicon.ico` — multi-size ICO (16×16 + 32×32) with a 4-point sparkle star (`#7c3aed` on `#0a0a0f`). Generated via Pillow using cubic bezier path subdivided into a polygon.
+- `src/public/images/favicon.svg` — same sparkle in SVG with `rx="4"` rounded background.
+- Swagger UI (`/gdt/api-docs`): emoji removed from tab title; `customfavIcon` now points to the SVG; `<link rel="icon">` order is SVG → PNG → ICO so modern browsers get the vector.

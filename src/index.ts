@@ -66,6 +66,14 @@ for (const testPath of publicPaths) {
 app.use('/public', express.static(publicPath));
 
 // Favicon routes - serve from the images directory
+app.get('/favicon.svg', (req, res) => {
+    const svgPath = path.join(publicPath, 'images', 'favicon.svg');
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.sendFile(svgPath, (err) => {
+        if (err) res.status(404).send('Not found');
+    });
+});
+
 app.get('/favicon.ico', (req, res) => {
     const faviconPath = path.join(publicPath, 'images', 'favicon.ico');
     res.sendFile(faviconPath, (err) => {
