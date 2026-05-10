@@ -10,7 +10,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist' });
 const plusJakartaSans = Plus_Jakarta_Sans({ subsets: ['latin'], variable: '--font-display' });
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrains-mono' });
-const notoSansJP = Noto_Sans_JP({ subsets: ['latin'], variable: '--font-noto-jp' });
+const notoSansJP = Noto_Sans_JP({ subsets: ['latin'], variable: '--font-noto-jp', display: 'optional' });
 
 export const metadata: Metadata = {
   title: 'Gacha Daily Tracker',

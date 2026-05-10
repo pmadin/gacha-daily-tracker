@@ -8,6 +8,7 @@ interface Props {
   isTracked: boolean;
   onAdd: (game: Game) => void;
   onRemove: (game: Game) => void;
+  priority?: boolean;
 }
 
 function formatResetTime(dailyReset: string): string {
@@ -17,19 +18,24 @@ function formatResetTime(dailyReset: string): string {
   return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 }
 
-export default function GameCard({ game, isTracked, onAdd, onRemove }: Props) {
+export default function GameCard({ game, isTracked, onAdd, onRemove, priority }: Props) {
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-zinc-800 bg-zinc-900 p-4 transition-colors hover:border-zinc-700">
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-start gap-2">
-          <img
-            src={game.icon_name ? `/icons/${game.icon_name}.gif` : '/icons/placeholder.svg'}
-            alt=""
-            width={36}
-            height={36}
-            className="shrink-0 rounded-lg object-cover"
-            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/icons/placeholder.svg'; }}
-          />
+          <div style={{ width: 36, height: 36, flexShrink: 0, display: 'block' }}>
+            <img
+              src={game.icon_name ? `/icons/${game.icon_name}.gif` : '/icons/placeholder.svg'}
+              alt=""
+              width={36}
+              height={36}
+              style={{ aspectRatio: '1 / 1' }}
+              className="rounded-lg object-cover"
+              loading={priority ? 'eager' : undefined}
+              fetchPriority={priority ? 'high' : undefined}
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/icons/placeholder.svg'; }}
+            />
+          </div>
           <h3 className="text-sm font-semibold leading-snug text-white">{game.name}</h3>
         </div>
         <span

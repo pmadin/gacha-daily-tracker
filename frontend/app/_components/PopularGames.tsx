@@ -97,14 +97,16 @@ function PopularRow({
       </span>
 
       {/* Icon */}
-      <img
-        src={game.icon_name ? `/icons/${game.icon_name}.gif` : '/icons/placeholder.svg'}
-        alt=""
-        width={44}
-        height={44}
-        style={{ borderRadius: 10, objectFit: 'cover', flexShrink: 0 }}
-        onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/icons/placeholder.svg'; }}
-      />
+      <div style={{ width: 44, height: 44, flexShrink: 0, display: 'block' }}>
+        <img
+          src={game.icon_name ? `/icons/${game.icon_name}.gif` : '/icons/placeholder.svg'}
+          alt=""
+          width={44}
+          height={44}
+          style={{ borderRadius: 10, objectFit: 'cover', aspectRatio: '1 / 1' }}
+          onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/icons/placeholder.svg'; }}
+        />
+      </div>
 
       {/* Name */}
       <span

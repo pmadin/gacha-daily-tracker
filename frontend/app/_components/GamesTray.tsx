@@ -134,71 +134,101 @@ export default function GamesTray({ games, onToggle }: Props) {
         </Link>
       </div>
 
-      {/* Scroll tray + fade overlay */}
-      <div style={{ position: 'relative' }}>
-        <div
-          className="scroll-x-custom"
-          style={{
-            display: 'flex',
-            gap: 10,
-            overflowX: 'auto',
-            scrollSnapType: 'x mandatory',
-            paddingBottom: 8,
-          }}
-        >
-          {sorted.map(game => (
-            <GameCard
-              key={game.id}
-              game={game}
-              isToggling={toggling.has(game.id)}
-              onToggle={() => handleToggle(game)}
-            />
-          ))}
-
-          {/* Add game ghost card */}
-          <Link
-            href="/games"
+      {/* Scroll tray — marquee when >9 games, plain scroll otherwise */}
+      {sorted.length > 9 ? (
+        <div style={{ overflow: 'hidden', height: 196 }}>
+          <div
+            className="animate-marquee"
             style={{
-              width: 110,
-              minWidth: 110,
-              height: 168,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              borderRadius: 12,
-              border: '1.5px dashed var(--border2)',
-              background: 'transparent',
-              textDecoration: 'none',
-              scrollSnapAlign: 'start',
-              flexShrink: 0,
+              display: 'inline-flex',
+              gap: 10,
+              animationDuration: `${sorted.length * 3}s`,
             }}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ color: 'var(--text3)' }}>
-              <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-            <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 11, color: 'var(--text3)' }}>
-              Add game
-            </span>
-          </Link>
+            {sorted.map(game => (
+              <GameCard
+                key={`${game.id}-a`}
+                game={game}
+                isToggling={toggling.has(game.id)}
+                onToggle={() => handleToggle(game)}
+              />
+            ))}
+            {sorted.map(game => (
+              <GameCard
+                key={`${game.id}-b`}
+                game={game}
+                isToggling={toggling.has(game.id)}
+                onToggle={() => handleToggle(game)}
+              />
+            ))}
+          </div>
         </div>
+      ) : (
+        <div style={{ position: 'relative' }}>
+          <div
+            className="scroll-x-custom"
+            style={{
+              display: 'flex',
+              gap: 10,
+              overflowX: 'auto',
+              scrollSnapType: 'x mandatory',
+              paddingBottom: 8,
+            }}
+          >
+            {sorted.map(game => (
+              <GameCard
+                key={game.id}
+                game={game}
+                isToggling={toggling.has(game.id)}
+                onToggle={() => handleToggle(game)}
+              />
+            ))}
 
-        {/* Fade-right overlay */}
-        <div
-          aria-hidden="true"
-          style={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-            bottom: 8,
-            width: 72,
-            background: 'linear-gradient(to right, transparent, var(--bg))',
-            pointerEvents: 'none',
-          }}
-        />
-      </div>
+            {/* Add game ghost card */}
+            <Link
+              href="/games"
+              style={{
+                width: 110,
+                minWidth: 110,
+                height: 168,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                borderRadius: 12,
+                border: '1.5px dashed var(--border2)',
+                background: 'transparent',
+                textDecoration: 'none',
+                scrollSnapAlign: 'start',
+                flexShrink: 0,
+              }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ color: 'var(--text3)' }}>
+                <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 11, color: 'var(--text3)' }}>
+                Add game
+              </span>
+            </Link>
+          </div>
+
+          {/* Fade-right overlay */}
+          <div
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              bottom: 8,
+              width: 72,
+              background: 'linear-gradient(to right, transparent, var(--bg))',
+              pointerEvents: 'none',
+            }}
+          />
+        </div>
+      )}
     </section>
   );
 }
@@ -241,13 +271,13 @@ function GameCard({
       }}
     >
       {/* Icon with done badge */}
-      <div style={{ position: 'relative' }}>
+      <div style={{ position: 'relative', width: 56, height: 56, flexShrink: 0 }}>
         <img
           src={game.icon_name ? `/icons/${game.icon_name}.gif` : '/icons/placeholder.svg'}
           alt=""
           width={56}
           height={56}
-          style={{ borderRadius: 10, objectFit: 'cover', display: 'block' }}
+          style={{ borderRadius: 10, objectFit: 'cover', display: 'block', aspectRatio: '1 / 1' }}
           onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/icons/placeholder.svg'; }}
         />
         {game.done && (
@@ -297,23 +327,18 @@ function GameCard({
         {game.name}
       </span>
 
-      {/* Timer or done label */}
-      {game.done ? (
-        <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 10, color: 'var(--green)' }}>
-          ✓ done
-        </span>
-      ) : (
-        <span
-          style={{
-            fontFamily: 'var(--font-jetbrains-mono)',
-            fontSize: 10,
-            color: timerColor,
-            letterSpacing: '0.02em',
-          }}
-        >
-          {timerText}
-        </span>
-      )}
+      {/* Timer — always rendered to hold space; invisible when done so button stays aligned */}
+      <span
+        style={{
+          fontFamily: 'var(--font-jetbrains-mono)',
+          fontSize: 10,
+          color: timerColor,
+          letterSpacing: '0.02em',
+          visibility: game.done ? 'hidden' : 'visible',
+        }}
+      >
+        {timerText || ' '}
+      </span>
 
       {/* Toggle button */}
       <button

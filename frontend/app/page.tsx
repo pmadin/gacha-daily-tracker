@@ -8,6 +8,7 @@ import {
   markComplete,
   unmarkComplete,
   addTrackerGame,
+  checkStreak,
 } from './_lib/api';
 import type { PopularGame } from './_lib/api';
 import {
@@ -15,6 +16,7 @@ import {
   markAnonComplete,
   unmarkAnonComplete,
   addAnonGame,
+  updateAnonStreak,
 } from './_lib/storage';
 import { useAuth } from './_context/AuthContext';
 import MarketingHero from './_components/MarketingHero';
@@ -87,7 +89,27 @@ export default function HomePage() {
       }
     }
     setMyGames(prev => prev.map(g => g.id === gameId ? { ...g, done: !done } : g));
-  }, [token]);
+
+    // Trigger streak + confetti when this toggle completes the last game
+    if (!done) {
+      const currentDone = myGames.filter(g => g.done).length;
+      const isNowAllDone = currentDone + 1 === myGames.length && myGames.length > 0;
+      if (isNowAllDone) {
+        if (token) {
+          checkStreak(token).catch(() => {});
+        } else {
+          updateAnonStreak();
+        }
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (localStorage.getItem('gdt_confetti_date') !== todayStr) {
+          localStorage.setItem('gdt_confetti_date', todayStr);
+          import('canvas-confetti').then(m => {
+            m.default({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
+          });
+        }
+      }
+    }
+  }, [token, myGames]);
 
   const handleAddPopular = useCallback(async (game: PopularGame) => {
     if (token) {
@@ -133,18 +155,21 @@ export default function HomePage() {
   const popContext: 'logged-out' | 'empty' | 'has-games' =
     hasGames ? 'has-games' : isLoggedIn ? 'empty' : 'logged-out';
 
-  if (loading) {
-    return <div style={{ minHeight: 'calc(100vh - 56px)', background: 'var(--bg)' }} />;
-  }
-
   return (
     <>
       {/* State-dependent top section:
+          - loading         → skeleton (reserves height, prevents CLS)
           - anon, no games  → MarketingHero
           - anon, has games → GamesTray (anon localStorage games)
           - auth, no games  → EmptyDashboard
           - auth, has games → GamesTray */}
-      {hasGames ? (
+      {loading ? (
+        <div className="mx-auto max-w-6xl px-4 pt-8 pb-2">
+          <div style={{ minHeight: 220 }}>
+            <div className="h-48 animate-pulse rounded-xl bg-zinc-800" />
+          </div>
+        </div>
+      ) : hasGames ? (
         <div className="mx-auto max-w-6xl px-4 pt-8 pb-2">
           <GamesTray games={myGames} onToggle={handleToggle} />
         </div>

@@ -41,10 +41,18 @@ export default function DashboardPage() {
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('gdt_order');
-      if (saved) setCustomOrder(JSON.parse(saved));
+      const savedOrder = localStorage.getItem('gdt_order');
+      if (savedOrder) setCustomOrder(JSON.parse(savedOrder));
+      const savedSort = localStorage.getItem('gdt_sort');
+      if (savedSort === 'reset' || savedSort === 'alpha' || savedSort === 'custom') {
+        setSortBy(savedSort);
+      }
     } catch { /* ignore */ }
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('gdt_sort', sortBy);
+  }, [sortBy]);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -231,7 +239,7 @@ export default function DashboardPage() {
                 className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                   sortBy === 'reset'
                     ? 'bg-violet-600 text-white'
-                    : 'text-zinc-500 hover:text-zinc-300'
+                    : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
                 }`}
               >
                 Reset time
@@ -241,7 +249,7 @@ export default function DashboardPage() {
                 className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                   sortBy === 'alpha'
                     ? 'bg-violet-600 text-white'
-                    : 'text-zinc-500 hover:text-zinc-300'
+                    : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
                 }`}
               >
                 A–Z
@@ -256,7 +264,7 @@ export default function DashboardPage() {
                 className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                   sortBy === 'custom'
                     ? 'bg-violet-600 text-white'
-                    : 'text-zinc-500 hover:text-zinc-300'
+                    : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
                 }`}
               >
                 Custom
