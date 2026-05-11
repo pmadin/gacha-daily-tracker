@@ -169,7 +169,7 @@ passwordRouter.patch('/update-password', async (req: Request, res: Response) => 
 
         // Hash new password
         const pepperedNewPassword = addPepper(newPassword);
-        const saltRounds = 16;
+        const saltRounds = 12;
         const newPasswordHash = await bcrypt.hash(pepperedNewPassword, saltRounds);
 
         // Update password

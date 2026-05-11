@@ -18,7 +18,11 @@
       "Bash(npm install *)",
       "Bash(Get-ChildItem *)",
       "Bash(Select-Object FullName)",
-      "Bash(xargs grep -l \"localhost\")"
+      "Bash(xargs grep -l \"localhost\")",
+      "Bash(python -c \"from PIL import Image; print\\('Pillow OK'\\)\")",
+      "Bash(python *)",
+      "Bash(pip install *)",
+      "Bash(Set-Content *)"
     ],
     "deny": [],
     "ask": []

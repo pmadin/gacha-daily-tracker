@@ -9,7 +9,7 @@ import { useAuth } from '../_context/AuthContext';
 export default function LoginPage() {
   const router = useRouter();
   const { login: authLogin } = useAuth();
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const res = await login(email, password);
+      const res = await login(identifier, password);
       authLogin(res.token, res.user);
       router.push('/dashboard');
     } catch (err: unknown) {
@@ -37,14 +37,14 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="mb-1.5 block text-sm text-zinc-400">Email</label>
+            <label className="mb-1.5 block text-sm text-zinc-400">Email or username</label>
             <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
+              type="text"
+              value={identifier}
+              onChange={e => setIdentifier(e.target.value)}
               required
               className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none focus:border-violet-500"
-              placeholder="you@example.com"
+              placeholder="Email or username"
             />
           </div>
 

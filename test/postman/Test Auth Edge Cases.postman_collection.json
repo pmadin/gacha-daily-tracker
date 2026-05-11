@@ -547,7 +547,7 @@
               "script": {
                 "exec": [
                   "pm.request.body.raw = JSON.stringify({",
-                  "    email: 'nonexistent@example.com',",
+                  "    identifier: 'nonexistent@example.com',",
                   "    password: 'SomePassword123!'",
                   "});"
                 ],
@@ -602,14 +602,13 @@
           "response": []
         },
         {
-          "name": "Test Login - Invalid Email Format",
+          "name": "Test Login - Missing Identifier",
           "event": [
             {
               "listen": "prerequest",
               "script": {
                 "exec": [
                   "pm.request.body.raw = JSON.stringify({",
-                  "    email: 'not-an-email',",
                   "    password: 'SomePassword123!'",
                   "});"
                 ],
@@ -620,16 +619,16 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "// Test 1: Should return 400 for invalid email format",
-                  "pm.test(\"Should return 400 for invalid email format\", () => {",
+                  "// Test 1: Should return 400 when identifier is missing",
+                  "pm.test(\"Should return 400 for missing identifier\", () => {",
                   "    pm.response.to.have.status(400);",
                   "});",
                   "",
                   "// Test 2: Error message validation",
-                  "pm.test(\"Error message should indicate invalid email\", () => {",
+                  "pm.test(\"Error message should indicate missing identifier\", () => {",
                   "    const response = pm.response.json();",
                   "    pm.expect(response).to.have.property('error');",
-                  "    pm.expect(response.error).to.match(/email.*invalid|valid.*email/i);",
+                  "    pm.expect(response.error).to.equal('Identifier and password are required');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -670,7 +669,7 @@
               "script": {
                 "exec": [
                   "pm.request.body.raw = JSON.stringify({",
-                  "    email: 'test@example.com'",
+                  "    identifier: 'test@example.com'",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -730,7 +729,7 @@
               "script": {
                 "exec": [
                   "pm.request.body.raw = JSON.stringify({",
-                  "    email: '',",
+                  "    identifier: '',",
                   "    password: ''",
                   "});"
                 ],

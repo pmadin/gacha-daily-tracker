@@ -4,6 +4,8 @@ import jwt from 'jsonwebtoken';
 import database from '../../config/database';
 import { addPepper, JWT_SECRET } from '../../utils/crypto';
 
+const SALT_ROUNDS = 12;
+
 const loginRouter: Router = express.Router();
 
 /**
@@ -23,11 +25,11 @@ const loginRouter: Router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
- *             required: [email, password]
+ *             required: [identifier, password]
  *             properties:
- *               email:
+ *               identifier:
  *                 type: string
- *                 format: email
+ *                 description: Email address or username
  *                 example: "user@example.com"
  *               password:
  *                 type: string
@@ -67,29 +69,21 @@ const loginRouter: Router = express.Router();
  */
 loginRouter.post('/login', async (req: Request, res: Response) => {
     try {
-        const { email, password } = req.body;
+        const { identifier, password } = req.body;
 
-        if (!email || !password) {
-            return res.status(400).json({ error: 'Email and password are required' });
+        if (!identifier || !password) {
+            return res.status(400).json({ error: 'Identifier and password are required' });
         }
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        if (!emailRegex.test(email)) {
-            return res.status(400).json({
-                error: 'Email format is invalid'
-            });
-        }
-
-        // Find user
+        // Find user by email or username (username match is case-insensitive)
         const result = await database.query(
-            'SELECT id, username, email, password_hash, timezone, role FROM users WHERE email = $1',
-            [email]
+            'SELECT id, username, email, password_hash, timezone, role FROM users WHERE email = $1 OR LOWER(username) = LOWER($1)',
+            [identifier]
         );
 
         if (result.rows.length === 0) {
             // Timing attack protection: still hash even if user doesn't exist
-            await bcrypt.hash('dummy-password-to-prevent-timing-attacks', 16);
+            await bcrypt.hash('dummy-password-to-prevent-timing-attacks', SALT_ROUNDS);
             return res.status(401).json({ error: 'Invalid email or password' });
         }
 
@@ -101,6 +95,16 @@ loginRouter.post('/login', async (req: Request, res: Response) => {
 
         if (!validPassword) {
             return res.status(401).json({ error: 'Invalid email or password' });
+        }
+
+        // Rehash if stored hash uses a different round count (e.g. old 16-round accounts)
+        const hashRounds = bcrypt.getRounds(user.password_hash);
+        if (hashRounds !== SALT_ROUNDS) {
+            const newHash = await bcrypt.hash(pepperedPassword, SALT_ROUNDS);
+            await database.query(
+                'UPDATE users SET password_hash = $1 WHERE id = $2',
+                [newHash, user.id]
+            );
         }
 
         // Generate secure JWT

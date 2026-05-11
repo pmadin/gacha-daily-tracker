@@ -168,21 +168,23 @@ registerRouter.post('/register', async (req: Request, res: Response) => {
             userTimezone = TimezoneService.normalizeTimezone(req.body.timezone);
         }
 
-        // Check if user exists
+        // Check if user exists (username check is case-insensitive)
         const existingUser = await database.query(
-            'SELECT id FROM users WHERE email = $1 OR username = $2',
+            'SELECT id, email, username FROM users WHERE email = $1 OR LOWER(username) = LOWER($2)',
             [email, username]
         );
 
         if (existingUser.rows.length > 0) {
-            return res.status(400).json({
-                error: 'User with this email or username already exists'
-            });
+            const taken = existingUser.rows[0];
+            if (taken.email === email) {
+                return res.status(400).json({ error: 'An account with this email already exists' });
+            }
+            return res.status(400).json({ error: 'Username is already taken' });
         }
 
         // Enhanced password hashing: Pepper + Salt + bcrypt
         const pepperedPassword = addPepper(password);
-        const saltRounds = 16; // Very secure, takes ~65ms per hash
+        const saltRounds = 12;
         const passwordHash = await bcrypt.hash(pepperedPassword, saltRounds);
 
         // Create user with optional fields

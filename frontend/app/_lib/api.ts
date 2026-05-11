@@ -79,10 +79,10 @@ export async function fetchServers(): Promise<{ servers: { server: string; game_
   return apiFetch('/gdt/games/servers/list');
 }
 
-export async function login(email: string, password: string): Promise<{ token: string; user: AuthUser }> {
+export async function login(identifier: string, password: string): Promise<{ token: string; user: AuthUser }> {
   return apiFetch('/gdt/auth/login', {
     method: 'POST',
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ identifier, password }),
   });
 }
 
