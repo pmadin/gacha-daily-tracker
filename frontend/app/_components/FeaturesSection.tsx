@@ -74,9 +74,8 @@ export default function FeaturesSection() {
 
       {/* Card grid */}
       <div
+        className="grid grid-cols-1 md:grid-cols-3"
         style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
           gap: '1px',
           background: 'var(--border)',
           border: '1px solid var(--border)',

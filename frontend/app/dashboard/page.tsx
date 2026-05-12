@@ -276,7 +276,7 @@ export default function DashboardPage() {
           {total > 0 && (
             <button
               onClick={handleClearAll}
-              className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+              className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                 confirmClear
                   ? 'bg-red-600 text-white hover:bg-red-500'
                   : 'border border-zinc-700 text-zinc-400 hover:border-red-800 hover:text-red-400'
@@ -287,7 +287,7 @@ export default function DashboardPage() {
           )}
           <Link
             href="/games"
-            className="rounded-lg bg-violet-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-violet-500"
+            className="whitespace-nowrap rounded-lg bg-violet-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-violet-500"
           >
             + Add games
           </Link>

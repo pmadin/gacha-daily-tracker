@@ -118,7 +118,7 @@ export default function GamesClient({ initialGames, initialTotal }: Props) {
         </p>
       </div>
 
-      <form onSubmit={handleSearch} className="mb-6 flex gap-2">
+      <form onSubmit={handleSearch} className="mb-6 flex flex-col gap-2 sm:flex-row">
         <input
           type="text"
           placeholder="Search games…"
@@ -126,22 +126,24 @@ export default function GamesClient({ initialGames, initialTotal }: Props) {
           onChange={e => setSearchInput(e.target.value)}
           className="flex-1 rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm text-white placeholder-zinc-500 outline-none focus:border-violet-500"
         />
-        <select
-          value={serverGroup}
-          onChange={e => { setServerGroup(e.target.value); setPage(0); }}
-          className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white outline-none focus:border-violet-500"
-        >
-          <option value="">All servers</option>
-          {availableGroups.map(g => (
-            <option key={g} value={g}>{g}</option>
-          ))}
-        </select>
-        <button
-          type="submit"
-          className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-violet-500"
-        >
-          Search
-        </button>
+        <div className="flex gap-2">
+          <select
+            value={serverGroup}
+            onChange={e => { setServerGroup(e.target.value); setPage(0); }}
+            className="flex-1 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white outline-none focus:border-violet-500 sm:flex-none"
+          >
+            <option value="">All servers</option>
+            {availableGroups.map(g => (
+              <option key={g} value={g}>{g}</option>
+            ))}
+          </select>
+          <button
+            type="submit"
+            className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-violet-500"
+          >
+            Search
+          </button>
+        </div>
       </form>
 
       {loading ? (
