@@ -218,9 +218,9 @@ export default function MarketingHero() {
           }}
         >
           <StatItem value="330+" label="games" />
-          <div style={{ width: 1, height: 32, background: 'var(--border)', margin: '0 48px' }} />
+          <div className="mx-4 sm:mx-12" style={{ width: 1, height: 32, background: 'var(--border)' }} />
           <StatItem value="20+" label="regions" />
-          <div style={{ width: 1, height: 32, background: 'var(--border)', margin: '0 48px' }} />
+          <div className="mx-4 sm:mx-12" style={{ width: 1, height: 32, background: 'var(--border)' }} />
           <StatItem value="free" label="always" />
         </div>
       </div>

@@ -26,7 +26,7 @@ export default function DashboardCard({ game, onToggleComplete, onRemove, dragHa
 
   return (
     <div
-      className={`flex items-center gap-4 rounded-xl border px-4 py-3 transition-colors ${
+      className={`flex items-center gap-3 rounded-xl border px-3 py-3 transition-colors sm:gap-4 sm:px-4 ${
         game.completed_today
           ? 'border-emerald-900/60 bg-emerald-950/30'
           : 'border-zinc-800 bg-zinc-900'
@@ -60,13 +60,13 @@ export default function DashboardCard({ game, onToggleComplete, onRemove, dragHa
       />
 
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className={`text-sm font-medium leading-snug ${game.completed_today ? 'text-zinc-400 line-through' : 'text-white'}`}>
+        <span className={`truncate text-sm font-medium leading-snug ${game.completed_today ? 'text-zinc-400 line-through' : 'text-white'}`}>
           {game.name}
         </span>
         <span className="text-xs text-zinc-500">{displayServer(game.server)}</span>
       </div>
 
-      <div className="flex flex-col items-end gap-0.5">
+      <div className="flex shrink-0 flex-col items-end gap-0.5">
         {game.completed_today ? (
           <span className="text-xs font-medium text-emerald-500">Done</span>
         ) : (
