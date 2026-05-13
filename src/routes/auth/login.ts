@@ -107,13 +107,12 @@ loginRouter.post('/login', async (req: Request, res: Response) => {
             );
         }
 
-        // Generate secure JWT
+        // Generate secure JWT — role intentionally excluded from payload
         const token = jwt.sign(
             {
                 userId: user.id,
                 email: user.email,
                 username: user.username,
-                role: user.role,
                 iat: Math.floor(Date.now() / 1000) // Issued at time
             },
             JWT_SECRET,

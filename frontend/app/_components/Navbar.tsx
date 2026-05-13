@@ -74,6 +74,7 @@ export default function Navbar() {
           <nav className="hidden sm:flex items-center gap-4">
             {navLink('/games', 'Games')}
             {navLink('/dashboard', 'My List')}
+            {user && user.role >= 3 && navLink('/admin', 'Admin')}
           </nav>
         </div>
 
@@ -207,6 +208,7 @@ export default function Navbar() {
                 <div style={{ height: 1, background: 'var(--border)' }} />
                 {user ? (
                   <>
+                    {user.role >= 3 && navLink('/admin', 'Admin')}
                     <Link
                       href="/profile"
                       style={{

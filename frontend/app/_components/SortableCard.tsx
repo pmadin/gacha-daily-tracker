@@ -9,9 +9,10 @@ interface Props {
   game: DashboardGame;
   onToggleComplete: (gameId: number, completed: boolean) => void;
   onRemove: (gameId: number) => void;
+  onUpdateOffset?: (gameId: number, offset: number) => void;
 }
 
-export default function SortableCard({ game, onToggleComplete, onRemove }: Props) {
+export default function SortableCard({ game, onToggleComplete, onRemove, onUpdateOffset }: Props) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: game.game_id,
   });
@@ -47,6 +48,7 @@ export default function SortableCard({ game, onToggleComplete, onRemove }: Props
         game={game}
         onToggleComplete={onToggleComplete}
         onRemove={onRemove}
+        onUpdateOffset={onUpdateOffset}
         dragHandle={dragHandle}
       />
     </div>

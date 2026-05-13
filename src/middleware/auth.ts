@@ -35,7 +35,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
             userId: decoded.userId,
             email: decoded.email,
             username: decoded.username,
-            role: decoded.role || 1 // 1 is default value
+            role: 1 // role not stored in JWT; admin routes re-check DB
         };
 
         next();
@@ -71,7 +71,7 @@ export const optionalAuth = (req: Request, res: Response, next: NextFunction) =>
             userId: decoded.userId,
             email: decoded.email,
             username: decoded.username,
-            role: decoded.role || 1
+            role: 1 // role not stored in JWT; admin routes re-check DB
         };
     } catch (error) {
         // Invalid token, but continue anyway (optional auth)

@@ -3,8 +3,7 @@
 		"_postman_id": "76f43070-7ed2-4cf6-9b21-59022143cddf",
 		"name": "Gacha-daily-tracker",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "44170125",
-		"_collection_link": "https://petermadin.postman.co/workspace/Messages~a71a6062-1fcf-4f82-8a64-231b7113bb99/collection/44170125-76f43070-7ed2-4cf6-9b21-59022143cddf?action=share&source=collection_link&creator=44170125"
+		"_exporter_id": "44170125"
 	},
 	"item": [
 		{
@@ -232,13 +231,13 @@
 			"response": []
 		},
 		{
-			"name": "Gacha register",
+			"name": "Gacha register admin",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"username\": \"devadmintest\",\r\n    \"email\": \"pmadin999@gmail.com\",\r\n    \"password\": \"MySecure123!Pass\",\r\n    \"timezone\": \"America/Los_Angeles\",\r\n    \"confirmPassword\": \"MySecure123!Pass\",\r\n    \"registrationToken\": \"e6b1228b6525d690bfc64ab355db000c1d9a49d921c97bbb9166a627d200c66437d2dfd53f2ea1d3ae2e173593732935c11b9418507a79fb6f39864ba6b83fc6\"\r\n}",
+					"raw": "{\r\n    \"username\": \"{{admin_username}}\",\r\n    \"email\": \"{{admin_email}}\",\r\n    \"password\": \"{{admin_password}}\",\r\n    \"timezone\": \"America/Los_Angeles\",\r\n    \"confirmPassword\": \"{{admin_password}}\",\r\n    \"registrationToken\": \"{{registration_token}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -260,13 +259,13 @@
 			"response": []
 		},
 		{
-			"name": "Gacha register Copy",
+			"name": "Gacha register owner",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"username\": \"wahgew\",\r\n    \"email\": \"petermadin@yahoo.com\",\r\n    \"password\": \"xrZ#$s^L7mUpjkUIfrCMojomm\",\r\n    \"timezone\": \"America/Los_Angeles\",\r\n    \"confirmPassword\": \"xrZ#$s^L7mUpjkUIfrCMojomm\",\r\n    \"registrationToken\": \"e6b1228b6525d690bfc64ab355db000c1d9a49d921c97bbb9166a627d200c66437d2dfd53f2ea1d3ae2e173593732935c11b9418507a79fb6f39864ba6b83fc6\"\r\n}",
+					"raw": "{\r\n    \"username\": \"{{owner_username}}\",\r\n    \"email\": \"{{owner_email}}\",\r\n    \"password\": \"{{owner_password}}\",\r\n    \"timezone\": \"America/Los_Angeles\",\r\n    \"confirmPassword\": \"{{owner_password}}\",\r\n    \"registrationToken\": \"{{registration_token}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -290,21 +289,11 @@
 		{
 			"name": "Gacha register standard user",
 			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "e6b1228b6525d690bfc64ab355db000c1d9a49d92",
-							"type": "string"
-						}
-					]
-				},
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"username\": \"test_userROLE1\",\r\n    \"email\": \"test@example.com\",\r\n    \"password\": \"TestPassword123!\",\r\n    \"confirmPassword\": \"TestPassword123!\",\r\n    \"registrationToken\": \"e6b1228b6525d690bfc64ab355db000c1d9a49d921c97bbb9166a627d200c66437d2dfd53f2ea1d3ae2e173593732935c11b9418507a79fb6f39864ba6b83fc6\"\r\n}",
+					"raw": "{\r\n    \"username\": \"{{test_username}}\",\r\n    \"email\": \"{{test_email}}\",\r\n    \"password\": \"{{test_password}}\",\r\n    \"confirmPassword\": \"{{test_password}}\",\r\n    \"registrationToken\": \"{{registration_token}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -326,13 +315,13 @@
 			"response": []
 		},
 		{
-			"name": "Gacha login",
+			"name": "Gacha login admin",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"email\": \"pmadin999@gmail.com\",\r\n  \"password\": \"MySecure123!Pass\"\r\n}",
+					"raw": "{\r\n  \"identifier\": \"{{admin_email}}\",\r\n  \"password\": \"{{admin_password}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -360,7 +349,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"email\": \"petermadin@yahoo.com\",\r\n  \"password\": \"xrZ#$s^L7mUpjkUIfrCMojomm\"\r\n}",
+					"raw": "{\r\n  \"identifier\": \"{{owner_email}}\",\r\n  \"password\": \"{{owner_password}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -382,13 +371,13 @@
 			"response": []
 		},
 		{
-			"name": "Gacha login admin",
+			"name": "Gacha login standard user",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"email\": \"pmadin999@gmail.com\",\r\n  \"password\": \"MySecure123!Pass\"\r\n}",
+					"raw": "{\r\n  \"identifier\": \"{{test_email}}\",\r\n  \"password\": \"{{test_password}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -404,6 +393,34 @@
 						"gdt",
 						"auth",
 						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Gacha update password",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"identifier\": \"{{admin_email}}\",\r\n  \"currentPassword\": \"{{admin_password}}\",\r\n  \"newPassword\": \"{{admin_new_password}}\",\r\n  \"confirmNewPassword\": \"{{admin_new_password}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gdt/auth/update-password",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gdt",
+						"auth",
+						"update-password"
 					]
 				}
 			},
@@ -416,7 +433,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"password\": \"MySecure123!Pass\",\r\n  \"identifier\": \"pmadin999@gmail.com\"\r\n}",
+					"raw": "{\r\n  \"password\": \"{{admin_password}}\",\r\n  \"identifier\": \"{{admin_email}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"

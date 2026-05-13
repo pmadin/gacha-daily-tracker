@@ -22,7 +22,13 @@
       "Bash(python -c \"from PIL import Image; print\\('Pillow OK'\\)\")",
       "Bash(python *)",
       "Bash(pip install *)",
-      "Bash(Set-Content *)"
+      "Bash(Set-Content *)",
+      "Bash(npx web-push *)",
+      "Bash(findstr /v \"VAPID\")",
+      "Bash(ConvertTo-Json -AsArray)",
+      "Bash(New-Item -ItemType File -Path \"F:\\\\University\\\\My Personal Programs\\\\gacha_tracker\\\\frontend\\\\public\\\\sw.js\" -Force)",
+      "Bash(Out-Null)",
+      "PowerShell(New-Item *)"
     ],
     "deny": [],
     "ask": []

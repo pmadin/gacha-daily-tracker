@@ -12,6 +12,10 @@ import { updateRouter} from './routes/closed/close';
 import { trackerRouter } from './routes/tracker/tracker';
 import autoImportService from './services/autoImportService';
 import { specs, swaggerUi, swaggerOptions } from './config/swagger';
+import { notificationsRouter } from './routes/notifications';
+import { adminGamesRouter } from './routes/admin/games';
+import { initWebPush } from './config/webpush';
+import { startNotificationCron } from './workers/notificationCron';
 
 // Load environment variables - try multiple file names
 dotenv.config({ path: '.env.local' });
@@ -129,8 +133,10 @@ app.use('/gdt/games', gameRoutes);
 app.use('/gdt/timezones', timezoneRoutes);
 app.use('/gdt/auth', authRoutes);
 app.use('/gdt/admin', roleRouter);
+app.use('/gdt/admin', adminGamesRouter);
 app.use('/gdt/update', updateRouter);
 app.use('/gdt/tracker', trackerRouter);
+app.use('/gdt/notifications', notificationsRouter);
 
 /**
  * @swagger
@@ -424,6 +430,10 @@ async function initializeApp() {
 
         // Check and auto-import initial data
         await autoImportService.checkAndImportInitialData();
+
+        // Initialize web push and start notification cron
+        initWebPush();
+        startNotificationCron();
 
         // Start server
         app.listen(PORT, () => {

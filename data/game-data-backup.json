@@ -1,9 +1,7 @@
 {
-  "lastUpdated": "2026-05-06T20:15:57.067Z",
+  "lastUpdated": "2026-05-13T03:49:39.311Z",
   "source": "https://raw.githubusercontent.com/cicerakes/Game-Time-Master/refs/heads/master/game-data.js",
-  "attribution": "Based on Game-Time-Master by cicerakes (https://github.com/cicerakes/Game-Time-Master), licensed under GPL-3.0",
-  "modifications": "Converted from game-data.js (JavaScript module) to JSON by pmadin. Added wrapper metadata fields (lastUpdated, source, gameCount, attribution, modifications). Game records (name, server, timezone, dailyReset, icon) are unmodified from upstream.",
-  "gameCount": 345,
+  "gameCount": 348,
   "data": [
     {
       "game": "18TRIP",
@@ -514,6 +512,14 @@
       "icon": "echocalypse"
     },
     {
+      "game": "Egg, Inc.",
+      "server": "Global",
+      "timezone": "America/Los_Angeles",
+      "dailyReset": "16:00",
+      "icon": "egg-inc",
+      "utcDailyReset": true
+    },
+    {
       "game": "Elpis: Fallen Star",
       "server": "Global",
       "timezone": "Etc/UTC",
@@ -656,6 +662,14 @@
       "timezone": "Etc/UTC",
       "dailyReset": "00:00",
       "icon": "food-fantasy"
+    },
+    {
+      "game": "Fortnite",
+      "server": "Global",
+      "timezone": "America/New_York",
+      "dailyReset": "14:00",
+      "icon": "fortnite",
+      "utcDailyReset": true
     },
     {
       "game": "Free Fire",
@@ -1494,7 +1508,7 @@
     {
       "game": "Neverness to Everness",
       "server": "America",
-      "timezone": "Etc/GMT+5",
+      "timezone": "Etc/GMT+4",
       "dailyReset": "05:00",
       "icon": "neverness-to-everness"
     },
@@ -1509,6 +1523,13 @@
       "game": "Neverness to Everness",
       "server": "Europe",
       "timezone": "Etc/GMT-1",
+      "dailyReset": "05:00",
+      "icon": "neverness-to-everness"
+    },
+    {
+      "game": "Neverness to Everness",
+      "server": "SEA",
+      "timezone": "Etc/GMT-8",
       "dailyReset": "05:00",
       "icon": "neverness-to-everness"
     },
