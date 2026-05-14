@@ -14,6 +14,8 @@ import {
   bulkAddGames,
   saveGameOrder,
   checkStreak,
+  updateGameReminderOffset,
+  fetchNotificationPrefs,
 } from '../_lib/api';
 import {
   getAnonGames,
@@ -38,6 +40,7 @@ export default function DashboardPage() {
   const [streak, setStreak] = useState(0);
   const [sortBy, setSortBy] = useState<'reset' | 'alpha' | 'custom'>('reset');
   const [customOrder, setCustomOrder] = useState<number[]>([]);
+  const [notifEnabled, setNotifEnabled] = useState(false);
 
   useEffect(() => {
     try {
@@ -69,6 +72,7 @@ export default function DashboardPage() {
           daily_reset: g.daily_reset,
           icon_name: g.icon_name,
           completed_today: g.completed_today,
+          custom_reminder_offset: g.custom_reminder_offset ?? 0,
         })));
         setStreak(res.streak ?? 0);
         // Seed custom order from DB if localStorage has nothing saved yet
@@ -97,6 +101,13 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
+  }, [token]);
+
+  useEffect(() => {
+    if (!token) return;
+    fetchNotificationPrefs(token)
+      .then(p => setNotifEnabled(p.enabled))
+      .catch(() => {});
   }, [token]);
 
   useEffect(() => {
@@ -165,6 +176,13 @@ export default function DashboardPage() {
       clearAnonGames();
     }
   };
+
+  const handleUpdateOffset = useCallback(async (gameId: number, offset: number) => {
+    setGames(prev => prev.map(g => g.game_id === gameId ? { ...g, custom_reminder_offset: offset } : g));
+    if (token) {
+      updateGameReminderOffset(token, gameId, offset).catch(() => {});
+    }
+  }, [token]);
 
   const handleRemove = async (gameId: number) => {
     setGames(prev => prev.filter(g => g.game_id !== gameId));
@@ -327,6 +345,7 @@ export default function DashboardPage() {
                       game={game}
                       onToggleComplete={handleToggleComplete}
                       onRemove={handleRemove}
+                      onUpdateOffset={notifEnabled ? handleUpdateOffset : undefined}
                     />
                   ))}
                 </div>
@@ -340,6 +359,7 @@ export default function DashboardPage() {
                   game={game}
                   onToggleComplete={handleToggleComplete}
                   onRemove={handleRemove}
+                  onUpdateOffset={notifEnabled ? handleUpdateOffset : undefined}
                 />
               ))}
             </div>

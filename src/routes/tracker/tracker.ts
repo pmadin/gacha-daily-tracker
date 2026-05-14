@@ -60,10 +60,11 @@ trackerRouter.get('/games', async (req, res) => {
 
         const result = await database.query(`
             SELECT
-                ug.id             AS user_game_id,
+                ug.id                     AS user_game_id,
                 ug.is_enabled,
-                ug.created_at     AS added_at,
+                ug.created_at             AS added_at,
                 ug.display_order,
+                ug.custom_reminder_offset,
                 g.id              AS game_id,
                 g.name,
                 g.server,
@@ -586,6 +587,30 @@ trackerRouter.put('/order', async (req, res) => {
         res.status(500).json({ error: 'Failed to save order' });
     } finally {
         client.release();
+    }
+});
+
+trackerRouter.patch('/games/:id/reminder', async (req, res) => {
+    try {
+        const { userId } = req.user!;
+        const gameId = parseInt(req.params.id, 10);
+        if (isNaN(gameId)) return res.status(400).json({ error: 'Invalid game ID' });
+
+        const raw = parseInt(req.body.offset, 10);
+        if (isNaN(raw)) return res.status(400).json({ error: 'offset must be a number' });
+        const offset = Math.max(0, Math.min(1440, raw));
+
+        await database.query(
+            'UPDATE user_games SET custom_reminder_offset = $1 WHERE user_id = $2 AND game_id = $3',
+            [offset, userId, gameId]
+        );
+
+        res.json({ message: 'Reminder offset updated', offset });
+
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        console.error('Error updating reminder offset:', errorMessage);
+        res.status(500).json({ error: 'Failed to update reminder offset' });
     }
 });
 

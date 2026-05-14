@@ -143,6 +143,14 @@ daily routine.
                 name: 'Data Management',
                 description: '🔄 Import and sync game data',
             },
+            {
+                name: 'Notifications',
+                description: '🔔 Push notification subscriptions and preferences',
+            },
+            {
+                name: 'Admin',
+                description: '🛡️ Game management, imports, and icon uploads (role 3+)',
+            },
         ],
     },
     apis: ['./src/routes/*.ts', './src/routes/**/*.ts', './src/index.ts'], // paths to files containing OpenAPI definitions

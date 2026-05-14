@@ -54,16 +54,8 @@ export const requireAdmin = async (req: Request, res: Response, next: NextFuncti
 
         const user = userResult.rows[0];
 
-        // 4. Compare JWT role with DB role (security check)
-        if (decoded.role !== user.role) {
-            console.warn(`Role mismatch detected! JWT: ${decoded.role}, DB: ${user.role} for user ${user.username}`);
-            return res.status(401).json({
-                error: 'Token invalid. Please login again.',
-                reason: 'Role verification failed'
-            });
-        }
-
-        // 5. Check admin privileges (3 = Admin, 4 = Owner)
+        // 4. Check admin privileges using DB role (3 = Admin, 4 = Owner)
+        // role is not in the JWT — DB is the single source of truth
         if (user.role < ROLES.ADMIN) {
             return res.status(403).json({
                 error: 'Admin privileges required',
@@ -74,7 +66,7 @@ export const requireAdmin = async (req: Request, res: Response, next: NextFuncti
             });
         }
 
-        // 6. Attach user info to request (use DB data, not JWT data)
+        // 5. Attach user info to request from DB
         req.user = {
             userId: user.id,
             email: user.email,

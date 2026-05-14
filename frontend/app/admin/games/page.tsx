@@ -1,0 +1,617 @@
+'use client';
+
+import { useState, useEffect, useCallback, useRef, FormEvent } from 'react';
+import { useAuth } from '../../_context/AuthContext';
+import {
+  fetchAdminGames,
+  createAdminGame,
+  updateAdminGame,
+  softDeleteGame,
+  restoreGame,
+  hardDeleteGame,
+  importGames,
+  patchIcons,
+  uploadGameIcon,
+  type AdminGame,
+  type GamePayload,
+} from '../../_lib/api';
+
+const PAGE_SIZE = 50;
+
+type SortCol = 'name' | 'server' | 'timezone' | 'daily_reset' | 'tracked_by' | 'is_active';
+type SortDir = 'asc' | 'desc';
+
+function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
+  return (
+    <span className={`ml-1 text-xs ${active ? 'text-violet-400' : 'text-zinc-700'}`}>
+      {active ? (dir === 'asc' ? '↑' : '↓') : '↕'}
+    </span>
+  );
+}
+
+// ─── Game form modal (add + edit) ─────────────────────────────────────────────
+function GameFormModal({
+  game,
+  onSave,
+  onClose,
+}: {
+  game: AdminGame | null;
+  onSave: (data: GamePayload) => Promise<void>;
+  onClose: () => void;
+}) {
+  const [form, setForm] = useState({
+    name: game?.name ?? '',
+    server: game?.server ?? '',
+    timezone: game?.timezone ?? 'America/Los_Angeles',
+    daily_reset: game?.daily_reset ?? '04:00',
+    icon_name: game?.icon_name ?? '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const field =
+    (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+      setForm(f => ({ ...f, [key]: e.target.value }));
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setError('');
+    try {
+      const payload: GamePayload = {
+        name: form.name.trim(),
+        server: form.server.trim(),
+        timezone: form.timezone.trim(),
+        daily_reset: form.daily_reset.trim(),
+      };
+      if (form.icon_name.trim()) payload.icon_name = form.icon_name.trim();
+      await onSave(payload);
+      onClose();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to save');
+      setSaving(false);
+    }
+  };
+
+  const fields: { label: string; key: keyof typeof form; placeholder: string; required: boolean }[] = [
+    { label: 'Name', key: 'name', placeholder: 'Genshin Impact', required: true },
+    { label: 'Server', key: 'server', placeholder: 'Global', required: true },
+    { label: 'Timezone', key: 'timezone', placeholder: 'America/Los_Angeles', required: true },
+    { label: 'Daily Reset (HH:MM)', key: 'daily_reset', placeholder: '04:00', required: true },
+    { label: 'Icon name (optional)', key: 'icon_name', placeholder: 'genshin-impact', required: false },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div className="w-full max-w-md rounded-xl border border-zinc-700 bg-zinc-900 p-6">
+        <h2 className="mb-5 text-base font-semibold text-white">
+          {game ? 'Edit Game' : 'Add Game'}
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          {fields.map(({ label, key, placeholder, required }) => (
+            <div key={key}>
+              <label className="mb-1 block text-xs text-zinc-400">{label}</label>
+              <input
+                value={form[key]}
+                onChange={field(key)}
+                required={required}
+                placeholder={placeholder}
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white outline-none focus:border-violet-500"
+              />
+            </div>
+          ))}
+          {error && (
+            <p className="rounded-lg bg-red-950 px-3 py-2 text-sm text-red-400">{error}</p>
+          )}
+          <div className="flex gap-2 pt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 rounded-lg border border-zinc-700 py-2 text-sm text-zinc-400 hover:text-white"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex-1 rounded-lg bg-violet-600 py-2 text-sm font-medium text-white hover:bg-violet-500 disabled:opacity-50"
+            >
+              {saving ? 'Saving…' : game ? 'Save changes' : 'Add game'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ─── Hard-delete confirmation modal ───────────────────────────────────────────
+function ConfirmDeleteModal({
+  game,
+  onConfirm,
+  onClose,
+}: {
+  game: AdminGame;
+  onConfirm: () => Promise<void>;
+  onClose: () => void;
+}) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div className="w-full max-w-sm rounded-xl border border-red-900/60 bg-zinc-900 p-6">
+        <h2 className="mb-2 text-base font-semibold text-red-400">Permanently delete game?</h2>
+        <p className="mb-1 text-sm text-zinc-300">
+          {game.name}{' '}
+          <span className="text-zinc-500">({game.server})</span>
+        </p>
+        <p className="mb-5 text-xs text-zinc-500">
+          This removes the game and all user tracking data. It cannot be undone.
+        </p>
+        {error && (
+          <p className="mb-3 rounded-lg bg-red-950 px-3 py-2 text-sm text-red-400">{error}</p>
+        )}
+        <div className="flex gap-2">
+          <button
+            onClick={onClose}
+            className="flex-1 rounded-lg border border-zinc-700 py-2 text-sm text-zinc-400 hover:text-white"
+          >
+            Cancel
+          </button>
+          <button
+            disabled={loading}
+            onClick={async () => {
+              setLoading(true);
+              setError('');
+              try {
+                await onConfirm();
+              } catch (err: unknown) {
+                setError(err instanceof Error ? err.message : 'Delete failed');
+                setLoading(false);
+              }
+            }}
+            className="flex-1 rounded-lg bg-red-700 py-2 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50"
+          >
+            {loading ? 'Deleting…' : 'Delete permanently'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main page ────────────────────────────────────────────────────────────────
+export default function AdminGamesPage() {
+  const { token, user } = useAuth();
+
+  const [games, setGames] = useState<AdminGame[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(0);
+  const [search, setSearch] = useState('');
+  const [submittedSearch, setSubmittedSearch] = useState('');
+  const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [loading, setLoading] = useState(true);
+  const [listError, setListError] = useState('');
+
+  const [editGame, setEditGame] = useState<AdminGame | null>(null);
+  const [addingGame, setAddingGame] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<AdminGame | null>(null);
+  const [actionLoading, setActionLoading] = useState<number | null>(null);
+
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResult, setImportResult] = useState('');
+  const [patchLoading, setPatchLoading] = useState(false);
+  const [patchResult, setPatchResult] = useState('');
+
+  const iconInputRef = useRef<HTMLInputElement>(null);
+  const [iconTargetId, setIconTargetId] = useState<number | null>(null);
+
+  const [sortCol, setSortCol] = useState<SortCol>('name');
+  const [sortDir, setSortDir] = useState<SortDir>('asc');
+
+  const handleSort = (col: SortCol) => {
+    if (sortCol === col) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortCol(col);
+      setSortDir('asc');
+    }
+  };
+
+  const sortedGames = [...games].sort((a, b) => {
+    let cmp = 0;
+    if (sortCol === 'tracked_by') {
+      cmp = a.tracked_by - b.tracked_by;
+    } else if (sortCol === 'is_active') {
+      cmp = Number(a.is_active) - Number(b.is_active);
+    } else {
+      cmp = (a[sortCol] ?? '').localeCompare(b[sortCol] ?? '');
+    }
+    return sortDir === 'asc' ? cmp : -cmp;
+  });
+
+  const load = useCallback(async () => {
+    if (!token) return;
+    setLoading(true);
+    setListError('');
+    try {
+      const res = await fetchAdminGames(token, {
+        search: submittedSearch || undefined,
+        active: filter === 'all' ? undefined : filter === 'active',
+        limit: PAGE_SIZE,
+        offset: page * PAGE_SIZE,
+      });
+      setGames(res.games);
+      setTotal(res.total);
+    } catch (err: unknown) {
+      setListError(err instanceof Error ? err.message : 'Failed to load games');
+    } finally {
+      setLoading(false);
+    }
+  }, [token, submittedSearch, filter, page]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleSearch = (e: FormEvent) => {
+    e.preventDefault();
+    setPage(0);
+    setSubmittedSearch(search);
+  };
+
+  const handleSave = async (data: GamePayload) => {
+    if (!token) return;
+    if (editGame) {
+      await updateAdminGame(token, editGame.id, data);
+    } else {
+      await createAdminGame(token, data);
+    }
+    await load();
+  };
+
+  const handleToggleActive = async (game: AdminGame) => {
+    if (!token) return;
+    setActionLoading(game.id);
+    try {
+      if (game.is_active) {
+        await softDeleteGame(token, game.id);
+      } else {
+        await restoreGame(token, game.id);
+      }
+      await load();
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Action failed');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleHardDelete = async () => {
+    if (!token || !confirmDelete) return;
+    await hardDeleteGame(token, confirmDelete.id);
+    setConfirmDelete(null);
+    await load();
+  };
+
+  const handleImport = async (forceRefresh: boolean) => {
+    if (!token) return;
+    setImportLoading(true);
+    setImportResult('');
+    try {
+      const res = await importGames(token, forceRefresh);
+      setImportResult(`${res.total} games synced from ${res.source}`);
+      await load();
+    } catch (err: unknown) {
+      setImportResult(`Error: ${err instanceof Error ? err.message : 'Import failed'}`);
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  const handlePatchIcons = async () => {
+    if (!token) return;
+    setPatchLoading(true);
+    setPatchResult('');
+    try {
+      const res = await patchIcons(token);
+      setPatchResult(`Fetched ${res.fetched} icons · ${res.still_missing} still missing`);
+    } catch (err: unknown) {
+      setPatchResult(`Error: ${err instanceof Error ? err.message : 'Patch failed'}`);
+    } finally {
+      setPatchLoading(false);
+    }
+  };
+
+  const handleIconFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !iconTargetId || !token) return;
+    try {
+      await uploadGameIcon(token, iconTargetId, file);
+      await load();
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Icon upload failed');
+    } finally {
+      e.target.value = '';
+      setIconTargetId(null);
+    }
+  };
+
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  return (
+    <>
+      {/* Hidden file input for icon uploads */}
+      <input
+        ref={iconInputRef}
+        type="file"
+        accept=".gif"
+        className="hidden"
+        onChange={handleIconFileChange}
+      />
+
+      {/* Header */}
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-white">Games</h1>
+          <p className="text-sm text-zinc-500">{total} total</p>
+        </div>
+        <button
+          onClick={() => setAddingGame(true)}
+          className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500"
+        >
+          + Add game
+        </button>
+      </div>
+
+      {/* Import / icon tools */}
+      <div className="mb-6 rounded-xl border border-zinc-800 bg-zinc-900 p-4">
+        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+          Data &amp; Icons
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => handleImport(false)}
+            disabled={importLoading || patchLoading}
+            className="rounded-lg border border-zinc-700 px-3 py-1.5 text-sm text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white disabled:opacity-40"
+          >
+            {importLoading ? 'Syncing…' : 'Sync from cache'}
+          </button>
+          <button
+            onClick={() => handleImport(true)}
+            disabled={importLoading || patchLoading}
+            className="rounded-lg border border-zinc-700 px-3 py-1.5 text-sm text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white disabled:opacity-40"
+          >
+            {importLoading ? 'Syncing…' : 'Force refresh from source'}
+          </button>
+          <button
+            onClick={handlePatchIcons}
+            disabled={patchLoading || importLoading}
+            className="rounded-lg border border-zinc-700 px-3 py-1.5 text-sm text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white disabled:opacity-40"
+          >
+            {patchLoading ? 'Patching…' : 'Patch missing icons'}
+          </button>
+        </div>
+        {importResult && (
+          <p className="mt-2 text-xs text-zinc-400">{importResult}</p>
+        )}
+        {patchResult && (
+          <p className={`mt-1 text-xs ${patchResult.startsWith('Error') ? 'text-red-400' : 'text-zinc-400'}`}>
+            {patchResult}
+          </p>
+        )}
+      </div>
+
+      {/* Search + filter */}
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <form onSubmit={handleSearch} className="flex flex-1 gap-2">
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search by name or server…"
+            className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white outline-none focus:border-violet-500"
+          />
+          <button
+            type="submit"
+            className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500"
+          >
+            Search
+          </button>
+        </form>
+        <div className="flex overflow-hidden rounded-lg border border-zinc-700 text-sm">
+          {(['all', 'active', 'inactive'] as const).map(f => (
+            <button
+              key={f}
+              onClick={() => { setFilter(f); setPage(0); }}
+              className={`px-3 py-2 capitalize transition-colors ${
+                filter === f ? 'bg-violet-600 text-white' : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Error */}
+      {listError && (
+        <p className="mb-4 rounded-lg bg-red-950 px-4 py-2 text-sm text-red-400">{listError}</p>
+      )}
+
+      {/* Table */}
+      <div className="overflow-x-auto rounded-xl border border-zinc-800">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-zinc-800 bg-zinc-900/80 text-left text-xs text-zinc-500">
+              {(
+                [
+                  { col: 'name' as SortCol, label: 'Name', cls: '' },
+                  { col: 'server' as SortCol, label: 'Server', cls: '' },
+                  { col: 'timezone' as SortCol, label: 'Timezone', cls: 'hidden md:table-cell' },
+                  { col: 'daily_reset' as SortCol, label: 'Reset', cls: '' },
+                  { col: 'tracked_by' as SortCol, label: 'Tracked', cls: 'hidden sm:table-cell' },
+                ] as { col: SortCol; label: string; cls: string }[]
+              ).map(({ col, label, cls }) => (
+                <th
+                  key={col}
+                  className={`px-4 py-3 font-medium ${cls}`}
+                >
+                  <button
+                    onClick={() => handleSort(col)}
+                    className="flex items-center whitespace-nowrap hover:text-zinc-300 transition-colors"
+                  >
+                    {label}
+                    <SortIcon active={sortCol === col} dir={sortDir} />
+                  </button>
+                </th>
+              ))}
+              <th className="px-4 py-3 font-medium">
+                <button
+                  onClick={() => handleSort('is_active')}
+                  className="flex items-center whitespace-nowrap hover:text-zinc-300 transition-colors"
+                >
+                  Status
+                  <SortIcon active={sortCol === 'is_active'} dir={sortDir} />
+                </button>
+              </th>
+              <th className="px-4 py-3 font-medium">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              Array.from({ length: 8 }).map((_, i) => (
+                <tr key={i} className="border-b border-zinc-800/40">
+                  {Array.from({ length: 7 }).map((_, j) => (
+                    <td key={j} className="px-4 py-3">
+                      <div className="h-3 animate-pulse rounded bg-zinc-800" />
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : games.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="px-4 py-10 text-center text-sm text-zinc-500">
+                  No games found
+                </td>
+              </tr>
+            ) : (
+              sortedGames.map(game => (
+                <tr
+                  key={game.id}
+                  className={`border-b border-zinc-800/40 transition-colors hover:bg-zinc-800/30 ${
+                    !game.is_active ? 'opacity-50' : ''
+                  }`}
+                >
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-white">{game.name}</div>
+                    {game.icon_name ? (
+                      <div className="text-xs text-zinc-500">{game.icon_name}</div>
+                    ) : (
+                      <div className="text-xs text-amber-500/80">no icon</div>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-zinc-400">{game.server}</td>
+                  <td className="hidden px-4 py-3 text-xs text-zinc-500 md:table-cell">
+                    {game.timezone}
+                  </td>
+                  <td className="px-4 py-3 font-mono text-zinc-300">{game.daily_reset}</td>
+                  <td className="hidden px-4 py-3 text-zinc-400 sm:table-cell">{game.tracked_by}</td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                        game.is_active
+                          ? 'bg-emerald-900/30 text-emerald-400'
+                          : 'bg-zinc-800 text-zinc-500'
+                      }`}
+                    >
+                      {game.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setEditGame(game)}
+                        className="rounded px-2 py-1 text-xs text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleToggleActive(game)}
+                        disabled={actionLoading === game.id}
+                        className="rounded px-2 py-1 text-xs text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white disabled:opacity-40"
+                      >
+                        {actionLoading === game.id
+                          ? '…'
+                          : game.is_active
+                          ? 'Deactivate'
+                          : 'Restore'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIconTargetId(game.id);
+                          iconInputRef.current?.click();
+                        }}
+                        className="rounded px-2 py-1 text-xs text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+                        title="Upload icon (.gif, 96×96)"
+                      >
+                        Icon
+                      </button>
+                      {user?.role === 4 && (
+                        <button
+                          onClick={() => setConfirmDelete(game)}
+                          className="rounded px-2 py-1 text-xs text-red-500/70 transition-colors hover:bg-red-950 hover:text-red-400"
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-4 flex items-center justify-between text-sm text-zinc-500">
+          <span>
+            Page {page + 1} of {totalPages} · {total} games
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPage(p => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="rounded-lg border border-zinc-700 px-3 py-1.5 text-zinc-400 transition-colors hover:border-zinc-500 hover:text-white disabled:opacity-40"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+              disabled={page >= totalPages - 1}
+              className="rounded-lg border border-zinc-700 px-3 py-1.5 text-zinc-400 transition-colors hover:border-zinc-500 hover:text-white disabled:opacity-40"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modals */}
+      {(addingGame || editGame) && (
+        <GameFormModal
+          game={editGame}
+          onSave={handleSave}
+          onClose={() => { setEditGame(null); setAddingGame(false); }}
+        />
+      )}
+      {confirmDelete && (
+        <ConfirmDeleteModal
+          game={confirmDelete}
+          onConfirm={handleHardDelete}
+          onClose={() => setConfirmDelete(null)}
+        />
+      )}
+    </>
+  );
+}

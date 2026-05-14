@@ -12,16 +12,35 @@ export interface DashboardGame {
   daily_reset: string;
   icon_name: string;
   completed_today: boolean;
+  custom_reminder_offset?: number;
 }
 
 interface Props {
   game: DashboardGame;
   onToggleComplete: (gameId: number, completed: boolean) => void;
   onRemove: (gameId: number) => void;
+  onUpdateOffset?: (gameId: number, offset: number) => void;
   dragHandle?: React.ReactNode;
 }
 
-export default function DashboardCard({ game, onToggleComplete, onRemove, dragHandle }: Props) {
+const OFFSET_OPTIONS = [
+  { value: 0,   label: 'No reminder' },
+  { value: 15,  label: '15 min' },
+  { value: 60,  label: '1 hr' },
+  { value: 120, label: '2 hr' },
+  { value: 180, label: '3 hr' },
+  { value: 240, label: '4 hr' },
+  { value: 300, label: '5 hr' },
+  { value: 360, label: '6 hr' },
+  { value: 420, label: '7 hr' },
+  { value: 480, label: '8 hr' },
+  { value: 540, label: '9 hr' },
+  { value: 600, label: '10 hr' },
+  { value: 660, label: '11 hr' },
+  { value: 720, label: '12 hr' },
+];
+
+export default function DashboardCard({ game, onToggleComplete, onRemove, onUpdateOffset, dragHandle }: Props) {
   const resetAt = game.completed_today ? null : getLocalResetTime(game.timezone, game.daily_reset);
 
   return (
@@ -63,7 +82,21 @@ export default function DashboardCard({ game, onToggleComplete, onRemove, dragHa
         <span className={`truncate text-sm font-medium leading-snug ${game.completed_today ? 'text-zinc-400 line-through' : 'text-white'}`}>
           {game.name}
         </span>
-        <span className="text-xs text-zinc-500">{displayServer(game.server)}</span>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-xs text-zinc-500">{displayServer(game.server)}</span>
+          {onUpdateOffset && (
+            <select
+              value={game.custom_reminder_offset ?? 0}
+              onChange={e => onUpdateOffset(game.game_id, parseInt(e.target.value, 10))}
+              onClick={e => e.stopPropagation()}
+              className="rounded border border-zinc-700 bg-zinc-800 px-1 py-px text-xs text-zinc-400 outline-none focus:border-violet-500"
+            >
+              {OFFSET_OPTIONS.map(o => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          )}
+        </div>
       </div>
 
       <div className="flex shrink-0 flex-col items-end gap-0.5">
