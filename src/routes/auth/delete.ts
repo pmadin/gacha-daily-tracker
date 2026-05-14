@@ -189,7 +189,7 @@ deleteRouter.delete('/account', async (req: Request, res: Response) => {
             SELECT
                     (SELECT COUNT(*) FROM user_games WHERE user_id = $1) as games_count,
                     (SELECT COUNT(*) FROM daily_completions WHERE user_id = $1) as completions_count,
-                    (SELECT COUNT(*) FROM reminder_settings WHERE user_id = $1) as reminders_count
+                    (SELECT COUNT(*) FROM push_subscriptions WHERE user_id = $1) as subscriptions_count
         `, [decoded.userId]);
 
         const stats = statsResult.rows[0];
@@ -201,7 +201,7 @@ deleteRouter.delete('/account', async (req: Request, res: Response) => {
         await client.query('COMMIT');
 
         console.log('User account deleted successfully');
-        console.log(`   Cascade deleted: ${stats.games_count} games, ${stats.completions_count} completions, ${stats.reminders_count} reminders`);
+        console.log(`   Cascade deleted: ${stats.games_count} games, ${stats.completions_count} completions, ${stats.subscriptions_count} push subscriptions`);
 
         // Return success with user details
         res.json({

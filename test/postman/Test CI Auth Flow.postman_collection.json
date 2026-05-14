@@ -75,6 +75,19 @@
 							"    pm.expect(json).to.have.property('token');",
 							"    pm.expect(json.token).to.be.a('string').and.not.empty;",
 							"    pm.collectionVariables.set('ci_token', json.token);",
+							"});",
+							"",
+							"pm.test('JWT payload does not contain role', function () {",
+							"    const json = pm.response.json();",
+							"    const parts = json.token.split('.');",
+							"    const payload = JSON.parse(atob(parts[1]));",
+							"    pm.expect(payload).to.not.have.property('role');",
+							"});",
+							"",
+							"pm.test('Login response does not leak password hash', function () {",
+							"    const json = pm.response.json();",
+							"    pm.expect(json.user).to.not.have.property('password_hash');",
+							"    pm.expect(json.user).to.not.have.property('password');",
 							"});"
 						],
 						"type": "text/javascript"
@@ -116,6 +129,12 @@
 							"    pm.expect(json).to.have.property('user');",
 							"    pm.expect(json.user.username).to.eql(pm.collectionVariables.get('ci_username'));",
 							"    pm.expect(json.user.email).to.eql(pm.collectionVariables.get('ci_email'));",
+							"});",
+							"",
+							"pm.test('Profile response does not leak password hash', function () {",
+							"    const json = pm.response.json();",
+							"    pm.expect(json.user).to.not.have.property('password_hash');",
+							"    pm.expect(json.user).to.not.have.property('password');",
 							"});"
 						],
 						"type": "text/javascript"
