@@ -228,10 +228,10 @@ export default function DashboardPage() {
   if (authLoading || loading) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-8">
-        <div className="mb-6 h-8 w-32 animate-pulse rounded bg-zinc-800" />
+        <div className="mb-6 h-8 w-32 animate-pulse rounded bg-[#18140d]" />
         <div className="flex flex-col gap-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-16 animate-pulse rounded-xl bg-zinc-800" />
+            <div key={i} className="h-16 animate-pulse rounded-xl bg-[#18140d]" />
           ))}
         </div>
       </div>
@@ -256,8 +256,8 @@ export default function DashboardPage() {
                 onClick={() => setSortBy('reset')}
                 className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                   sortBy === 'reset'
-                    ? 'bg-violet-600 text-white'
-                    : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
+                    ? 'bg-[rgba(200,155,60,0.15)] text-[#e8c86a] border border-[rgba(200,155,60,0.3)]'
+                    : 'bg-[#18140d] text-[#4a3d2a] hover:bg-[#1e190f] hover:text-[#9a8570]'
                 }`}
               >
                 Reset time
@@ -266,8 +266,8 @@ export default function DashboardPage() {
                 onClick={() => setSortBy('alpha')}
                 className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                   sortBy === 'alpha'
-                    ? 'bg-violet-600 text-white'
-                    : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
+                    ? 'bg-[rgba(200,155,60,0.15)] text-[#e8c86a] border border-[rgba(200,155,60,0.3)]'
+                    : 'bg-[#18140d] text-[#4a3d2a] hover:bg-[#1e190f] hover:text-[#9a8570]'
                 }`}
               >
                 A–Z
@@ -281,8 +281,8 @@ export default function DashboardPage() {
                 }}
                 className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                   sortBy === 'custom'
-                    ? 'bg-violet-600 text-white'
-                    : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
+                    ? 'bg-[rgba(200,155,60,0.15)] text-[#e8c86a] border border-[rgba(200,155,60,0.3)]'
+                    : 'bg-[#18140d] text-[#4a3d2a] hover:bg-[#1e190f] hover:text-[#9a8570]'
                 }`}
               >
                 Custom
@@ -297,7 +297,7 @@ export default function DashboardPage() {
               className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                 confirmClear
                   ? 'bg-red-600 text-white hover:bg-red-500'
-                  : 'border border-zinc-700 text-zinc-400 hover:border-red-800 hover:text-red-400'
+                  : 'border border-[rgba(200,155,60,0.15)] text-[#4a3d2a] hover:border-red-800 hover:text-red-400'
               }`}
             >
               {confirmClear ? 'Confirm clear?' : 'Clear all'}
@@ -305,7 +305,8 @@ export default function DashboardPage() {
           )}
           <Link
             href="/games"
-            className="whitespace-nowrap rounded-lg bg-violet-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-violet-500"
+            className="whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors hover:opacity-90"
+            style={{ background: 'linear-gradient(135deg, #c8913c, #e8c86a)', color: '#0a0808' }}
           >
             + Add games
           </Link>
@@ -317,7 +318,8 @@ export default function DashboardPage() {
           <p className="text-zinc-400">Your list is empty.</p>
           <Link
             href="/games"
-            className="rounded-lg bg-violet-600 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-violet-500"
+            className="rounded-lg px-5 py-2 text-sm font-medium transition-colors hover:opacity-90"
+            style={{ background: 'linear-gradient(135deg, #c8913c, #e8c86a)', color: '#0a0808' }}
           >
             Browse games
           </Link>
@@ -325,9 +327,9 @@ export default function DashboardPage() {
       ) : (
         <>
           {total > 0 && (
-            <div className="relative mb-4 h-6 w-full overflow-hidden rounded-full bg-zinc-800">
+            <div className="relative mb-4 h-6 w-full overflow-hidden rounded-full bg-[#18140d]">
               <div
-                className="h-full rounded-full bg-emerald-500 transition-all duration-300"
+                className="progress-gold h-full rounded-full transition-all duration-300"
                 style={{ width: `${(done / total) * 100}%` }}
               />
               <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white drop-shadow-sm">

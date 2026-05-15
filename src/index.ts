@@ -82,9 +82,9 @@ app.get('/favicon.ico', (req, res) => {
     const faviconPath = path.join(publicPath, 'images', 'favicon.ico');
     res.sendFile(faviconPath, (err) => {
         if (err) {
-            console.log('📎 favicon.ico not found, serving fallback');
-            // Fallback to PNG if ICO doesn't exist
-            const fallbackPath = path.join(publicPath, 'images', 'favicon-96x96.png');
+            // Fallback to gold G SVG
+            const fallbackPath = path.join(publicPath, 'favicon.svg');
+            res.setHeader('Content-Type', 'image/svg+xml');
             res.sendFile(fallbackPath, (fallbackErr) => {
                 if (fallbackErr) {
                     res.status(404).send('Favicon not found');

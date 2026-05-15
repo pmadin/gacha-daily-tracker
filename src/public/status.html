@@ -8,28 +8,29 @@
   <link rel="icon" type="image/png" sizes="96x96" href="/public/images/favicon-96x96.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/public/images/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
-  <meta name="theme-color" content="#0a0a0f">
+  <meta name="theme-color" content="#080808">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0a0a0f;
-      --bg2: #0f0f1a;
-      --bg3: #13131f;
-      --surface: #1a1a2e;
-      --border: rgba(139,92,246,0.15);
-      --border2: rgba(139,92,246,0.3);
-      --purple: #7c3aed;
-      --purple-bright: #a855f7;
+      --bg: #080808;
+      --bg2: #0d0b08;
+      --bg3: #111009;
+      --surface: #18140d;
+      --border: rgba(200,155,60,0.12);
+      --border2: rgba(200,155,60,0.28);
+      --gold: #c8913c;
+      --gold-bright: #e8c86a;
+      --gold-dim: #8a6020;
       --cyan: #06b6d4;
       --green: #10b981;
       --red: #ef4444;
       --amber: #f59e0b;
-      --text: #f1f0ff;
-      --text2: #a89ec0;
-      --text3: #6b6080;
+      --text: #f0ede8;
+      --text2: #9a8570;
+      --text3: #4a3d2a;
     }
 
     body {
@@ -72,7 +73,7 @@
       color: var(--text);
     }
 
-    .logo-text span { color: var(--purple-bright); }
+    .logo-text span { color: var(--gold-bright); }
 
     .nav-badge {
       font-family: 'JetBrains Mono', monospace;
@@ -112,7 +113,7 @@
       letter-spacing: 0.04em;
     }
 
-    .nav-right a:hover { color: var(--purple-bright); }
+    .nav-right a:hover { color: var(--gold-bright); }
 
     /* HERO */
     .hero {
@@ -126,16 +127,16 @@
       position: absolute;
       inset: 0;
       background-image:
-        linear-gradient(rgba(124,58,237,0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(124,58,237,0.05) 1px, transparent 1px);
-      background-size: 44px 44px;
+        linear-gradient(rgba(200,155,60,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(200,155,60,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
       mask-image: radial-gradient(ellipse 70% 80% at 50% 40%, black 30%, transparent 100%);
     }
 
     .hero-orb {
       position: absolute;
       width: 400px; height: 250px;
-      background: rgba(124,58,237,0.07);
+      background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(200,155,60,0.07) 0%, transparent 70%);
       border-radius: 50%;
       filter: blur(60px);
       top: -60px; left: 50%;
@@ -146,7 +147,7 @@
     .page-eyebrow {
       font-family: 'JetBrains Mono', monospace;
       font-size: 10.5px;
-      color: var(--purple-bright);
+      color: var(--gold-bright);
       letter-spacing: 0.12em;
       text-transform: uppercase;
       margin-bottom: 1rem;
@@ -160,7 +161,7 @@
     .page-eyebrow::before, .page-eyebrow::after {
       content: '';
       width: 24px; height: 1px;
-      background: var(--purple-bright);
+      background: var(--gold-bright);
       opacity: 0.5;
     }
 
@@ -274,7 +275,7 @@
       position: absolute;
       bottom: 0; left: 1.75rem; right: 1.75rem;
       height: 2px;
-      background: linear-gradient(90deg, transparent, rgba(16,185,129,0.3), transparent);
+      background: linear-gradient(90deg, transparent, rgba(200,155,60,0.3), transparent);
       opacity: 0;
       transition: opacity 0.2s;
     }
@@ -331,22 +332,22 @@
       font-family: 'Syne', sans-serif;
       font-size: 13px;
       font-weight: 700;
-      color: var(--text2);
-      background: none;
-      border: 1px solid var(--border2);
+      color: var(--gold-bright);
+      background: rgba(200,155,60,0.08);
+      border: 1px solid rgba(200,155,60,0.2);
       padding: 9px 22px;
       border-radius: 7px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      transition: color 0.2s, border-color 0.2s;
+      transition: color 0.2s, background 0.2s, border-color 0.2s;
       letter-spacing: 0.01em;
     }
 
     #refreshBtn:hover {
-      color: var(--text);
-      border-color: rgba(139,92,246,0.5);
+      background: rgba(200,155,60,0.15);
+      border-color: rgba(200,155,60,0.35);
     }
 
     #refreshBtn.loading {
@@ -388,7 +389,7 @@
       transition: color 0.2s;
     }
 
-    .footer-links a:hover { color: var(--purple-bright); }
+    .footer-links a:hover { color: var(--gold-bright); }
 
     @media (max-width: 600px) {
       #services { grid-template-columns: 1fr; }
@@ -401,12 +402,12 @@
 <nav>
   <a class="nav-logo" href="/gdt/">
     <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <rect width="22" height="22" rx="5.5" fill="#7c3aed" opacity="0.15"/>
-      <circle cx="11" cy="11" r="4" stroke="#a855f7" stroke-width="1.3" fill="none"/>
-      <circle cx="11" cy="11" r="1.3" fill="#a855f7"/>
-      <path d="M11 3v2.5M11 16.5V19M3 11h2.5M16.5 11H19" stroke="#a855f7" stroke-width="1.3" stroke-linecap="round" opacity="0.5"/>
+      <rect width="22" height="22" rx="5.5" fill="#c8913c" opacity="0.15"/>
+      <circle cx="11" cy="11" r="4" stroke="#c8913c" stroke-width="1.3" fill="none"/>
+      <circle cx="11" cy="11" r="1.3" fill="#e8c86a"/>
+      <path d="M11 3v2.5M11 16.5V19M3 11h2.5M16.5 11H19" stroke="#c8913c" stroke-width="1.3" stroke-linecap="round" opacity="0.5"/>
     </svg>
-    <span class="logo-text">Gacha<span>Daily</span></span>
+    <span class="logo-text">Gacha<span>Daily</span>Tracker</span>
   </a>
   <span class="nav-badge">
     <span class="pulse-dot"></span>

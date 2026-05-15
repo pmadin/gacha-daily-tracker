@@ -53,25 +53,52 @@ export default function Navbar() {
     <header
       ref={headerRef}
       className="sticky top-0 z-50 backdrop-blur"
-      style={{ borderBottom: '1px solid var(--border)', background: 'rgba(10,10,15,0.88)' }}
+      style={{ borderBottom: '1px solid var(--border)', background: 'rgba(13,11,8,0.90)' }}
     >
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-        <div className="flex items-center gap-6">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <Link
             href="/"
             className="flex items-center gap-2"
-            style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 15, color: 'var(--text)', textDecoration: 'none' }}
+            style={{ textDecoration: 'none' }}
           >
-            <svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <rect width="32" height="32" rx="7" fill="#7c3aed"/>
-              <polygon points="16,5 7,14 16,17" fill="white" opacity="0.75"/>
-              <polygon points="16,5 25,14 16,17" fill="white" opacity="0.97"/>
-              <polygon points="7,14 16,27 16,17"  fill="white" opacity="0.40"/>
-              <polygon points="25,14 16,17 16,27" fill="white" opacity="0.62"/>
+            <svg width="34" height="34" viewBox="0 0 96 96" aria-hidden="true">
+              <rect width="96" height="96" rx="20" fill="#0d0b08"/>
+              <defs>
+                <linearGradient id="navfg" x1="15%" y1="0%" x2="85%" y2="100%">
+                  <stop offset="0%" stopColor="#f0d898"/>
+                  <stop offset="40%" stopColor="#d4a040"/>
+                  <stop offset="100%" stopColor="#7a5018"/>
+                </linearGradient>
+                <linearGradient id="navft" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#f8e8b0"/>
+                  <stop offset="100%" stopColor="#c8913c"/>
+                </linearGradient>
+                <linearGradient id="navfb" x1="100%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#7a5018"/>
+                  <stop offset="100%" stopColor="#3a2008"/>
+                </linearGradient>
+              </defs>
+              <polygon points="48,14 72,40 48,72 24,40" fill="url(#navfg)"/>
+              <polygon points="48,14 72,40 48,40" fill="url(#navft)" opacity="0.5"/>
+              <polygon points="48,72 24,40 48,40" fill="url(#navfb)" opacity="0.8"/>
+              <line x1="24" y1="40" x2="72" y2="40" stroke="#0d0b08" strokeWidth="1.5" opacity="0.6"/>
             </svg>
-            Gacha<span style={{ color: 'var(--purple-bright)' }}>Daily</span>
+            <span
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontWeight: 800,
+                fontSize: 14,
+                letterSpacing: '-0.03em',
+                lineHeight: 1,
+              }}
+            >
+              <span style={{ color: 'var(--text)' }}>Gacha</span>
+              <span style={{ color: 'var(--gold, #c8913c)' }}>Daily</span>
+              <span style={{ color: 'var(--text3)' }}>Tracker</span>
+            </span>
           </Link>
-          <nav className="hidden sm:flex items-center gap-4">
+          <nav className="hidden xl:flex items-center gap-4">
             {navLink('/games', 'Games')}
             {navLink('/dashboard', 'My List')}
             {user && user.role >= 3 && navLink('/admin', 'Admin')}
@@ -80,7 +107,7 @@ export default function Navbar() {
 
         <div className="flex items-center gap-3">
           {/* Desktop auth — hidden on mobile */}
-          <div className="hidden sm:flex items-center gap-3">
+          <div className="hidden xl:flex items-center gap-3">
             {isLoading ? null : user ? (
               <div className="relative" ref={dropdownRef}>
                 <button
@@ -89,7 +116,7 @@ export default function Navbar() {
                     width: 30,
                     height: 30,
                     borderRadius: '50%',
-                    background: 'linear-gradient(135deg, var(--purple), var(--cyan))',
+                    background: 'linear-gradient(135deg, #8a6020, #e8c86a)',
                     color: 'white',
                     fontWeight: 700,
                     fontSize: 13,
@@ -113,14 +140,14 @@ export default function Navbar() {
                     <Link
                       href="/profile"
                       onClick={() => setDropdownOpen(false)}
-                      className="block px-4 py-2 text-sm transition-colors hover:bg-zinc-800"
+                      className="block px-4 py-2 text-sm transition-colors hover:bg-[#18140d]"
                       style={{ color: 'var(--text2)', textDecoration: 'none' }}
                     >
                       Profile
                     </Link>
                     <button
                       onClick={() => { logout(); setDropdownOpen(false); }}
-                      className="w-full px-4 py-2 text-left text-sm transition-colors hover:bg-zinc-800"
+                      className="w-full px-4 py-2 text-left text-sm transition-colors hover:bg-[#18140d]"
                       style={{ color: 'var(--text2)' }}
                     >
                       Sign out
@@ -149,8 +176,8 @@ export default function Navbar() {
                 <Link
                   href="/register"
                   style={{
-                    background: 'var(--purple)',
-                    color: 'white',
+                    background: 'linear-gradient(135deg, #c8913c, #e8c86a)',
+                    color: '#0a0808',
                     borderRadius: 8,
                     padding: '6px 14px',
                     fontFamily: 'var(--font-display)',
@@ -167,7 +194,7 @@ export default function Navbar() {
 
           {/* Hamburger — mobile only */}
           <button
-            className="sm:hidden"
+            className="xl:hidden"
             onClick={() => setMobileMenuOpen(o => !o)}
             aria-label="Toggle menu"
             style={{
@@ -197,8 +224,8 @@ export default function Navbar() {
       {/* Mobile menu dropdown */}
       {mobileMenuOpen && (
         <div
-          className="sm:hidden"
-          style={{ borderTop: '1px solid var(--border)', background: 'rgba(10,10,15,0.97)' }}
+          className="xl:hidden"
+          style={{ borderTop: '1px solid var(--border)', background: 'rgba(13,11,8,0.97)' }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', padding: '1rem', gap: '1rem' }}>
             {navLink('/games', 'Games')}
@@ -264,8 +291,8 @@ export default function Navbar() {
                       href="/register"
                       style={{
                         flex: 1,
-                        background: 'var(--purple)',
-                        color: 'white',
+                        background: 'linear-gradient(135deg, #c8913c, #e8c86a)',
+                        color: '#0a0808',
                         borderRadius: 8,
                         padding: '8px 0',
                         fontFamily: 'var(--font-display)',

@@ -41,19 +41,30 @@ export default function MarketingHero() {
         overflow: 'hidden',
       }}
     >
-      {/* CSS grid background with radial fade */}
+      {/* Kintsugi vein background — fades out toward bottom via mask */}
       <div
         aria-hidden="true"
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundImage: [
-            'linear-gradient(rgba(139,92,246,0.07) 1px, transparent 1px)',
-            'linear-gradient(90deg, rgba(139,92,246,0.07) 1px, transparent 1px)',
-          ].join(', '),
-          backgroundSize: '40px 40px',
-          maskImage: 'radial-gradient(ellipse 75% 65% at 50% 35%, black, transparent)',
-          WebkitMaskImage: 'radial-gradient(ellipse 75% 65% at 50% 35%, black, transparent)',
+          width: '100%',
+          height: '100%',
+          backgroundImage: "url('/kintsugi-veins-homepage.svg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center top',
+          opacity: 0.45,
+          maskImage: 'radial-gradient(ellipse 85% 75% at 50% 30%, black 10%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 85% 75% at 50% 30%, black 10%, transparent 100%)',
+        }}
+      />
+      {/* Radial gold atmosphere — adds depth even if veins are subtle */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'radial-gradient(ellipse 60% 50% at 50% 0%, rgba(200,155,60,0.06) 0%, transparent 70%)',
+          pointerEvents: 'none',
         }}
       />
 
@@ -78,7 +89,7 @@ export default function MarketingHero() {
             alignItems: 'center',
             gap: 8,
             border: '1px solid var(--border2)',
-            background: 'rgba(124,58,237,0.07)',
+            background: 'rgba(200,155,60,0.05)',
             borderRadius: 999,
             padding: '6px 16px',
             marginBottom: 36,
@@ -108,6 +119,19 @@ export default function MarketingHero() {
           </span>
         </div>
 
+        <div
+          style={{
+            fontFamily: 'var(--font-jetbrains-mono)',
+            fontSize: 10,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color: 'var(--text2)',
+            marginBottom: 20,
+          }}
+        >
+          — GACHA DAILY TRACKER —
+        </div>
+
         {/* H1 — three lines */}
         <h1
           style={{
@@ -124,7 +148,7 @@ export default function MarketingHero() {
           <span
             style={{
               display: 'block',
-              backgroundImage: 'linear-gradient(90deg, var(--purple-bright) 0%, var(--cyan) 100%)',
+              background: 'linear-gradient(135deg, #ffffff 0%, #f0d898 40%, #c8913c 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -135,11 +159,7 @@ export default function MarketingHero() {
           <span
             style={{
               display: 'block',
-              color: 'var(--bg)',
-              filter: [
-                'drop-shadow(0 0 0.6px rgba(139,92,246,1))',
-                'drop-shadow(0 0 1.5px rgba(139,92,246,0.5))',
-              ].join(' '),
+              color: 'rgba(200, 155, 60, 0.30)',
             }}
           >
             again.
@@ -170,8 +190,8 @@ export default function MarketingHero() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: 8,
-              background: 'var(--purple)',
-              color: 'white',
+              background: 'linear-gradient(135deg, #c8913c, #e8c86a)',
+              color: '#0a0808',
               borderRadius: 10,
               padding: '13px 28px',
               fontFamily: 'var(--font-display)',

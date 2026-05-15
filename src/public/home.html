@@ -13,20 +13,21 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0a0a0f;
-      --bg2: #0f0f1a;
-      --bg3: #13131f;
-      --surface: #1a1a2e;
-      --border: rgba(139,92,246,0.15);
-      --border2: rgba(139,92,246,0.3);
-      --purple: #7c3aed;
-      --purple-bright: #a855f7;
+      --bg: #080808;
+      --bg2: #0d0b08;
+      --bg3: #111009;
+      --surface: #18140d;
+      --border: rgba(200,155,60,0.12);
+      --border2: rgba(200,155,60,0.28);
+      --gold: #c8913c;
+      --gold-bright: #e8c86a;
+      --gold-dim: #8a6020;
       --cyan: #06b6d4;
       --green: #10b981;
       --amber: #f59e0b;
-      --text: #f1f0ff;
-      --text2: #a89ec0;
-      --text3: #6b6080;
+      --text: #f0ede8;
+      --text2: #9a8570;
+      --text3: #4a3d2a;
     }
 
     body {
@@ -69,7 +70,7 @@
       color: var(--text);
     }
 
-    .logo-text span { color: var(--purple-bright); }
+    .logo-text span { color: var(--gold-bright); }
 
     .nav-badge {
       font-family: 'JetBrains Mono', monospace;
@@ -77,9 +78,9 @@
       font-weight: 500;
       padding: 2px 8px;
       border-radius: 100px;
-      background: rgba(124,58,237,0.1);
-      border: 1px solid rgba(124,58,237,0.25);
-      color: var(--purple-bright);
+      background: rgba(200,155,60,0.1);
+      border: 1px solid rgba(200,155,60,0.25);
+      color: var(--gold-bright);
       letter-spacing: 0.06em;
     }
 
@@ -98,7 +99,7 @@
       letter-spacing: 0.04em;
     }
 
-    .nav-right a:hover { color: var(--purple-bright); }
+    .nav-right a:hover { color: var(--gold-bright); }
 
     /* HERO */
     .hero {
@@ -112,16 +113,16 @@
       position: absolute;
       inset: 0;
       background-image:
-        linear-gradient(rgba(124,58,237,0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(124,58,237,0.06) 1px, transparent 1px);
-      background-size: 44px 44px;
+        linear-gradient(rgba(200,155,60,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(200,155,60,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
       mask-image: radial-gradient(ellipse 70% 80% at 50% 40%, black 30%, transparent 100%);
     }
 
     .hero-orb {
       position: absolute;
       width: 500px; height: 300px;
-      background: rgba(124,58,237,0.08);
+      background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(200,155,60,0.07) 0%, transparent 70%);
       border-radius: 50%;
       filter: blur(70px);
       top: -80px; left: 50%;
@@ -133,9 +134,9 @@
       display: inline-flex;
       align-items: center;
       gap: 7px;
-      background: rgba(124,58,237,0.1);
-      border: 1px solid rgba(124,58,237,0.3);
-      color: var(--purple-bright);
+      background: rgba(200,155,60,0.1);
+      border: 1px solid rgba(200,155,60,0.3);
+      color: var(--gold-bright);
       font-family: 'JetBrains Mono', monospace;
       font-size: 10.5px;
       font-weight: 500;
@@ -167,7 +168,7 @@
     }
 
     .gradient-text {
-      background: linear-gradient(135deg, var(--purple-bright) 0%, var(--cyan) 100%);
+      background: linear-gradient(135deg, var(--gold-bright) 0%, var(--cyan) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -196,8 +197,8 @@
       font-family: 'Syne', sans-serif;
       font-size: 13px;
       font-weight: 700;
-      color: #fff;
-      background: var(--purple);
+      color: #0a0808;
+      background: linear-gradient(135deg, #c8913c, #e8c86a);
       border: none;
       padding: 10px 22px;
       border-radius: 7px;
@@ -205,10 +206,10 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      transition: background 0.2s;
+      transition: opacity 0.2s;
     }
 
-    .btn-primary:hover { background: #6d28d9; }
+    .btn-primary:hover { opacity: 0.9; }
 
     .btn-ghost {
       font-family: 'Syne', sans-serif;
@@ -226,7 +227,7 @@
       transition: color 0.2s, border-color 0.2s;
     }
 
-    .btn-ghost:hover { color: var(--text); border-color: rgba(139,92,246,0.5); }
+    .btn-ghost:hover { color: var(--text); border-color: rgba(200,155,60,0.5); }
 
     /* STATS */
     .stats-bar {
@@ -278,7 +279,7 @@
     .section-eyebrow {
       font-family: 'JetBrains Mono', monospace;
       font-size: 10px;
-      color: var(--purple-bright);
+      color: var(--gold-bright);
       text-transform: uppercase;
       letter-spacing: 0.15em;
       margin-bottom: 0.75rem;
@@ -290,7 +291,7 @@
     .section-eyebrow::before {
       content: '';
       width: 20px; height: 1px;
-      background: var(--purple-bright);
+      background: var(--gold-bright);
       display: block;
     }
 
@@ -327,7 +328,7 @@
       position: absolute;
       bottom: 0; left: 1.75rem; right: 1.75rem;
       height: 2px;
-      background: linear-gradient(90deg, transparent, rgba(124,58,237,0.4), transparent);
+      background: linear-gradient(90deg, transparent, rgba(200,155,60,0.4), transparent);
       opacity: 0;
       transition: opacity 0.25s;
     }
@@ -347,8 +348,8 @@
     .feature-icon {
       width: 32px; height: 32px;
       border-radius: 8px;
-      background: rgba(124,58,237,0.1);
-      border: 1px solid rgba(124,58,237,0.2);
+      background: rgba(200,155,60,0.1);
+      border: 1px solid rgba(200,155,60,0.2);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -375,7 +376,7 @@
       content: '';
       width: 4px; height: 4px;
       border-radius: 50%;
-      background: var(--purple-bright);
+      background: var(--gold-bright);
       margin-top: 7px;
       flex-shrink: 0;
     }
@@ -408,7 +409,7 @@
       position: absolute;
       bottom: 0; left: 1.5rem; right: 1.5rem;
       height: 2px;
-      background: linear-gradient(90deg, transparent, rgba(124,58,237,0.4), transparent);
+      background: linear-gradient(90deg, transparent, rgba(200,155,60,0.4), transparent);
       opacity: 0;
       transition: opacity 0.2s;
     }
@@ -418,8 +419,8 @@
     .link-card-icon {
       width: 36px; height: 36px;
       border-radius: 9px;
-      background: rgba(124,58,237,0.1);
-      border: 1px solid rgba(124,58,237,0.2);
+      background: rgba(200,155,60,0.1);
+      border: 1px solid rgba(200,155,60,0.2);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -475,7 +476,7 @@
       transition: color 0.2s;
     }
 
-    .footer-links a:hover { color: var(--purple-bright); }
+    .footer-links a:hover { color: var(--gold-bright); }
   </style>
 </head>
 <body>
@@ -484,12 +485,12 @@
 <nav>
   <a class="nav-logo" href="https://gachadailytracker.com">
     <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <rect width="22" height="22" rx="5.5" fill="#7c3aed" opacity="0.15"/>
-      <circle cx="11" cy="11" r="4" stroke="#a855f7" stroke-width="1.3" fill="none"/>
-      <circle cx="11" cy="11" r="1.3" fill="#a855f7"/>
-      <path d="M11 3v2.5M11 16.5V19M3 11h2.5M16.5 11H19" stroke="#a855f7" stroke-width="1.3" stroke-linecap="round" opacity="0.5"/>
+      <rect width="22" height="22" rx="5.5" fill="#c8913c" opacity="0.15"/>
+      <circle cx="11" cy="11" r="4" stroke="#c8913c" stroke-width="1.3" fill="none"/>
+      <circle cx="11" cy="11" r="1.3" fill="#e8c86a"/>
+      <path d="M11 3v2.5M11 16.5V19M3 11h2.5M16.5 11H19" stroke="#c8913c" stroke-width="1.3" stroke-linecap="round" opacity="0.5"/>
     </svg>
-    <span class="logo-text">Gacha<span>Daily</span></span>
+    <span class="logo-text">Gacha<span>Daily</span>Tracker</span>
   </a>
   <span class="nav-badge">REST API</span>
   <div class="nav-right">
@@ -580,10 +581,10 @@
       <div class="feature-card-title">
         <div class="feature-icon">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="8" r="5.5" stroke="#a855f7" stroke-width="1.3" fill="none"/>
-            <circle cx="8" cy="8" r="2" fill="#a855f7" opacity="0.4"/>
-            <circle cx="8" cy="8" r="0.8" fill="#a855f7"/>
-            <path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2" stroke="#a855f7" stroke-width="1.3" stroke-linecap="round" opacity="0.5"/>
+            <circle cx="8" cy="8" r="5.5" stroke="#c8913c" stroke-width="1.3" fill="none"/>
+            <circle cx="8" cy="8" r="2" fill="#e8c86a" opacity="0.4"/>
+            <circle cx="8" cy="8" r="0.8" fill="#e8c86a"/>
+            <path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2" stroke="#c8913c" stroke-width="1.3" stroke-linecap="round" opacity="0.5"/>
           </svg>
         </div>
         Core Features
@@ -602,8 +603,8 @@
       <div class="feature-card-title">
         <div class="feature-icon">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <rect x="1.5" y="3.5" width="13" height="9" rx="2" stroke="#a855f7" stroke-width="1.3" fill="none"/>
-            <path d="M5 7l2 2-2 2M8.5 11h3" stroke="#a855f7" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="1.5" y="3.5" width="13" height="9" rx="2" stroke="#c8913c" stroke-width="1.3" fill="none"/>
+            <path d="M5 7l2 2-2 2M8.5 11h3" stroke="#c8913c" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
         Tech Stack
@@ -626,8 +627,8 @@
     <a href="/gdt/api-docs" class="link-card">
       <div class="link-card-icon">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <rect x="2" y="2" width="14" height="14" rx="3" stroke="#a855f7" stroke-width="1.3" fill="none"/>
-          <path d="M5 6.5h8M5 9h8M5 11.5h5" stroke="#a855f7" stroke-width="1.3" stroke-linecap="round"/>
+          <rect x="2" y="2" width="14" height="14" rx="3" stroke="#c8913c" stroke-width="1.3" fill="none"/>
+          <path d="M5 6.5h8M5 9h8M5 11.5h5" stroke="#c8913c" stroke-width="1.3" stroke-linecap="round"/>
         </svg>
       </div>
       <div class="link-card-title">API Docs</div>
@@ -637,9 +638,9 @@
     <a href="/gdt/games" class="link-card">
       <div class="link-card-icon">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <circle cx="9" cy="9" r="6.5" stroke="#a855f7" stroke-width="1.3" fill="none"/>
-          <circle cx="9" cy="9" r="2.5" stroke="#a855f7" stroke-width="1.3" fill="none"/>
-          <path d="M9 2.5v3M9 12.5v3M2.5 9h3M12.5 9h3" stroke="#a855f7" stroke-width="1.3" stroke-linecap="round" opacity="0.5"/>
+          <circle cx="9" cy="9" r="6.5" stroke="#c8913c" stroke-width="1.3" fill="none"/>
+          <circle cx="9" cy="9" r="2.5" stroke="#c8913c" stroke-width="1.3" fill="none"/>
+          <path d="M9 2.5v3M9 12.5v3M2.5 9h3M12.5 9h3" stroke="#c8913c" stroke-width="1.3" stroke-linecap="round" opacity="0.5"/>
         </svg>
       </div>
       <div class="link-card-title">Browse Games</div>
@@ -649,8 +650,8 @@
     <a href="/gdt/status" class="link-card">
       <div class="link-card-icon">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M3 12l3.5-4 3 3 3.5-5L16 9" stroke="#a855f7" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-          <rect x="1.5" y="2.5" width="15" height="13" rx="2.5" stroke="#a855f7" stroke-width="1.3" fill="none"/>
+          <path d="M3 12l3.5-4 3 3 3.5-5L16 9" stroke="#c8913c" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="1.5" y="2.5" width="15" height="13" rx="2.5" stroke="#c8913c" stroke-width="1.3" fill="none"/>
         </svg>
       </div>
       <div class="link-card-title">System Status</div>
@@ -660,7 +661,7 @@
     <a href="/gdt/health" class="link-card">
       <div class="link-card-icon">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M2 9h3l2-5 3 9 2-6 2 2h2" stroke="#a855f7" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M2 9h3l2-5 3 9 2-6 2 2h2" stroke="#c8913c" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
       <div class="link-card-title">Health Check</div>

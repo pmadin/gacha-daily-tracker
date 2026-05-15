@@ -22,5 +22,5 @@ export default function CountdownTimer({ timezone, dailyReset }: Props) {
     return () => clearInterval(id);
   }, [timezone, dailyReset]);
 
-  return <span className="font-mono tabular-nums text-violet-400">{display}</span>;
+  return <span className="font-mono tabular-nums" style={{ color: 'var(--gold-bright)' }}>{display}</span>;
 }

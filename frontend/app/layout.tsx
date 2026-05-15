@@ -13,8 +13,11 @@ const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jet
 const notoSansJP = Noto_Sans_JP({ subsets: ['latin'], variable: '--font-noto-jp', display: 'optional' });
 
 export const metadata: Metadata = {
-  title: 'Gacha Daily Tracker',
-  description: 'Track your daily resets across 300+ gacha games.',
+  title: 'GachaDailyTracker',
+  description: 'Track your daily resets across 330+ gacha games.',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

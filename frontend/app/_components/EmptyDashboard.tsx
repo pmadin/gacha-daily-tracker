@@ -61,8 +61,8 @@ export default function EmptyDashboard() {
       <Link
         href="/games"
         style={{
-          background: 'var(--purple)',
-          color: 'white',
+          background: 'linear-gradient(135deg, #c8913c, #e8c86a)',
+          color: '#0a0808',
           borderRadius: 10,
           padding: '10px 24px',
           fontFamily: 'var(--font-display)',

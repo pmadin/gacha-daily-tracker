@@ -12,7 +12,7 @@ export default function TermsOfServicePage() {
       <p className="mb-10 text-sm text-zinc-500">Last updated: May 2026</p>
 
       <section className="mb-8">
-        <h2 className="mb-3 text-lg font-semibold text-violet-400">Acceptance</h2>
+        <h2 className="mb-3 text-lg font-semibold text-[#e8c86a]">Acceptance</h2>
         <p className="text-sm text-zinc-400">
           By using Gacha Daily Tracker (&quot;the site&quot;), you agree to these terms. If you do not agree,
           please do not use the site.
@@ -20,7 +20,7 @@ export default function TermsOfServicePage() {
       </section>
 
       <section className="mb-8">
-        <h2 className="mb-3 text-lg font-semibold text-violet-400">About the Service</h2>
+        <h2 className="mb-3 text-lg font-semibold text-[#e8c86a]">About the Service</h2>
         <p className="text-sm text-zinc-400">
           Gacha Daily Tracker is a personal project that helps players track daily resets across
           gacha games. It is provided free of charge for personal, non-commercial use. The service
@@ -29,7 +29,7 @@ export default function TermsOfServicePage() {
       </section>
 
       <section className="mb-8">
-        <h2 className="mb-3 text-lg font-semibold text-violet-400">Your Account</h2>
+        <h2 className="mb-3 text-lg font-semibold text-[#e8c86a]">Your Account</h2>
         <ul className="space-y-2 text-sm text-zinc-400">
           <li>You are responsible for keeping your login credentials secure.</li>
           <li>You are responsible for all activity that occurs under your account.</li>
@@ -42,7 +42,7 @@ export default function TermsOfServicePage() {
       </section>
 
       <section className="mb-8">
-        <h2 className="mb-3 text-lg font-semibold text-violet-400">Acceptable Use</h2>
+        <h2 className="mb-3 text-lg font-semibold text-[#e8c86a]">Acceptable Use</h2>
         <ul className="space-y-2 text-sm text-zinc-400">
           <li>Use the site for personal game tracking only.</li>
           <li>Do not attempt to access other users&apos; data.</li>
@@ -53,7 +53,7 @@ export default function TermsOfServicePage() {
       </section>
 
       <section className="mb-8">
-        <h2 className="mb-3 text-lg font-semibold text-violet-400">Intellectual Property</h2>
+        <h2 className="mb-3 text-lg font-semibold text-[#e8c86a]">Intellectual Property</h2>
         <ul className="space-y-2 text-sm text-zinc-400">
           <li>
             Original site code and design are copyright &copy; 2026 Peter Madin. The source code is
@@ -62,7 +62,7 @@ export default function TermsOfServicePage() {
               href="https://github.com/pmadin/gacha-daily-tracker"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-violet-400 hover:text-violet-300 transition-colors"
+              className="text-[#e8c86a] hover:opacity-80 transition-colors"
             >
               GitHub
             </a>
@@ -74,7 +74,7 @@ export default function TermsOfServicePage() {
               href="https://github.com/cicerakes/Game-Time-Master"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-violet-400 hover:text-violet-300 transition-colors"
+              className="text-[#e8c86a] hover:opacity-80 transition-colors"
             >
               cicerakes/Game-Time-Master
             </a>{' '}
@@ -89,7 +89,7 @@ export default function TermsOfServicePage() {
       </section>
 
       <section className="mb-8">
-        <h2 className="mb-3 text-lg font-semibold text-violet-400">Disclaimer</h2>
+        <h2 className="mb-3 text-lg font-semibold text-[#e8c86a]">Disclaimer</h2>
         <p className="text-sm text-zinc-400">
           The site is provided &quot;as is&quot; with no warranties of any kind. We make no guarantees
           regarding uptime, accuracy of game data, or fitness for any particular purpose. Use at
@@ -98,7 +98,7 @@ export default function TermsOfServicePage() {
       </section>
 
       <section className="mb-8">
-        <h2 className="mb-3 text-lg font-semibold text-violet-400">Changes to These Terms</h2>
+        <h2 className="mb-3 text-lg font-semibold text-[#e8c86a]">Changes to These Terms</h2>
         <p className="text-sm text-zinc-400">
           These terms may be updated at any time. The &quot;last updated&quot; date at the top of this page
           will reflect changes. Continued use of the site after changes are posted constitutes
@@ -110,12 +110,12 @@ export default function TermsOfServicePage() {
         Questions?{' '}
         <a
           href="mailto:pmadin@uw.edu"
-          className="text-violet-400 hover:text-violet-300 transition-colors"
+          className="text-[#e8c86a] hover:opacity-80 transition-colors"
         >
           pmadin@uw.edu
         </a>{' '}
         ·{' '}
-        <Link href="/privacy-policy" className="text-violet-400 hover:text-violet-300 transition-colors">
+        <Link href="/privacy-policy" className="text-[#e8c86a] hover:opacity-80 transition-colors">
           Privacy Policy
         </Link>
       </p>

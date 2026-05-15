@@ -57,8 +57,23 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4 py-8">
-      <div className="w-full max-w-sm">
+    <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4 py-8" style={{ position: 'relative', overflow: 'hidden' }}>
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: "url('/kintsugi-veins-login-reg.svg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          transform: 'scaleY(-1)',
+          maskImage: 'radial-gradient(ellipse 60% 55% at 50% 50%, transparent 0%, rgba(0,0,0,0.6) 45%, black 75%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 60% 55% at 50% 50%, transparent 0%, rgba(0,0,0,0.6) 45%, black 75%)',
+          opacity: 0.25,
+          pointerEvents: 'none',
+        }}
+      />
+      <div className="w-full max-w-sm" style={{ position: 'relative', zIndex: 1 }}>
         <h1 className="mb-6 text-center text-2xl font-bold text-white">Create account</h1>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -73,7 +88,10 @@ export default function RegisterPage() {
               maxLength={50}
               pattern="[a-zA-Z0-9_\-]+"
               title="Letters, numbers, underscores, and hyphens only"
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none focus:border-violet-500"
+              className="w-full rounded-lg px-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none"
+              style={{ background: 'rgba(8,8,8,0.8)', border: '1px solid rgba(200,155,60,0.18)', color: 'var(--text)' }}
+              onFocus={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.55)')}
+              onBlur={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.18)')}
               placeholder="Min 5 chars, letters/numbers/_-"
             />
           </div>
@@ -85,7 +103,10 @@ export default function RegisterPage() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none focus:border-violet-500"
+              className="w-full rounded-lg px-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none"
+              style={{ background: 'rgba(8,8,8,0.8)', border: '1px solid rgba(200,155,60,0.18)', color: 'var(--text)' }}
+              onFocus={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.55)')}
+              onBlur={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.18)')}
               placeholder="you@example.com"
             />
           </div>
@@ -96,17 +117,19 @@ export default function RegisterPage() {
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              onFocus={() => setPwFocused(true)}
               required
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none focus:border-violet-500"
+              className="w-full rounded-lg px-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none"
+              style={{ background: 'rgba(8,8,8,0.8)', border: '1px solid rgba(200,155,60,0.18)', color: 'var(--text)' }}
+              onFocus={e => { setPwFocused(true); e.currentTarget.style.borderColor = 'rgba(200,155,60,0.55)'; }}
+              onBlur={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.18)')}
               placeholder="Min 15 characters"
             />
             {showChecklist && (
-              <ul className="mt-2 space-y-1 rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2">
+              <ul className="mt-2 space-y-1 rounded-lg px-3 py-2" style={{ border: '1px solid rgba(200,155,60,0.10)', background: 'rgba(13,11,8,0.6)' }}>
                 {PASSWORD_RULES.map(rule => {
                   const met = rule.test(password);
                   return (
-                    <li key={rule.label} className={`flex items-center gap-2 text-xs transition-colors ${met ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                    <li key={rule.label} className="flex items-center gap-2 text-xs transition-colors" style={{ color: met ? 'var(--gold-bright)' : 'var(--text3)' }}>
                       <span className="text-[10px]">{met ? '✓' : '○'}</span>
                       {rule.label}
                     </li>
@@ -123,11 +146,14 @@ export default function RegisterPage() {
               value={confirm}
               onChange={e => setConfirm(e.target.value)}
               required
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none focus:border-violet-500"
+              className="w-full rounded-lg px-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none"
+              style={{ background: 'rgba(8,8,8,0.8)', border: '1px solid rgba(200,155,60,0.18)', color: 'var(--text)' }}
+              onFocus={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.55)')}
+              onBlur={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.18)')}
               placeholder="••••••••"
             />
             {confirm.length > 0 && (
-              <p className={`mt-1 text-xs ${confirm === password ? 'text-emerald-400' : 'text-red-400'}`}>
+              <p className={`mt-1 text-xs ${confirm !== password ? 'text-red-400' : ''}`} style={confirm === password ? { color: 'var(--gold-bright)' } : undefined}>
                 {confirm === password ? '✓ Passwords match' : '✗ Passwords do not match'}
               </p>
             )}
@@ -140,7 +166,8 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading || !allRulesMet}
-            className="rounded-lg bg-violet-600 py-2.5 text-sm font-medium text-white transition-colors hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-lg py-2.5 text-sm font-medium transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            style={{ background: 'linear-gradient(135deg, #c8913c, #e8c86a)', color: '#0a0808' }}
           >
             {loading ? 'Creating account…' : 'Create account'}
           </button>
@@ -148,7 +175,7 @@ export default function RegisterPage() {
 
         <p className="mt-6 text-center text-sm text-zinc-500">
           Already have an account?{' '}
-          <Link href="/login" className="text-violet-400 hover:text-violet-300">
+          <Link href="/login" style={{ color: 'var(--gold-bright)' }}>
             Sign in
           </Link>
         </p>

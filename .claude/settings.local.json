@@ -28,7 +28,9 @@
       "Bash(ConvertTo-Json -AsArray)",
       "Bash(New-Item -ItemType File -Path \"F:\\\\University\\\\My Personal Programs\\\\gacha_tracker\\\\frontend\\\\public\\\\sw.js\" -Force)",
       "Bash(Out-Null)",
-      "PowerShell(New-Item *)"
+      "PowerShell(New-Item *)",
+      "Bash(grep -rn \"124,58,237\\\\|139,92,246\\\\|7c3aed\\\\|a855f7\\\\|1a1a2e\\\\|0f0f1a\" app --include=\"*.tsx\" --include=\"*.css\")",
+      "Bash(echo \"EXIT:$?\")"
     ],
     "deny": [],
     "ask": []

@@ -20,30 +20,31 @@ function formatResetTime(dailyReset: string): string {
 
 export default function GameCard({ game, isTracked, onAdd, onRemove, priority }: Props) {
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-zinc-800 bg-zinc-900 p-4 transition-colors hover:border-zinc-700">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex min-w-0 items-start gap-2">
-          <div style={{ width: 36, height: 36, flexShrink: 0, display: 'block' }}>
-            <img
-              src={game.icon_name ? `/icons/${game.icon_name}.gif` : '/icons/placeholder.svg'}
-              alt=""
-              width={36}
-              height={36}
-              style={{ aspectRatio: '1 / 1' }}
-              className="rounded-lg object-cover"
-              loading={priority ? 'eager' : undefined}
-              fetchPriority={priority ? 'high' : undefined}
-              onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/icons/placeholder.svg'; }}
-            />
-          </div>
-          <h3 className="text-sm font-semibold leading-snug text-white">{game.name}</h3>
+    <div className="kintsugi-card flex flex-col gap-3 rounded-xl p-4" style={{ border: '1px solid rgba(200,155,60,0.12)', background: 'var(--bg2)' }}>
+      <div className="flex items-start gap-2">
+        <div style={{ width: 36, height: 36, flexShrink: 0, display: 'block' }}>
+          <img
+            src={game.icon_name ? `/icons/${game.icon_name}.gif` : '/icons/placeholder.svg'}
+            alt=""
+            width={36}
+            height={36}
+            style={{ aspectRatio: '1 / 1' }}
+            className="rounded-lg object-cover"
+            loading={priority ? 'eager' : undefined}
+            fetchPriority={priority ? 'high' : undefined}
+            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/icons/placeholder.svg'; }}
+          />
         </div>
-        <span
-          title={game.server}
-          className="shrink-0 rounded-full bg-zinc-800 px-2 py-0.5 text-xs font-medium text-zinc-400"
-        >
-          {displayServer(game.server)}
-        </span>
+        <div className="min-w-0 flex-1">
+          <h3 className="text-sm font-semibold leading-snug text-white">{game.name}</h3>
+          <span
+            title={game.server}
+            className="mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-medium"
+            style={{ background: 'rgba(200,155,60,0.08)', color: 'var(--text3)' }}
+          >
+            {displayServer(game.server)}
+          </span>
+        </div>
       </div>
 
       <div className="flex flex-col gap-1 text-xs text-zinc-500">
@@ -54,10 +55,9 @@ export default function GameCard({ game, isTracked, onAdd, onRemove, priority }:
       <button
         onClick={() => (isTracked ? onRemove(game) : onAdd(game))}
         className={`mt-auto w-full rounded-lg py-1.5 text-xs font-medium transition-colors ${
-          isTracked
-            ? 'bg-zinc-800 text-zinc-400 hover:bg-red-950 hover:text-red-400'
-            : 'bg-violet-600 text-white hover:bg-violet-500'
+          isTracked ? 'bg-[#18140d] text-[#9a8570] hover:bg-red-950 hover:text-red-400' : 'hover:opacity-90'
         }`}
+        style={isTracked ? undefined : { background: 'linear-gradient(135deg, #c8913c, #e8c86a)', color: '#0a0808' }}
       >
         {isTracked ? 'Remove' : '+ Add to list'}
       </button>

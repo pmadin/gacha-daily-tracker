@@ -161,8 +161,8 @@ const specs = swaggerJsdoc(options);
 // Custom CSS for gacha/anime theming
 const customCss = `
   .swagger-ui .topbar { 
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-bottom: 3px solid #ff6b9d;
+    background: linear-gradient(135deg, #8a6020 0%, #c8913c 100%);
+    border-bottom: 2px solid rgba(200,155,60,0.5);
   }
   .swagger-ui .topbar .download-url-wrapper { display: none; }
   

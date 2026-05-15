@@ -45,21 +45,18 @@ export default function DashboardCard({ game, onToggleComplete, onRemove, onUpda
 
   return (
     <div
-      className={`flex items-center gap-3 rounded-xl border px-3 py-3 transition-colors sm:gap-4 sm:px-4 ${
-        game.completed_today
-          ? 'border-emerald-900/60 bg-emerald-950/30'
-          : 'border-zinc-800 bg-zinc-900'
-      }`}
+      className="kintsugi-card crack-line flex items-center gap-3 rounded-xl px-3 py-3 sm:gap-4 sm:px-4"
+      style={{
+        borderColor: game.completed_today ? 'rgba(200,155,60,0.3)' : undefined,
+        background: game.completed_today ? 'rgba(200,155,60,0.08)' : 'var(--bg2)',
+      }}
     >
       {dragHandle}
 
       <button
         onClick={() => onToggleComplete(game.game_id, !game.completed_today)}
-        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-          game.completed_today
-            ? 'border-emerald-500 bg-emerald-500 text-white'
-            : 'border-zinc-600 bg-transparent hover:border-emerald-500'
-        }`}
+        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors border-zinc-600 bg-transparent"
+        style={game.completed_today ? { borderColor: '#c8913c', background: '#c8913c', color: '#1a140a' } : undefined}
         aria-label={game.completed_today ? 'Mark incomplete' : 'Mark complete'}
       >
         {game.completed_today && (
@@ -89,7 +86,10 @@ export default function DashboardCard({ game, onToggleComplete, onRemove, onUpda
               value={game.custom_reminder_offset ?? 0}
               onChange={e => onUpdateOffset(game.game_id, parseInt(e.target.value, 10))}
               onClick={e => e.stopPropagation()}
-              className="rounded border border-zinc-700 bg-zinc-800 px-1 py-px text-xs text-zinc-400 outline-none focus:border-violet-500"
+              className="rounded px-1 py-px text-xs outline-none"
+              style={{ border: '1px solid rgba(200,155,60,0.15)', background: 'var(--surface)', color: 'var(--text2)' }}
+              onFocus={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.55)')}
+              onBlur={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.15)')}
             >
               {OFFSET_OPTIONS.map(o => (
                 <option key={o.value} value={o.value}>{o.label}</option>
@@ -101,7 +101,7 @@ export default function DashboardCard({ game, onToggleComplete, onRemove, onUpda
 
       <div className="flex shrink-0 flex-col items-end gap-0.5">
         {game.completed_today ? (
-          <span className="text-xs font-medium text-emerald-500">Done</span>
+          <span className="text-xs font-medium" style={{ color: 'var(--gold-bright)' }}>Done</span>
         ) : (
           <>
             <CountdownTimer timezone={game.timezone} dailyReset={game.daily_reset} />

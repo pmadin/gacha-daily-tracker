@@ -1,231 +1,155 @@
-# Gacha Daily Tracker API
+# GachaDailyTracker
 
-REST API and web frontend for tracking daily tasks across 345 gacha games with timezone-aware reset timers.
+**Never miss a daily reset again.**
 
-**Live:** [gachadailytracker.com](https://gachadailytracker.com)
+A full-stack web app for tracking daily reset times across 330+ gacha games.
+Built as a personal project by Peter Madin.
 
-**Status:** V2 complete · Backend on Heroku · Frontend on Vercel
-
----
-
-## Tech Stack
-
-| Layer | Tech |
-|-------|------|
-| Runtime | Node.js 18+ / TypeScript |
-| Framework | Express.js |
-| Database | PostgreSQL (Docker locally, Heroku Postgres remotely) |
-| Auth | JWT + bcrypt + pepper |
-| API Docs | Swagger / OpenAPI 3.0 |
-| Frontend | Next.js 16 / React 19 / Tailwind v4 |
-| Game Data | [cicerakes/Game-Time-Master](https://github.com/cicerakes/Game-Time-Master) (GPL-3.0) |
+**Live site:** https://gachadailytracker.com
+**API docs:** https://gachadailytracker.com/gdt/api-docs
 
 ---
 
-## Data Attribution
+## What it does
 
-**This project includes modified data from [Game-Time-Master](https://github.com/cicerakes/Game-Time-Master) by [cicerakes](https://github.com/cicerakes), licensed under [GPL-3.0](https://github.com/cicerakes/Game-Time-Master/blob/master/LICENSE).**
+Gacha games reset daily quests and resources on a fixed schedule — miss the window
+and you lose that day's rewards permanently. GachaDailyTracker lets you:
 
-The game dataset (`data/game-data-backup.json`) is derived from `game-data.js` in that repository. Modifications made by pmadin:
-- Converted from a JavaScript module export to JSON
-- Added wrapper metadata fields: `lastUpdated`, `source`, `gameCount`, `attribution`, `modifications`
-- Wrapped the game array under a `data` key
-
-Game icon GIF files (downloaded into `frontend/public/icons/` by `scripts/download-icons.js`) are sourced from the `game-icons/` folder of the same repository and are subject to the same GPL-3.0 license.
+- Track reset countdowns across 330+ games in real time
+- Support for 20+ server regions with full timezone awareness
+- Mark games done each day, track streaks, celebrate completions
+- Use anonymously (no account required) or sign up to sync across devices
+- Browse and search the full game catalog with server filtering
 
 ---
 
-## NPM Scripts
+## Version history
+
+### V3.5 — Kintsugi Design System (May 2026)
+Major frontend visual redesign. No breaking changes to API or data.
+
+- **Kintsugi gold theme** — replaced purple/violet color system with a
+  black and gold palette inspired by the Japanese art of kintsugi
+- **Custom kintsugi background** — AI-generated gold crack texture
+  (Adobe Firefly Image 4 Ultra) used as hero and login/register backgrounds
+- **New logo and favicon** — gold faceted diamond replacing the purple diamond.
+  Separate favicon for main site (diamond mark) and API (gradient G)
+- **Full wordmark** — navbar updated to show GachaDailyTracker with
+  GachaDailyTracker in gold and Tracker in muted gold
+- **Region badge system** — Americas (gold), Global (ivory), Europe (silver),
+  Japan (amber red), each semantically distinct
+- **Custom placeholder icon** — dashed diamond SVG replacing generic gamepad
+- **Login/register vein backgrounds** — kintsugi texture fills empty space
+  around centered forms, inverted mask so veins appear at edges not center
+- **Backend HTML pages themed** — /gdt/ home, /gdt/status, and Swagger UI
+  topbar updated to match gold palette
+- **Privacy policy and Terms of Service** — rewritten with full legal content
+  including age requirements, data practices, GPL-3.0 attribution, and
+  governing law (Washington State)
+
+### V3.0 — Stability & UX Pass
+- Game-timezone-aware completion dates (fixed UTC vs local date bug)
+- Custom drag-and-drop sort order persisted to database
+- Streak tracking with confetti on daily completion
+- Hybrid SSR for games browser (first 48 games server-rendered)
+- Anonymous game list sync on registration
+- Windowed pagination component
+- Password validation checklist on register
+- Profile page with username/email/password/timezone management
+- Account deletion with confirmation flow
+
+### V2.5 — Frontend Redesign
+- Full Next.js frontend replacing server-rendered HTML
+- Purple/dark design system (now superseded by V3.5)
+- Marquee scroll for large game lists
+- Countdown timers respecting local timezone
+- Mobile responsive layout
+
+### V1.0 — V2.0 — Initial builds
+- Express/PostgreSQL backend API
+- JWT authentication with bcrypt + HMAC pepper
+- Game catalog from cicerakes/Game-Time-Master (GPL-3.0)
+- Basic HTML frontend
+
+---
+
+## Tech stack
+
+**Frontend**
+- Next.js 15 (App Router, hybrid SSR)
+- TypeScript
+- Tailwind CSS v4
+- @dnd-kit (drag and drop)
+- Deployed on Vercel
+
+**Backend**
+- Node.js + Express
+- TypeScript
+- PostgreSQL (Heroku)
+- JWT authentication
+- Swagger / OpenAPI 3.0 docs
+- Deployed on Heroku
+
+---
+
+## Local development
 
 ```bash
-npm run local       # local Docker DB (.env)
-npm run dev         # remote Heroku DB (.env.development)
-npm run prod        # production (.env.production)
-npm run build       # compile TypeScript → dist/
-npm start           # run compiled dist/
+# Clone
+git clone https://github.com/pmadin/GachaDailyTracker
+cd GachaDailyTracker
 
-npm run db-reset    # restart Docker postgres container
-npm run format:write  # auto-format with Prettier
-npm run lint        # ESLint
-```
-
----
-
-## Database Commands
-
-### Local Docker
-
-```bash
-# Connect to local Docker postgres
-docker exec -it gacha_tracker_db psql -U developer -d gacha_tracker
-
-# Start / stop container
-docker-compose up -d
-docker-compose down
-
-# Useful psql commands
-\dt                          # list all tables
-SELECT * FROM table_name;    # query a table
-SELECT COUNT(*) FROM games WHERE is_active = true;
-```
-
-### Remote Heroku
-
-```bash
-# Connect to Heroku postgres
-heroku pg:psql postgresql-convex-93435 -a gachadailytracker
-
-# Same psql commands apply once connected
-\dt
-SELECT * FROM table_name;
-```
-
----
-
-## API Endpoints
-
-Base path: `/gdt`
-
-### Public (no auth)
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/games` | List games — supports filters: `name`, `search`, `server`, `timezone`, `reset_time`, `limit`, `offset`, `sort_by`, `order`, `includeDeleted`, `deletedOnly` |
-| GET | `/games/:id` | Get game by ID |
-| GET | `/games/deleted` | List soft-deleted games |
-| GET | `/games/servers/list` | Server regions with game counts |
-| GET | `/timezones` | All supported timezones grouped by region |
-| GET | `/timezones/detect` | Auto-detect timezone from headers/IP |
-| GET | `/health` | Database + backup file health check |
-| GET | `/status` | HTML status page |
-
-### Auth
-
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/auth/register` | Register (`username`, `email`, `password`, `confirmPassword`, `registrationToken`) |
-| POST | `/auth/login` | Login → returns JWT (30-day) |
-| PUT | `/auth/profile` | Update profile (`timezone`, `first_name`, `last_name`, `phone`) |
-| PATCH | `/auth/update-password` | Change password |
-| PATCH | `/auth/update-email` | Change email |
-| DELETE | `/auth/account` | Delete account (irreversible) |
-
-### Game Management (JWT required)
-
-| Method | Path | Description |
-|--------|------|-------------|
-| PATCH | `/update/games/:id` | Update game (`daily_reset`, `timezone`, `is_active`, `reason`) |
-| POST | `/update/add/game` | Add new game |
-| DELETE | `/update/delete/game/:id` | Soft or permanent delete (`permanent: true/false`) |
-| POST | `/update/games/import` | Import from GitHub source |
-
-**Import body options:**
-```json
-{ "forceRefresh": true }           // bypass 24h cache, fetch fresh from GitHub
-{ "fullReset": true, "forceRefresh": true }  // deactivate all games first, then reimport (fixes inflated counts)
-```
-
-### Admin (role 3+ required)
-
-| Method | Path | Description |
-|--------|------|-------------|
-| PATCH | `/admin/users/role/:username` | Update user role (`newRole`: 1-4, `reason`) |
-| GET | `/admin/users` | List all users (paginated) |
-| GET | `/admin/users/search` | Search users |
-
-**Role system:** 1=User · 2=Premium · 3=Admin · 4=Owner
-
----
-
-## Database Schema
-
-```
-users          — accounts, roles, profile fields
-games          — game info, reset times, timezone, source, is_active
-user_games     — user ↔ game join table
-daily_completions — completion tracking per user/game/date
-reminder_settings — user notification preferences
-```
-
-Key behaviors:
-- Games use **soft-delete** (`is_active = false`) not hard delete
-- `UNIQUE(name, server)` on games — no real duplicates possible
-- `ON DELETE CASCADE` on all user-related foreign keys
-
----
-
-## Postman Testing
-
-Collections are in `test/postman/`. Import all `.postman_collection.json` files plus the environment files.
-
-**Environment variables needed:**
-```
-base_url              http://localhost:4000
-auth                  <admin/owner JWT>
-owner_token           <owner JWT>
-regular_user_token    <regular user JWT>
-```
-
-**Recommended run order:**
-1. `Test Auth Edge Cases` — registration/login validation
-2. `Test Public Endpoints` — health, deleted games, status
-3. `Test Auth Profile Management` — profile/password/email updates
-4. `Test Admin Endpoints` — role management, user search
-5. `Test Game Management Enhanced` — soft delete, restore, import
-
-**Run via Newman (CLI):**
-```bash
-npm install -g newman
-
-newman run "test/postman/Test Public Endpoints.postman_collection.json" \
-  --environment "test/postman/Local-gacha-daily-tracker.postman_environment.json"
-```
-
-**Notes:**
-- Timezone validation is **lenient** — invalid timezones auto-correct to `America/Los_Angeles` (returns 200, not 400)
-- JWT tokens expire after 30 days — re-login if you get 401s
-
----
-
-## Deployment
-
-Heroku deploys from `main` branch only.
-
-```bash
-# merge dev → main, Heroku auto-deploys
-git checkout main
-git merge dev
-git push origin main
-
-### Backend
-
-```bash
+# Backend
 npm install
-docker-compose up -d        # start local postgres
-npm run local               # start dev server on port 4000
-```
+cp .env.example .env   # fill in DB credentials, JWT secret, etc.
+npm run dev            # runs on http://localhost:4000
 
-Environment files:
-- `.env` — local Docker DB (used by `npm run local`)
-- `.env.development` — remote Heroku DB (used by `npm run dev`)
-- `.env.production` — production settings
-
-### Frontend
-
-```bash
+# Frontend (separate terminal)
 cd frontend
-cp .env.example .env.local
-# Set NEXT_PUBLIC_API_URL and REGISTRATION_TOKEN
 npm install
-node ../scripts/download-icons.js  # download game icon GIFs locally
-npm run dev                         # http://localhost:3000
+cp .env.example .env.local   # set NEXT_PUBLIC_API_URL=http://localhost:4000
+npm run dev            # runs on http://localhost:3000
+
+# Download game icons (optional — placeholder shown if missing)
+node scripts/download-icons.js
 ```
 
 ---
 
-## Scripts
+## Environment variables
 
-| Script | Purpose |
-|--------|---------|
-| `scripts/download-icons.js` | Downloads 96×96 GIF game icons from Game-Time-Master into `frontend/public/icons/` |
-| `scripts/download-game-data.js` | Re-fetches the game list from upstream and updates `data/game-data-backup.json` |
+**Backend (.env)**
+```
+DATABASE_URL=
+JWT_SECRET=
+JWT_PEPPER=
+REGISTRATION_TOKEN=
+PORT=4000
+```
+
+**Frontend (.env.local)**
+```
+NEXT_PUBLIC_API_URL=http://localhost:4000
+REGISTRATION_TOKEN=    # same value as backend, server-only
+```
+
+---
+
+## Game data
+
+Game catalog sourced from
+[cicerakes/Game-Time-Master](https://github.com/cicerakes/Game-Time-Master)
+licensed under GPL-3.0. Game names, icons, and artwork are property of
+their respective publishers and used for informational fan purposes only.
+
+---
+
+## License
+
+Source code: GPL-3.0
+See [LICENSE](./LICENSE) for details.
+
+---
+
+*Built by Peter Madin — University of Washington*
+*Contact: pmadin@uw.edu*
