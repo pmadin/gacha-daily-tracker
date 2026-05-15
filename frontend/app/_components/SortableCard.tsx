@@ -27,7 +27,7 @@ export default function SortableCard({ game, onToggleComplete, onRemove, onUpdat
     <button
       {...attributes}
       {...listeners}
-      className="shrink-0 cursor-grab touch-none text-zinc-700 hover:text-zinc-400 active:cursor-grabbing"
+      className="shrink-0 cursor-grab touch-none text-[#4a3d2a] hover:text-[#9a8570] active:cursor-grabbing"
       aria-label="Drag to reorder"
       tabIndex={-1}
     >

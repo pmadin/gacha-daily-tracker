@@ -26,7 +26,7 @@ export default function PopularGames({ games, context, trackedIds, onAdd }: Prop
             fontFamily: 'var(--font-jetbrains-mono)',
             fontSize: 11,
             letterSpacing: '0.08em',
-            color: 'var(--purple-bright)',
+            color: 'var(--gold-bright)',
             textTransform: 'uppercase',
           }}
         >
@@ -138,8 +138,8 @@ function PopularRow({
           height: 28,
           borderRadius: '50%',
           border: isTracked ? '1px solid rgba(16,185,129,0.3)' : '1px solid var(--border2)',
-          background: isTracked ? 'rgba(16,185,129,0.08)' : 'rgba(124,58,237,0.08)',
-          color: isTracked ? 'var(--green)' : 'var(--purple-bright)',
+          background: isTracked ? 'rgba(16,185,129,0.08)' : 'rgba(200,155,60,0.05)',
+          color: isTracked ? 'var(--green)' : 'var(--gold-bright)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

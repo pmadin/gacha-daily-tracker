@@ -1,24 +1,27 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #0a0a0f;
-  --bg2: #0f0f1a;
-  --bg3: #13131f;
-  --surface: #1a1a2e;
-  --surface2: #1f1f35;
-  --border: rgba(139, 92, 246, 0.15);
-  --border2: rgba(139, 92, 246, 0.3);
-  --purple: #7c3aed;
-  --purple-bright: #a855f7;
-  --cyan: #06b6d4;
-  --pink: #ec4899;
-  --amber: #f59e0b;
-  --green: #10b981;
-  --text: #f1f0ff;
-  --text2: #a89ec0;
-  --text3: #6b6080;
-  --background: #0a0a0f;
-  --foreground: #f1f0ff;
+  --bg: #080808;
+  --bg2: #0d0b08;
+  --bg3: #111009;
+  --surface: #18140d;
+  --surface2: #1e190f;
+  --border: rgba(200, 155, 60, 0.12);
+  --border2: rgba(200, 155, 60, 0.28);
+  --gold: #c8913c;
+  --gold-bright: #e8c86a;
+  --gold-dim: #8a6020;
+  --purple: #c8913c;
+  --purple-bright: #e8c86a;
+  --cyan: #d4a843;
+  --pink: #e07040;
+  --amber: #e8c86a;
+  --green: #7fb069;
+  --text: #f0ede8;
+  --text2: #9a8570;
+  --text3: #4a3d2a;
+  --background: #080808;
+  --foreground: #f0ede8;
   --font-mono: var(--font-jetbrains-mono);
   --font-body: var(--font-noto-jp);
 }
@@ -29,16 +32,14 @@ body {
   font-family: var(--font-display), system-ui, sans-serif;
 }
 
-/* Hide native scrollbar while keeping scroll functionality */
+/* ── Scrollbar hiding ── */
 .scroll-x-custom {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-.scroll-x-custom::-webkit-scrollbar {
-  display: none;
-}
+.scroll-x-custom::-webkit-scrollbar { display: none; }
 
-/* Infinite marquee scroll */
+/* ── Marquee ── */
 @keyframes marquee {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
@@ -48,20 +49,16 @@ body {
   animation-timing-function: linear;
   animation-iteration-count: infinite;
 }
-.animate-marquee:hover {
-  animation-play-state: paused;
-}
+.animate-marquee:hover { animation-play-state: paused; }
 
-/* Pulsing dot for hero badge */
+/* ── Pulsing dot ── */
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.35; }
 }
-.pulse-dot {
-  animation: pulse-dot 2s ease-in-out infinite;
-}
+.pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
 
-/* Popular games row hover */
+/* ── Popular games row hover ── */
 .popular-row {
   border-radius: 10px;
   border: 1px solid transparent;
@@ -72,16 +69,64 @@ body {
   border-color: var(--border);
 }
 
-/* Feature cards (FeaturesSection) */
+/* ── Feature cards ── */
 .feature-card { position: relative; transition: background 0.3s; }
 .feature-card::after {
   content: '';
   position: absolute;
   bottom: 0; left: 2rem; right: 2rem;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(124,58,237,0.4), transparent);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200,155,60,0.4), transparent);
   opacity: 0;
   transition: opacity 0.3s;
 }
 .feature-card:hover::after { opacity: 1; }
 .feature-card:hover { background: var(--bg3); }
+
+/* ── Kintsugi card ──
+   Vein texture fades in on hover via the static SVG file in /public.
+   opacity: 0 at rest so cards look clean by default.
+   pointer-events: none so the pseudo-element never blocks clicks.
+*/
+.kintsugi-card {
+  border: 1px solid rgba(200,155,60,0.12);
+  transition: border-color 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.kintsugi-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('/kintsugi-veins.svg');
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.kintsugi-card:hover { border-color: rgba(200,155,60,0.28); }
+.kintsugi-card:hover::before { opacity: 0.5; }
+
+/* ── Gold crack accent line bottom of cards ── */
+.crack-line::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 15%; right: 15%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200,155,60,0.35), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.crack-line:hover::after { opacity: 1; }
+
+/* ── Dashboard progress bar ── */
+.progress-gold {
+  background: linear-gradient(90deg, #c8913c, #e8c86a, #c8913c);
+  background-size: 200% 100%;
+  animation: gold-shimmer 3s linear infinite;
+}
+@keyframes gold-shimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}

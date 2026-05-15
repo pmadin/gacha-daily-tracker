@@ -2,7 +2,7 @@
 
 Daily-reset tracker for 330+ gacha games. Users browse a game list, add games to a personal list, and mark daily completions. Anonymous use via localStorage; optional account creation syncs data to the DB.
 
-**Current state:** V2.5. Backend on Heroku, frontend deployed to Vercel on `main`. V2.5 was a UI/frontend redesign pass — no new features, mainly performance, CLS fixes, and bug fixes.
+**Current state:** V3.5. Backend on Heroku, frontend deployed to Vercel on `main`. V3.5 was a full visual redesign pass (Kintsugi gold theme) — no new features or API changes from V3.0.
 
 ---
 
@@ -31,6 +31,36 @@ gacha_tracker/
 
 ---
 
+## Design System — Kintsugi Gold Theme (V3.5)
+
+The entire UI uses a warm black-and-gold palette. **There is no purple/violet anywhere.** All CSS custom properties are defined in `frontend/app/globals.css`.
+
+**CSS variables:**
+```
+--bg:       #080808
+--bg2:      #0d0b08
+--bg3:      #111009
+--surface:  #18140d
+--border:   rgba(200,155,60,0.12)
+--border2:  rgba(200,155,60,0.28)
+--gold:     #c8913c
+--gold-bright: #e8c86a
+--gold-dim: #8a6020
+--text:     #f0ede8
+--text2:    #9a8570
+--text3:    #4a3d2a
+```
+
+**Gold gradient button:** `background: linear-gradient(135deg, #c8913c, #e8c86a); color: #0a0808`
+
+**Kintsugi card class:** `.kintsugi-card` defined in `globals.css`
+
+**Input focus pattern:** `onFocus`/`onBlur` inline `borderColor` handlers instead of Tailwind focus classes.
+
+**Do NOT change:** Any `red` / `red-400` / `red-950` / `border-red-*` / `focus:border-red-500` values — those are intentional semantic error colors. Never touch `_lib/` files or `src/` backend files.
+
+---
+
 ## Frontend — important notes
 
 **This is Next.js 16 App Router.** APIs and conventions differ from older versions. Before writing any Next.js code, check `node_modules/next/dist/docs/`. All pages under `frontend/app/` are Server Components by default; add `'use client'` for any component using hooks or browser APIs.
@@ -50,16 +80,19 @@ gacha_tracker/
 - `/games` — **Hybrid SSR.** `app/games/page.tsx` is an async Server Component that fetches the first 48 games at render time and passes them as `initialGames`/`initialTotal` props to `app/games/GamesClient.tsx` (the `'use client'` component that owns all search/filter/pagination state). The skeleton only shows on subsequent page/filter changes, not on first load.
 - `/dashboard` (`app/dashboard/page.tsx`) — My List: sort by reset/alpha/custom (drag with @dnd-kit), streak display, progress bar, confetti on all-complete.
 - `/profile` (`app/profile/page.tsx`) — Account info + delete account (client-side identifier validation, 403 → "Incorrect password").
-- `/login`, `/register` — Auth forms.
-- `/privacy-policy`, `/terms-of-service` — Static legal pages.
+- `/login`, `/register` — Auth forms with kintsugi vein SVG background (see below).
+- `/privacy-policy`, `/terms-of-service` — Static legal pages (prose rewrite in V3.5, no lists, gold headings/links).
+- `/admin/games` — Admin game management: search with 400ms debounce autocomplete, windowed Pagination component, sortable columns.
 
 **Key components:**
 - `DashboardCard` — shows icon, name, server tag (`displayServer`), countdown (hidden when done), local reset time. Accepts optional `dragHandle` prop.
 - `SortableCard` — wraps `DashboardCard` with `useSortable` from @dnd-kit for drag reorder.
 - `GameCard` — game browser card with add/remove tracking button.
-- `Pagination` — windowed page number component: shows first/last always, ±2 around current, `…` for gaps >1. Used in games browser.
-- `Navbar` — logo links to `/`, nav links: Games + My List. Username dropdown (click-outside via `useRef`) with Profile link + Sign out.
+- `Pagination` — windowed page number component: shows first/last always, ±2 around current, `…` for gaps >1. Used in games browser and admin games page.
+- `Navbar` — logo links to `/`. Nav links: Games + My List. Username dropdown (click-outside via `useRef`) with Profile link + Sign out. Hamburger hidden at `xl:` breakpoint (1280px) — needed for 2K monitors at high DPI scaling where `lg:` (1024px) was insufficient.
+- `FeaturesSection` — three feature cards + notifications CTA strip at bottom. CTA uses `<Link href="/register">` (next/link imported).
 - `Footer` — privacy/ToS links, copyright, GPL-3.0 attribution.
+- `MarketingHero` — hero section includes `— GACHA DAILY TRACKER —` mono label (font-jetbrains-mono, `var(--text2)`) between the badge pill and the h1 headline.
 
 **localStorage keys:**
 - `gdt_anon_list` — anon tracked games (`AnonEntry[]`)
@@ -73,7 +106,51 @@ gacha_tracker/
 - `NEXT_PUBLIC_API_URL` — backend base URL (client + server)
 - `REGISTRATION_TOKEN` — server-only; never sent to browser
 
-**Icons:** 96×96 GIFs live in `frontend/public/icons/` (excluded from git via `.gitignore`). Run `node scripts/download-icons.js` to populate locally. `placeholder.svg` is committed as fallback.
+**Icons:** 96×96 GIFs live in `frontend/public/icons/` (excluded from git via `.gitignore`). Run `node scripts/download-icons.js` to populate locally. `frontend/public/icons/placeholder.svg` and `frontend/public/placeholder.svg` are committed as fallback — kintsugi gold diamond gem (no text, no question mark).
+
+---
+
+## Favicon & Branding
+
+**Frontend (`frontend/public/favicon.svg`):** Gold faceted diamond on dark `#0d0b08` background. 96×96 viewBox, three polygon facets with gold gradients, horizontal divider line.
+
+**Backend API (`src/public/favicon.svg`):** Gold "G" monogram on dark warm background with gold border stroke. Used by `/gdt/` home, `/gdt/status`, and Swagger UI.
+
+**`frontend/app/layout.tsx` metadata:**
+```ts
+export const metadata: Metadata = {
+  title: 'GachaDailyTracker',
+  description: 'Track your daily resets across 330+ gacha games.',
+  icons: { icon: '/favicon.svg' },
+};
+```
+
+**Fonts loaded in `layout.tsx`:** Geist (`--font-geist`), Plus Jakarta Sans (`--font-display`), JetBrains Mono (`--font-jetbrains-mono`), Noto Sans JP (`--font-noto-jp`).
+
+**Navbar logo & wordmark:**
+- 34×34 inline SVG: gold faceted diamond (gradients `navfg`/`navft`/`navfb`, line at y=40)
+- Wordmark: `Gacha` (`var(--text)`) + `Daily` (`var(--gold, #c8913c)`) + `Tracker` (`var(--text3)`)
+- Logo cluster: `display:flex; alignItems:center; gap:10`
+- Nav background: `rgba(13,11,8,0.90)` (warm near-black — avoids blue cast of `rgba(10,10,15,...)`)
+- All hamburger/desktop breakpoints use `xl:` (1280px), not `lg:`
+
+**Login / Register backgrounds:**
+- `frontend/public/kintsugi-veins-login-reg.svg` — kintsugi gold vein texture (color `#c8913c`)
+- Login: `transform: scaleX(-1)`, opacity 0.25, radial-gradient mask (transparent center, opaque edges)
+- Register: `transform: scaleY(-1)`, same mask and opacity
+- Mask: `radial-gradient(ellipse 60% 55% at 50% 50%, transparent 0%, rgba(0,0,0,0.6) 45%, black 75%)`
+
+---
+
+## Backend HTML pages (`src/public/`)
+
+`home.html`, `status.html` — standalone HTML pages (no Next.js). Themed with the same gold palette via inline CSS:
+- `:root` vars: `--gold: #c8913c`, `--gold-bright: #e8c86a`, `--gold-dim: #8a6020`, warm dark `--bg`/`--bg2`/`--bg3`
+- Gold gradient primary button, gold-tinted grid/orb hero elements
+- Brand name: "GachaDailyTracker" (full, one word)
+- Operational status dot (green) and error colors (red) are semantic — do not change
+
+`src/config/swagger.ts` — Swagger UI topbar: `linear-gradient(135deg, #8a6020 0%, #c8913c 100%)` with gold border-bottom.
 
 ---
 
@@ -153,17 +230,13 @@ heroku pg:psql -a gachadailytracker
 - **Icon img CLS fix**: every game icon `<img>` is wrapped in a fixed-size `<div>` (matching width/height) with `style={{ aspectRatio: '1/1' }}` on the img so `onError` src-swaps don't cause layout shift.
 - **Home page CLS fix**: while auth resolves, the top section renders a `min-height: 220px` animate-pulse skeleton instead of a blank div so the Popular Games and Features sections below never shift position.
 - **`/games` GamesClient skip-first-load**: a `useRef(initialGames.length > 0)` flag skips the mount `useEffect` fetch when SSR already provided data, preventing a redundant duplicate API call on hydration.
+- **Admin games search debounce**: 400ms `useEffect` on `search` state triggers `setSubmittedSearch` and resets `page` to 0 — matches the games browser pattern. No form submit needed.
+- **Navbar `xl:` breakpoint**: hamburger uses `xl:hidden` / `xl:flex` (1280px), not `lg:`. 2K monitors at 150–200% DPI scaling bring logical CSS pixels below 1024px, making `lg:` insufficient.
+- **Warm near-black**: `rgba(13,11,8,...)` matches the site's `#0d0b08` base. Avoid `rgba(10,10,15,...)` — the higher blue channel creates a visible cool/blue tint against the warm gold accents.
+- **placeholder.svg path**: components reference `/icons/placeholder.svg` — the file lives at `frontend/public/icons/placeholder.svg`. A copy also exists at `frontend/public/placeholder.svg`.
 
 ---
 
 ## Backend bug fixes (V2.5)
 
 - **Game-timezone-aware `completion_date`** (fixed in `tracker.ts`): all three completion queries (`GET /tracker/games` LEFT JOIN, `POST /complete` INSERT, `DELETE /complete`) now compute the **game-local period date** instead of using `CURRENT_DATE` (UTC). Formula: if current time in the game's timezone ≥ `daily_reset` → use today's local date; else → yesterday's local date. This fixes a bug where completing games just before their reset (e.g., at 3 AM for a 4 AM reset) kept them marked done after the reset fired, since both timestamps shared the same UTC calendar date.
-
----
-
-## Favicon / API docs
-
-- `src/public/favicon.ico` — multi-size ICO (16×16 + 32×32) with a 4-point sparkle star (`#7c3aed` on `#0a0a0f`). Generated via Pillow using cubic bezier path subdivided into a polygon.
-- `src/public/images/favicon.svg` — same sparkle in SVG with `rx="4"` rounded background.
-- Swagger UI (`/gdt/api-docs`): emoji removed from tab title; `customfavIcon` now points to the SVG; `<link rel="icon">` order is SVG → PNG → ICO so modern browsers get the vector.

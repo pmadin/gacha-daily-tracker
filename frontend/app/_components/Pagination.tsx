@@ -45,9 +45,9 @@ export default function Pagination({ page, totalPages, onPageChange }: Props) {
 
   const btnBase =
     'flex h-8 min-w-8 items-center justify-center rounded-lg border px-2 text-sm transition-colors';
-  const btnActive = 'border-violet-600 bg-violet-600 text-white';
-  const btnInactive = 'border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:text-white';
-  const btnDisabled = 'border-zinc-800 text-zinc-600 cursor-not-allowed';
+  const btnActive = 'bg-[#c8913c] text-[#0a0808] border-[#c8913c]';
+  const btnInactive = 'border-[rgba(200,155,60,0.15)] text-[#9a8570] hover:border-[rgba(200,155,60,0.35)] hover:text-[#f0ede8]';
+  const btnDisabled = 'border-[rgba(200,155,60,0.08)] text-[#4a3d2a] cursor-not-allowed';
 
   return (
     <div className="mt-8 flex flex-wrap items-center justify-center gap-1.5">

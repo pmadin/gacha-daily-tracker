@@ -283,7 +283,7 @@ export default function ProfilePage() {
       <h1 className="mb-8 text-2xl font-bold text-white">Profile</h1>
 
       {/* Account info */}
-      <div className="mb-6 rounded-xl border border-zinc-800 bg-zinc-900 p-6 space-y-4">
+      <div className="kintsugi-card mb-6 rounded-xl p-6 space-y-4" style={{ border: '1px solid rgba(200,155,60,0.12)', background: 'var(--bg2)' }}>
         <div className="flex items-center justify-between">
           <span className="text-sm text-zinc-500">Username</span>
           <span className="text-sm font-medium text-white">{user.username}</span>
@@ -294,14 +294,14 @@ export default function ProfilePage() {
         </div>
         <div className="flex items-center justify-between">
           <span className="text-sm text-zinc-500">Role</span>
-          <span className="rounded-full bg-violet-600/20 px-2.5 py-0.5 text-xs font-medium text-violet-400">
+          <span className="rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ background: 'rgba(200,155,60,0.12)', color: 'var(--gold-bright)' }}>
             {roleLabel}
           </span>
         </div>
       </div>
 
       {/* Change Password */}
-      <div className="mb-6 rounded-xl border border-zinc-800 bg-zinc-900 p-6">
+      <div className="kintsugi-card mb-6 rounded-xl p-6" style={{ border: '1px solid rgba(200,155,60,0.12)', background: 'var(--bg2)' }}>
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-base font-semibold text-white">Password</h2>
@@ -311,7 +311,8 @@ export default function ProfilePage() {
           </div>
           <button
             onClick={() => { setShowPwForm(v => !v); setPwError(''); setPwSuccess(''); }}
-            className="text-sm text-violet-400 hover:text-violet-300 transition-colors"
+            className="text-sm transition-colors"
+            style={{ color: 'var(--gold-bright)' }}
           >
             {showPwForm ? 'Cancel' : 'Change'}
           </button>
@@ -326,7 +327,10 @@ export default function ProfilePage() {
                 value={currentPw}
                 onChange={e => setCurrentPw(e.target.value)}
                 required
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm text-white outline-none focus:border-violet-500"
+                className="w-full rounded-lg px-4 py-2 text-sm text-white outline-none"
+                style={{ border: '1px solid rgba(200,155,60,0.15)', background: 'var(--bg2)' }}
+                onFocus={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.55)')}
+                onBlur={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.15)')}
               />
             </div>
             <div>
@@ -337,7 +341,10 @@ export default function ProfilePage() {
                 onChange={e => setNewPw(e.target.value)}
                 required
                 minLength={15}
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm text-white outline-none focus:border-violet-500"
+                className="w-full rounded-lg px-4 py-2 text-sm text-white outline-none"
+                style={{ border: '1px solid rgba(200,155,60,0.15)', background: 'var(--bg2)' }}
+                onFocus={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.55)')}
+                onBlur={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.15)')}
               />
               <p className="mt-1 text-xs text-zinc-600">Min 15 characters, must include uppercase, lowercase, number, and symbol</p>
             </div>
@@ -348,7 +355,10 @@ export default function ProfilePage() {
                 value={confirmPw}
                 onChange={e => setConfirmPw(e.target.value)}
                 required
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm text-white outline-none focus:border-violet-500"
+                className="w-full rounded-lg px-4 py-2 text-sm text-white outline-none"
+                style={{ border: '1px solid rgba(200,155,60,0.15)', background: 'var(--bg2)' }}
+                onFocus={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.55)')}
+                onBlur={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.15)')}
               />
             </div>
             {pwError && (
@@ -357,7 +367,8 @@ export default function ProfilePage() {
             <button
               type="submit"
               disabled={pwLoading}
-              className="w-full rounded-lg bg-violet-600 py-2 text-sm font-medium text-white transition-colors hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full rounded-lg py-2 text-sm font-medium transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              style={{ background: 'linear-gradient(135deg, #c8913c, #e8c86a)', color: '#0a0808' }}
             >
               {pwLoading ? 'Updating…' : 'Update password'}
             </button>
@@ -366,7 +377,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Change Email */}
-      <div className="mb-6 rounded-xl border border-zinc-800 bg-zinc-900 p-6">
+      <div className="kintsugi-card mb-6 rounded-xl p-6" style={{ border: '1px solid rgba(200,155,60,0.12)', background: 'var(--bg2)' }}>
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-base font-semibold text-white">Email</h2>
@@ -376,7 +387,8 @@ export default function ProfilePage() {
           </div>
           <button
             onClick={() => { setShowEmailForm(v => !v); setEmailError(''); setEmailSuccess(''); }}
-            className="text-sm text-violet-400 hover:text-violet-300 transition-colors"
+            className="text-sm transition-colors"
+            style={{ color: 'var(--gold-bright)' }}
           >
             {showEmailForm ? 'Cancel' : 'Change'}
           </button>
@@ -391,7 +403,10 @@ export default function ProfilePage() {
                 value={newEmail}
                 onChange={e => setNewEmail(e.target.value)}
                 required
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm text-white outline-none focus:border-violet-500"
+                className="w-full rounded-lg px-4 py-2 text-sm text-white outline-none"
+                style={{ border: '1px solid rgba(200,155,60,0.15)', background: 'var(--bg2)' }}
+                onFocus={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.55)')}
+                onBlur={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.15)')}
               />
             </div>
             <div>
@@ -401,7 +416,10 @@ export default function ProfilePage() {
                 value={emailPw}
                 onChange={e => setEmailPw(e.target.value)}
                 required
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm text-white outline-none focus:border-violet-500"
+                className="w-full rounded-lg px-4 py-2 text-sm text-white outline-none"
+                style={{ border: '1px solid rgba(200,155,60,0.15)', background: 'var(--bg2)' }}
+                onFocus={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.55)')}
+                onBlur={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.15)')}
               />
             </div>
             {emailError && (
@@ -410,7 +428,8 @@ export default function ProfilePage() {
             <button
               type="submit"
               disabled={emailLoading}
-              className="w-full rounded-lg bg-violet-600 py-2 text-sm font-medium text-white transition-colors hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full rounded-lg py-2 text-sm font-medium transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              style={{ background: 'linear-gradient(135deg, #c8913c, #e8c86a)', color: '#0a0808' }}
             >
               {emailLoading ? 'Updating…' : 'Update email'}
             </button>
@@ -419,7 +438,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Push Notifications */}
-      <div className="mb-6 rounded-xl border border-zinc-800 bg-zinc-900 p-6">
+      <div className="kintsugi-card mb-6 rounded-xl p-6" style={{ border: '1px solid rgba(200,155,60,0.12)', background: 'var(--bg2)' }}>
         <h2 className="mb-1 text-base font-semibold text-white">Push Notifications</h2>
         <p className="mb-5 text-sm text-zinc-500">
           Get reminded before your daily resets, even when the app is closed.
@@ -440,9 +459,10 @@ export default function ProfilePage() {
                 disabled={notifLoading}
                 className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
                   notifEnabled
-                    ? 'border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white'
-                    : 'bg-violet-600 text-white hover:bg-violet-500'
+                    ? 'border-[rgba(200,155,60,0.15)] text-[#9a8570] hover:border-[rgba(200,155,60,0.3)] hover:text-[#f0ede8] border'
+                    : 'hover:opacity-90'
                 }`}
+                style={!notifEnabled ? { background: 'linear-gradient(135deg, #c8913c, #e8c86a)', color: '#0a0808' } : undefined}
               >
                 {notifLoading ? '…' : notifEnabled ? 'Disable' : 'Enable'}
               </button>
@@ -454,7 +474,10 @@ export default function ProfilePage() {
                 <select
                   value={notifOffset}
                   onChange={e => handleOffsetChange(parseInt(e.target.value, 10))}
-                  className="rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm text-white outline-none focus:border-violet-500"
+                  className="rounded-lg px-3 py-1.5 text-sm text-white outline-none"
+                  style={{ border: '1px solid rgba(200,155,60,0.15)', background: 'var(--surface)' }}
+                  onFocus={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.55)')}
+                  onBlur={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.15)')}
                 >
                   {OFFSET_OPTIONS.map(o => (
                     <option key={o.value} value={o.value}>{o.label}</option>
@@ -470,7 +493,7 @@ export default function ProfilePage() {
                   <button
                     onClick={handleApplyDefault}
                     disabled={applyLoading}
-                    className="rounded-lg border border-zinc-700 px-3 py-1.5 text-sm text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white disabled:opacity-50"
+                    className="rounded-lg border px-3 py-1.5 text-sm transition-colors hover:border-[rgba(200,155,60,0.3)] hover:text-[#f0ede8] disabled:opacity-50 border-[rgba(200,155,60,0.15)] text-[#9a8570]"
                   >
                     {applyLoading ? '…' : `Set all to ${notifOffset < 60 ? `${notifOffset} min` : `${notifOffset / 60} hr`}`}
                   </button>
@@ -489,7 +512,7 @@ export default function ProfilePage() {
             )}
 
             {isIOS && !isStandalone && (
-              <p className="rounded-lg border border-zinc-700 bg-zinc-800/60 px-4 py-2.5 text-xs text-zinc-400">
+              <p className="rounded-lg px-4 py-2.5 text-xs" style={{ border: '1px solid rgba(200,155,60,0.10)', background: 'rgba(13,11,8,0.5)', color: 'var(--text3)' }}>
                 On iPhone, add GachaDaily to your Home Screen first — iOS requires it for push notifications to work.
               </p>
             )}
@@ -512,7 +535,8 @@ export default function ProfilePage() {
               value={identifier}
               onChange={e => setIdentifier(e.target.value)}
               required
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm text-white outline-none focus:border-red-500"
+              className="w-full rounded-lg px-4 py-2 text-sm text-white outline-none focus:border-red-500"
+              style={{ border: '1px solid rgba(200,155,60,0.15)', background: 'var(--bg2)' }}
             />
           </div>
           <div>
@@ -523,7 +547,8 @@ export default function ProfilePage() {
               onChange={e => setPassword(e.target.value)}
               required
               placeholder="Confirm with your password"
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm text-white outline-none focus:border-red-500"
+              className="w-full rounded-lg px-4 py-2 text-sm text-white outline-none focus:border-red-500"
+              style={{ border: '1px solid rgba(200,155,60,0.15)', background: 'var(--bg2)' }}
             />
           </div>
 
@@ -542,7 +567,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={() => { setConfirming(false); setPassword(''); setDeleteError(''); }}
-                className="flex-1 rounded-lg border border-zinc-700 py-2 text-sm text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white"
+                className="flex-1 rounded-lg border border-[rgba(200,155,60,0.15)] py-2 text-sm text-[#9a8570] transition-colors hover:border-[rgba(200,155,60,0.3)] hover:text-[#f0ede8]"
               >
                 Cancel
               </button>

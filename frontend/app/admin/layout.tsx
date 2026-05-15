@@ -32,9 +32,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen">
-      <div className="border-b border-zinc-800 bg-zinc-900/60">
+      <div className="border-b" style={{ borderColor: 'rgba(200,155,60,0.10)', background: 'rgba(13,11,8,0.6)' }}>
         <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-3">
-          <span className="rounded-full bg-violet-600/20 px-2.5 py-0.5 text-xs font-semibold text-violet-400">
+          <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ background: 'rgba(200,155,60,0.12)', color: 'var(--gold-bright)' }}>
             Admin
           </span>
           {navLink('/admin', 'Overview')}

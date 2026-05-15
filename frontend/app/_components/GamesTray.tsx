@@ -83,7 +83,7 @@ export default function GamesTray({ games, onToggle }: Props) {
               height: '100%',
               borderRadius: 2,
               width: `${progress}%`,
-              background: 'linear-gradient(90deg, var(--purple), var(--cyan))',
+              background: 'linear-gradient(135deg, #c8913c, #e8c86a)',
               transition: 'width 0.4s ease',
             }}
           />
@@ -126,7 +126,7 @@ export default function GamesTray({ games, onToggle }: Props) {
           style={{
             fontFamily: 'var(--font-jetbrains-mono)',
             fontSize: 12,
-            color: 'var(--purple-bright)',
+            color: 'var(--gold-bright)',
             textDecoration: 'none',
           }}
         >
@@ -254,6 +254,7 @@ function GameCard({
 
   return (
     <div
+      className="kintsugi-card"
       style={{
         width: 110,
         minWidth: 110,
@@ -349,9 +350,9 @@ function GameCard({
           width: '100%',
           padding: '5px 0',
           borderRadius: 7,
-          border: game.done ? '1px solid rgba(16,185,129,0.3)' : '1px solid var(--border2)',
-          background: game.done ? 'rgba(16,185,129,0.08)' : 'rgba(124,58,237,0.08)',
-          color: game.done ? 'var(--green)' : 'var(--purple-bright)',
+          border: game.done ? '1px solid rgba(200,155,60,0.3)' : '1px solid var(--border2)',
+          background: game.done ? 'rgba(200,155,60,0.10)' : 'rgba(200,155,60,0.05)',
+          color: game.done ? 'var(--gold-bright)' : 'var(--text3)',
           fontFamily: 'var(--font-jetbrains-mono)',
           fontSize: 10,
           fontWeight: 500,

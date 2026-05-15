@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, FormEvent } from 'react';
 import { useAuth } from '../../_context/AuthContext';
+import Pagination from '../../_components/Pagination';
 import {
   fetchAdminGames,
   createAdminGame,
@@ -23,7 +24,7 @@ type SortDir = 'asc' | 'desc';
 
 function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
   return (
-    <span className={`ml-1 text-xs ${active ? 'text-violet-400' : 'text-zinc-700'}`}>
+    <span className={`ml-1 text-xs ${active ? 'text-[#e8c86a]' : 'text-[#4a3d2a]'}`}>
       {active ? (dir === 'asc' ? '↑' : '↓') : '↕'}
     </span>
   );
@@ -83,7 +84,7 @@ function GameFormModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-md rounded-xl border border-zinc-700 bg-zinc-900 p-6">
+      <div className="w-full max-w-md rounded-xl p-6" style={{ border: '1px solid rgba(200,155,60,0.15)', background: 'var(--bg2)' }}>
         <h2 className="mb-5 text-base font-semibold text-white">
           {game ? 'Edit Game' : 'Add Game'}
         </h2>
@@ -96,7 +97,10 @@ function GameFormModal({
                 onChange={field(key)}
                 required={required}
                 placeholder={placeholder}
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white outline-none focus:border-violet-500"
+                className="w-full rounded-lg px-3 py-2 text-sm text-white outline-none"
+                style={{ border: '1px solid rgba(200,155,60,0.15)', background: 'var(--surface)' }}
+                onFocus={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.55)')}
+                onBlur={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.15)')}
               />
             </div>
           ))}
@@ -107,14 +111,15 @@ function GameFormModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-lg border border-zinc-700 py-2 text-sm text-zinc-400 hover:text-white"
+              className="flex-1 rounded-lg border border-[rgba(200,155,60,0.15)] py-2 text-sm text-[#9a8570] hover:text-[#f0ede8]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 rounded-lg bg-violet-600 py-2 text-sm font-medium text-white hover:bg-violet-500 disabled:opacity-50"
+              className="flex-1 rounded-lg py-2 text-sm font-medium hover:opacity-90 disabled:opacity-50"
+              style={{ background: 'linear-gradient(135deg, #c8913c, #e8c86a)', color: '#0a0808' }}
             >
               {saving ? 'Saving…' : game ? 'Save changes' : 'Add game'}
             </button>
@@ -155,7 +160,7 @@ function ConfirmDeleteModal({
         <div className="flex gap-2">
           <button
             onClick={onClose}
-            className="flex-1 rounded-lg border border-zinc-700 py-2 text-sm text-zinc-400 hover:text-white"
+            className="flex-1 rounded-lg border border-[rgba(200,155,60,0.15)] py-2 text-sm text-[#9a8570] hover:text-[#f0ede8]"
           >
             Cancel
           </button>
@@ -252,6 +257,14 @@ export default function AdminGamesPage() {
   }, [token, submittedSearch, filter, page]);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    const id = setTimeout(() => {
+      setPage(0);
+      setSubmittedSearch(search);
+    }, 400);
+    return () => clearTimeout(id);
+  }, [search]);
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
@@ -357,14 +370,15 @@ export default function AdminGamesPage() {
         </div>
         <button
           onClick={() => setAddingGame(true)}
-          className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500"
+          className="rounded-lg px-4 py-2 text-sm font-medium hover:opacity-90"
+          style={{ background: 'linear-gradient(135deg, #c8913c, #e8c86a)', color: '#0a0808' }}
         >
           + Add game
         </button>
       </div>
 
       {/* Import / icon tools */}
-      <div className="mb-6 rounded-xl border border-zinc-800 bg-zinc-900 p-4">
+      <div className="mb-6 rounded-xl p-4" style={{ border: '1px solid rgba(200,155,60,0.10)', background: 'var(--bg2)' }}>
         <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">
           Data &amp; Icons
         </p>
@@ -372,21 +386,21 @@ export default function AdminGamesPage() {
           <button
             onClick={() => handleImport(false)}
             disabled={importLoading || patchLoading}
-            className="rounded-lg border border-zinc-700 px-3 py-1.5 text-sm text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white disabled:opacity-40"
+            className="rounded-lg border border-[rgba(200,155,60,0.15)] px-3 py-1.5 text-sm text-[#9a8570] transition-colors hover:border-[rgba(200,155,60,0.3)] hover:text-[#f0ede8] disabled:opacity-40"
           >
             {importLoading ? 'Syncing…' : 'Sync from cache'}
           </button>
           <button
             onClick={() => handleImport(true)}
             disabled={importLoading || patchLoading}
-            className="rounded-lg border border-zinc-700 px-3 py-1.5 text-sm text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white disabled:opacity-40"
+            className="rounded-lg border border-[rgba(200,155,60,0.15)] px-3 py-1.5 text-sm text-[#9a8570] transition-colors hover:border-[rgba(200,155,60,0.3)] hover:text-[#f0ede8] disabled:opacity-40"
           >
             {importLoading ? 'Syncing…' : 'Force refresh from source'}
           </button>
           <button
             onClick={handlePatchIcons}
             disabled={patchLoading || importLoading}
-            className="rounded-lg border border-zinc-700 px-3 py-1.5 text-sm text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white disabled:opacity-40"
+            className="rounded-lg border border-[rgba(200,155,60,0.15)] px-3 py-1.5 text-sm text-[#9a8570] transition-colors hover:border-[rgba(200,155,60,0.3)] hover:text-[#f0ede8] disabled:opacity-40"
           >
             {patchLoading ? 'Patching…' : 'Patch missing icons'}
           </button>
@@ -408,22 +422,26 @@ export default function AdminGamesPage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search by name or server…"
-            className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white outline-none focus:border-violet-500"
+            className="flex-1 rounded-lg px-3 py-2 text-sm text-white outline-none"
+            style={{ border: '1px solid rgba(200,155,60,0.15)', background: 'var(--surface)' }}
+            onFocus={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.55)')}
+            onBlur={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.15)')}
           />
           <button
             type="submit"
-            className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500"
+            className="rounded-lg px-4 py-2 text-sm font-medium hover:opacity-90"
+            style={{ background: 'linear-gradient(135deg, #c8913c, #e8c86a)', color: '#0a0808' }}
           >
             Search
           </button>
         </form>
-        <div className="flex overflow-hidden rounded-lg border border-zinc-700 text-sm">
+        <div className="flex overflow-hidden rounded-lg border border-[rgba(200,155,60,0.15)] text-sm">
           {(['all', 'active', 'inactive'] as const).map(f => (
             <button
               key={f}
               onClick={() => { setFilter(f); setPage(0); }}
               className={`px-3 py-2 capitalize transition-colors ${
-                filter === f ? 'bg-violet-600 text-white' : 'text-zinc-400 hover:text-white'
+                filter === f ? 'bg-[rgba(200,155,60,0.15)] text-[#e8c86a]' : 'text-[#9a8570] hover:text-[#f0ede8]'
               }`}
             >
               {f}
@@ -438,10 +456,10 @@ export default function AdminGamesPage() {
       )}
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-zinc-800">
+      <div className="overflow-x-auto rounded-xl border border-[rgba(200,155,60,0.10)]">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-zinc-800 bg-zinc-900/80 text-left text-xs text-zinc-500">
+            <tr className="border-b border-[rgba(200,155,60,0.10)] bg-[rgba(13,11,8,0.8)] text-left text-xs text-[#4a3d2a]">
               {(
                 [
                   { col: 'name' as SortCol, label: 'Name', cls: '' },
@@ -479,10 +497,10 @@ export default function AdminGamesPage() {
           <tbody>
             {loading ? (
               Array.from({ length: 8 }).map((_, i) => (
-                <tr key={i} className="border-b border-zinc-800/40">
+                <tr key={i} className="border-b border-[rgba(200,155,60,0.06)]">
                   {Array.from({ length: 7 }).map((_, j) => (
                     <td key={j} className="px-4 py-3">
-                      <div className="h-3 animate-pulse rounded bg-zinc-800" />
+                      <div className="h-3 animate-pulse rounded bg-[#18140d]" />
                     </td>
                   ))}
                 </tr>
@@ -497,7 +515,7 @@ export default function AdminGamesPage() {
               sortedGames.map(game => (
                 <tr
                   key={game.id}
-                  className={`border-b border-zinc-800/40 transition-colors hover:bg-zinc-800/30 ${
+                  className={`border-b border-[rgba(200,155,60,0.06)] transition-colors hover:bg-[rgba(200,155,60,0.04)] ${
                     !game.is_active ? 'opacity-50' : ''
                   }`}
                 >
@@ -530,7 +548,7 @@ export default function AdminGamesPage() {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => setEditGame(game)}
-                        className="rounded px-2 py-1 text-xs text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+                        className="rounded px-2 py-1 text-xs text-[#9a8570] transition-colors hover:bg-[#18140d] hover:text-[#f0ede8]"
                       >
                         Edit
                       </button>
@@ -550,7 +568,7 @@ export default function AdminGamesPage() {
                           setIconTargetId(game.id);
                           iconInputRef.current?.click();
                         }}
-                        className="rounded px-2 py-1 text-xs text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+                        className="rounded px-2 py-1 text-xs text-[#9a8570] transition-colors hover:bg-[#18140d] hover:text-[#f0ede8]"
                         title="Upload icon (.gif, 96×96)"
                       >
                         Icon
@@ -573,29 +591,7 @@ export default function AdminGamesPage() {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-4 flex items-center justify-between text-sm text-zinc-500">
-          <span>
-            Page {page + 1} of {totalPages} · {total} games
-          </span>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setPage(p => Math.max(0, p - 1))}
-              disabled={page === 0}
-              className="rounded-lg border border-zinc-700 px-3 py-1.5 text-zinc-400 transition-colors hover:border-zinc-500 hover:text-white disabled:opacity-40"
-            >
-              Previous
-            </button>
-            <button
-              onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
-              disabled={page >= totalPages - 1}
-              className="rounded-lg border border-zinc-700 px-3 py-1.5 text-zinc-400 transition-colors hover:border-zinc-500 hover:text-white disabled:opacity-40"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
 
       {/* Modals */}
       {(addingGame || editGame) && (

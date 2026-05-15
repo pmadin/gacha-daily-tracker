@@ -3,16 +3,20 @@ import { displayServer } from '../_lib/servers';
 function getServerStyle(display: string): { bg: string; text: string; border: string } {
   switch (display) {
     case 'Global':
-      return { bg: 'rgba(6,182,212,0.1)', text: 'var(--cyan)', border: 'rgba(6,182,212,0.2)' };
+      return { bg: 'rgba(240,237,232,0.08)', text: '#f0ede8', border: 'rgba(240,237,232,0.25)' };
     case 'Americas':
     case 'N. America':
     case 'E. Americas':
-    case 'EU/Americas':
-      return { bg: 'rgba(124,58,237,0.1)', text: 'var(--purple-bright)', border: 'rgba(124,58,237,0.2)' };
+      return {
+        bg: 'rgba(200,155,60,0.08)',
+        text: 'var(--gold-bright)',
+        border: 'rgba(200,155,60,0.22)',
+      };
     case 'Japan':
-      return { bg: 'rgba(236,72,153,0.1)', text: 'var(--pink)', border: 'rgba(236,72,153,0.2)' };
+      return { bg: 'rgba(224,112,64,0.08)', text: '#e07040', border: 'rgba(224,112,64,0.22)' };
     case 'Europe':
-      return { bg: 'rgba(16,185,129,0.1)', text: 'var(--green)', border: 'rgba(16,185,129,0.2)' };
+    case 'EU/Americas':
+      return { bg: 'rgba(180,185,195,0.08)', text: '#b4b9c3', border: 'rgba(180,185,195,0.22)' };
     default:
       return { bg: 'rgba(168,158,192,0.08)', text: 'var(--text2)', border: 'rgba(168,158,192,0.15)' };
   }

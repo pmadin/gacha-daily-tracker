@@ -16,17 +16,18 @@ export default function AdminOverviewPage() {
           Signed in as{' '}
           <span className="text-zinc-300">{user?.username}</span>
           {' · '}
-          <span className="text-violet-400">{ROLE_LABELS[user?.role ?? 3]}</span>
+          <span style={{ color: 'var(--gold-bright)' }}>{ROLE_LABELS[user?.role ?? 3]}</span>
         </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Link
           href="/admin/games"
-          className="group rounded-xl border border-zinc-800 bg-zinc-900 p-6 transition-colors hover:border-zinc-700"
+          className="kintsugi-card group rounded-xl p-6 transition-colors"
+          style={{ border: '1px solid rgba(200,155,60,0.12)', background: 'var(--bg2)' }}
         >
           <div className="mb-3 text-2xl">🎮</div>
-          <h2 className="mb-1 text-base font-semibold text-white group-hover:text-violet-400 transition-colors">
+          <h2 className="mb-1 text-base font-semibold text-white group-hover:text-[#e8c86a] transition-colors">
             Game Management
           </h2>
           <p className="text-sm text-zinc-500">
@@ -34,7 +35,7 @@ export default function AdminOverviewPage() {
           </p>
         </Link>
 
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-6 opacity-50">
+        <div className="rounded-xl p-6 opacity-50" style={{ border: '1px solid rgba(200,155,60,0.10)', background: 'transparent' }}>
           <div className="mb-3 text-2xl">👥</div>
           <h2 className="mb-1 text-base font-semibold text-zinc-400">User Management</h2>
           <p className="text-sm text-zinc-500">View users, update roles, delete accounts. Coming soon.</p>

@@ -124,13 +124,19 @@ export default function GamesClient({ initialGames, initialTotal }: Props) {
           placeholder="Search games…"
           value={searchInput}
           onChange={e => setSearchInput(e.target.value)}
-          className="flex-1 rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm text-white placeholder-zinc-500 outline-none focus:border-violet-500"
+          className="flex-1 rounded-lg px-4 py-2 text-sm text-white placeholder-zinc-500 outline-none"
+          style={{ border: '1px solid rgba(200,155,60,0.15)', background: 'var(--bg2)' }}
+          onFocus={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.55)')}
+          onBlur={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.15)')}
         />
         <div className="flex gap-2">
           <select
             value={serverGroup}
             onChange={e => { setServerGroup(e.target.value); setPage(0); }}
-            className="flex-1 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white outline-none focus:border-violet-500 sm:flex-none"
+            className="flex-1 rounded-lg px-3 py-2 text-sm text-white outline-none sm:flex-none"
+            style={{ border: '1px solid rgba(200,155,60,0.15)', background: 'var(--bg2)' }}
+            onFocus={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.55)')}
+            onBlur={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.15)')}
           >
             <option value="">All servers</option>
             {availableGroups.map(g => (
@@ -139,7 +145,8 @@ export default function GamesClient({ initialGames, initialTotal }: Props) {
           </select>
           <button
             type="submit"
-            className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-violet-500"
+            className="rounded-lg px-4 py-2 text-sm font-medium transition-colors hover:opacity-90"
+            style={{ background: 'linear-gradient(135deg, #c8913c, #e8c86a)', color: '#0a0808' }}
           >
             Search
           </button>
@@ -149,7 +156,7 @@ export default function GamesClient({ initialGames, initialTotal }: Props) {
       {loading ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {Array.from({ length: 24 }).map((_, i) => (
-            <div key={i} className="h-36 animate-pulse rounded-xl bg-zinc-800" />
+            <div key={i} className="h-36 animate-pulse rounded-xl bg-[#18140d]" />
           ))}
         </div>
       ) : games.length === 0 ? (
