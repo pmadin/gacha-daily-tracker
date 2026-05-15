@@ -6,7 +6,7 @@ A full-stack web app for tracking daily reset times across 330+ gacha games.
 Built as a personal project by Peter Madin.
 
 **Live site:** https://gachadailytracker.com
-**API docs:** https://gachadailytracker.com/gdt/api-docs
+**API docs:** https://gachadailytracker-88df93607a47.herokuapp.com/gdt/api-docs/
 
 ---
 
