@@ -130,3 +130,63 @@ body {
   0%   { background-position: 200% center; }
   100% { background-position: -200% center; }
 }
+
+/* ── Navbar gem logo hover ── */
+.nav-logo-gem {
+  display: inline-flex;
+}
+
+/* Whole-gem light burst → sustained glow */
+.nav-logo-gem:hover svg {
+  animation: nav-gem-glow 0.9s ease-out forwards;
+}
+@keyframes nav-gem-glow {
+  0%   { filter: drop-shadow(0 0 2px rgba(232,200,106,0.2)); }
+  32%  { filter: drop-shadow(0 0 10px rgba(255,248,180,1)) drop-shadow(0 0 22px rgba(232,200,106,0.85)) brightness(1.55); }
+  100% { filter: drop-shadow(0 0 6px rgba(232,200,106,0.65)) drop-shadow(0 0 14px rgba(200,145,60,0.35)); }
+}
+
+/* Per-facet light pulses — sequential like Ramiel's internal illumination */
+.nav-facet-hi {
+  opacity: 0;
+  pointer-events: none;
+}
+.nav-logo-gem:hover .nav-facet-hi {
+  animation: nav-facet-flash 0.55s ease-in-out forwards;
+}
+@keyframes nav-facet-flash {
+  0%   { opacity: 0; }
+  35%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Catch-light flash on the dividing edges */
+.nav-edge-flash {
+  opacity: 0;
+  pointer-events: none;
+}
+.nav-logo-gem:hover .nav-edge-flash {
+  animation: nav-edge-flash 0.38s ease-in-out forwards;
+}
+@keyframes nav-edge-flash {
+  0%   { opacity: 0; }
+  22%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Elongated lens-flare sparkle stars */
+.nav-gem-sparkle {
+  fill: #fffbe0;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  pointer-events: none;
+}
+.nav-logo-gem:hover .nav-gem-sparkle {
+  animation: nav-gem-sparkle 0.85s ease-in-out forwards;
+}
+@keyframes nav-gem-sparkle {
+  0%   { opacity: 0; transform: scale(0) rotate(0deg); }
+  28%  { opacity: 1; transform: scale(1) rotate(45deg); }
+  100% { opacity: 0; transform: scale(0.2) rotate(90deg); }
+}

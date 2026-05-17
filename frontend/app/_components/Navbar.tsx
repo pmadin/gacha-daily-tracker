@@ -62,28 +62,68 @@ export default function Navbar() {
             className="flex items-center gap-2"
             style={{ textDecoration: 'none' }}
           >
-            <svg width="34" height="34" viewBox="0 0 96 96" aria-hidden="true">
-              <rect width="96" height="96" rx="20" fill="#0d0b08"/>
-              <defs>
-                <linearGradient id="navfg" x1="15%" y1="0%" x2="85%" y2="100%">
-                  <stop offset="0%" stopColor="#f0d898"/>
-                  <stop offset="40%" stopColor="#d4a040"/>
-                  <stop offset="100%" stopColor="#7a5018"/>
-                </linearGradient>
-                <linearGradient id="navft" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#f8e8b0"/>
-                  <stop offset="100%" stopColor="#c8913c"/>
-                </linearGradient>
-                <linearGradient id="navfb" x1="100%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#7a5018"/>
-                  <stop offset="100%" stopColor="#3a2008"/>
-                </linearGradient>
-              </defs>
-              <polygon points="48,14 72,40 48,72 24,40" fill="url(#navfg)"/>
-              <polygon points="48,14 72,40 48,40" fill="url(#navft)" opacity="0.5"/>
-              <polygon points="48,72 24,40 48,40" fill="url(#navfb)" opacity="0.8"/>
-              <line x1="24" y1="40" x2="72" y2="40" stroke="#0d0b08" strokeWidth="1.5" opacity="0.6"/>
-            </svg>
+            <span className="nav-logo-gem">
+              <svg width="34" height="34" viewBox="0 0 96 96" aria-hidden="true">
+                <rect width="96" height="96" rx="20" fill="#0d0b08"/>
+                <defs>
+                  <linearGradient id="neq1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#fdf0c0"/>
+                    <stop offset="100%" stopColor="#c8a030"/>
+                  </linearGradient>
+                  <linearGradient id="neq2" x1="100%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#d4a030"/>
+                    <stop offset="100%" stopColor="#8a5c18"/>
+                  </linearGradient>
+                  <linearGradient id="neq3" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#7a5018"/>
+                    <stop offset="100%" stopColor="#3a2008"/>
+                  </linearGradient>
+                  <linearGradient id="neq4" x1="100%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#4a2c0a"/>
+                    <stop offset="100%" stopColor="#1a0c04"/>
+                  </linearGradient>
+                </defs>
+                <polygon points="48,7 16,48 52,52" fill="url(#neq1)"/>
+                <polygon points="48,7 52,52 80,48" fill="url(#neq2)"/>
+                <polygon points="48,89 52,52 16,48" fill="url(#neq3)"/>
+                <polygon points="48,89 80,48 52,52" fill="url(#neq4)"/>
+                <line x1="16" y1="48" x2="52" y2="52" stroke="#f8e8a0" strokeWidth="1.1" opacity="0.7"/>
+                <line x1="52" y1="52" x2="80" y2="48" stroke="#f8e8a0" strokeWidth="1.1" opacity="0.7"/>
+                <line x1="48" y1="7" x2="16" y2="48" stroke="rgba(253,240,192,0.55)" strokeWidth="0.9"/>
+                <line x1="48" y1="7" x2="52" y2="52" stroke="rgba(200,160,48,0.4)" strokeWidth="0.8"/>
+                <line x1="48" y1="7" x2="80" y2="48" stroke="rgba(200,155,60,0.35)" strokeWidth="0.9"/>
+                <line x1="16" y1="48" x2="48" y2="89" stroke="rgba(120,80,24,0.45)" strokeWidth="0.9"/>
+                <line x1="52" y1="52" x2="48" y2="89" stroke="rgba(80,50,16,0.35)" strokeWidth="0.8"/>
+                <line x1="80" y1="48" x2="48" y2="89" stroke="rgba(60,32,8,0.4)" strokeWidth="0.9"/>
+                {/* Facet highlights — sequential light cycling, top-left → top-right → bottom-left → bottom-right */}
+                <polygon className="nav-facet-hi" style={{ animationDelay: '0s' }}
+                  points="48,7 16,48 52,52" fill="rgba(255,244,160,0.55)"/>
+                <polygon className="nav-facet-hi" style={{ animationDelay: '0.2s' }}
+                  points="48,7 52,52 80,48" fill="rgba(255,244,160,0.45)"/>
+                <polygon className="nav-facet-hi" style={{ animationDelay: '0.4s' }}
+                  points="48,89 52,52 16,48" fill="rgba(224,168,72,0.3)"/>
+                <polygon className="nav-facet-hi" style={{ animationDelay: '0.6s' }}
+                  points="48,89 80,48 52,52" fill="rgba(200,152,56,0.25)"/>
+                {/* Edge catch-light on the horizontal divider */}
+                <line className="nav-edge-flash" style={{ animationDelay: '0.1s' }}
+                  x1="16" y1="48" x2="52" y2="52" stroke="#fffbe0" strokeWidth="2"/>
+                <line className="nav-edge-flash" style={{ animationDelay: '0.1s' }}
+                  x1="52" y1="52" x2="80" y2="48" stroke="#fffbe0" strokeWidth="2"/>
+                {/* Elongated lens-flare stars — vertices + two corner floats */}
+                <path className="nav-gem-sparkle" style={{ animationDelay: '0s' }}
+                  d="M0-9 1-1 9 0 1 1 0 9-1 1-9 0-1-1Z" transform="translate(48,2)"/>
+                <path className="nav-gem-sparkle" style={{ animationDelay: '0.09s' }}
+                  d="M0-7 0.8-0.8 7 0 0.8 0.8 0 7-0.8 0.8-7 0-0.8-0.8Z" transform="translate(88,46)"/>
+                <path className="nav-gem-sparkle" style={{ animationDelay: '0.18s' }}
+                  d="M0-7 0.8-0.8 7 0 0.8 0.8 0 7-0.8 0.8-7 0-0.8-0.8Z" transform="translate(8,46)"/>
+                <path className="nav-gem-sparkle" style={{ animationDelay: '0.28s' }}
+                  d="M0-5 0.6-0.6 5 0 0.6 0.6 0 5-0.6 0.6-5 0-0.6-0.6Z" transform="translate(84,10)"/>
+                <path className="nav-gem-sparkle" style={{ animationDelay: '0.38s' }}
+                  d="M0-5 0.6-0.6 5 0 0.6 0.6 0 5-0.6 0.6-5 0-0.6-0.6Z" transform="translate(10,18)"/>
+                <path className="nav-gem-sparkle" style={{ animationDelay: '0.47s' }}
+                  d="M0-4 0.5-0.5 4 0 0.5 0.5 0 4-0.5 0.5-4 0-0.5-0.5Z" transform="translate(85,76)"/>
+              </svg>
+            </span>
             <span
               style={{
                 fontFamily: 'var(--font-display)',

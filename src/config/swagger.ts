@@ -3,10 +3,10 @@ import swaggerUi from 'swagger-ui-express';
 
 const options = {
     definition: {
-        openapi: '3.0.0',
+        openapi: '3.0.3',
         info: {
             title: 'Gacha Daily Tracker API',
-            version: '1.0.0',
+            version: '3.5.0',
             description: `
 A REST API for tracking daily reset times across 330+ gacha games.
 
@@ -231,10 +231,27 @@ const customCss = `
   }
   
   .swagger-ui .scheme-container {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background: linear-gradient(135deg, #8a6020 0%, #c8913c 100%);
     border-radius: 8px;
     padding: 10px;
     margin: 20px 0;
+  }
+
+  .swagger-ui .scheme-container .schemes > label,
+  .swagger-ui .scheme-container .schemes-title {
+    color: #1a0c04 !important;
+    font-weight: 600;
+  }
+
+  .swagger-ui .btn.authorize,
+  .swagger-ui .btn.authorize svg {
+    color: #1a0c04 !important;
+    border-color: rgba(26,12,4,0.5) !important;
+    fill: #1a0c04 !important;
+  }
+
+  .swagger-ui .btn.authorize:hover {
+    background: rgba(26,12,4,0.1) !important;
   }
   
   .swagger-ui .opblock.opblock-get .opblock-summary-method {
@@ -260,23 +277,23 @@ const customCss = `
   }
   
   .swagger-ui .btn.execute {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #c8913c 0%, #e8c86a 100%);
     border: none;
     border-radius: 6px;
-    color: white;
+    color: #0a0808;
     font-weight: 600;
   }
-  
+
   .swagger-ui .btn.execute:hover {
-    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+    background: linear-gradient(135deg, #b07828 0%, #d4a030 100%);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 4px 12px rgba(200,145,60,0.4);
   }
   
   .swagger-ui .response-col_description__inner div.markdown,
   .swagger-ui .response-col_description__inner div.renderedMarkdown {
     background: #f7fafc;
-    border-left: 4px solid #ff6b9d;
+    border-left: 4px solid #c8913c;
     padding: 10px 15px;
     border-radius: 4px;
   }
@@ -304,10 +321,10 @@ const customCss = `
     font-family: 'JetBrains Mono', 'Consolas', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
     font-size: 13px !important;
     line-height: 1.4 !important;
-  
-  /* Gacha-themed colors */
+  }
+
   .swagger-ui .opblock-tag {
-    border-bottom: 2px solid #ff6b9d;
+    border-bottom: 2px solid #c8913c;
     color: #2d3748 !important;
     font-weight: 700 !important;
   }
@@ -342,8 +359,8 @@ const swaggerOptions = {
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
         <link rel="apple-touch-icon" sizes="180x180" href="/public/images/apple-touch-icon.png">
         <link rel="manifest" href="/site.webmanifest">
-        <meta name="msapplication-TileColor" content="#667eea">
-        <meta name="theme-color" content="#667eea">
+        <meta name="msapplication-TileColor" content="#c8913c">
+        <meta name="theme-color" content="#c8913c">
         
         <script>
             // Clean up any remaining server selector elements after load

@@ -1,22 +1,33 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
-  <rect width="96" height="96" rx="20" fill="#0d0b08"/>
-  <defs>
-    <linearGradient id="fg" x1="15%" y1="0%" x2="85%" y2="100%">
-      <stop offset="0%" stop-color="#f0d898"/>
-      <stop offset="40%" stop-color="#d4a040"/>
-      <stop offset="100%" stop-color="#7a5018"/>
-    </linearGradient>
-    <linearGradient id="ft" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#f8e8b0"/>
-      <stop offset="100%" stop-color="#c8913c"/>
-    </linearGradient>
-    <linearGradient id="fb" x1="100%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#7a5018"/>
-      <stop offset="100%" stop-color="#3a2008"/>
-    </linearGradient>
-  </defs>
-  <polygon points="48,14 72,40 48,72 24,40" fill="url(#fg)"/>
-  <polygon points="48,14 72,40 48,40" fill="url(#ft)" opacity="0.5"/>
-  <polygon points="48,72 24,40 48,40" fill="url(#fb)" opacity="0.8"/>
-  <line x1="24" y1="40" x2="72" y2="40" stroke="#0d0b08" stroke-width="1.5" opacity="0.6"/>
+    <rect width="96" height="96" rx="20" fill="#0d0b08"/>
+    <defs>
+        <linearGradient id="eq1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#fdf0c0"/>
+            <stop offset="100%" stop-color="#c8a030"/>
+        </linearGradient>
+        <linearGradient id="eq2" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#d4a030"/>
+            <stop offset="100%" stop-color="#8a5c18"/>
+        </linearGradient>
+        <linearGradient id="eq3" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#7a5018"/>
+            <stop offset="100%" stop-color="#3a2008"/>
+        </linearGradient>
+        <linearGradient id="eq4" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#4a2c0a"/>
+            <stop offset="100%" stop-color="#1a0c04"/>
+        </linearGradient>
+    </defs>
+    <polygon points="48,7 16,48 52,52" fill="url(#eq1)"/>
+    <polygon points="48,7 52,52 80,48" fill="url(#eq2)"/>
+    <polygon points="48,89 52,52 16,48" fill="url(#eq3)"/>
+    <polygon points="48,89 80,48 52,52" fill="url(#eq4)"/>
+    <line x1="16" y1="48" x2="52" y2="52" stroke="#f8e8a0" stroke-width="1.1" opacity="0.7"/>
+    <line x1="52" y1="52" x2="80" y2="48" stroke="#f8e8a0" stroke-width="1.1" opacity="0.7"/>
+    <line x1="48" y1="7" x2="16" y2="48" stroke="rgba(253,240,192,0.55)" stroke-width="0.9"/>
+    <line x1="48" y1="7" x2="52" y2="52" stroke="rgba(200,160,48,0.4)" stroke-width="0.8"/>
+    <line x1="48" y1="7" x2="80" y2="48" stroke="rgba(200,155,60,0.35)" stroke-width="0.9"/>
+    <line x1="16" y1="48" x2="48" y2="89" stroke="rgba(120,80,24,0.45)" stroke-width="0.9"/>
+    <line x1="52" y1="52" x2="48" y2="89" stroke="rgba(80,50,16,0.35)" stroke-width="0.8"/>
+    <line x1="80" y1="48" x2="48" y2="89" stroke="rgba(60,32,8,0.4)" stroke-width="0.9"/>
 </svg>
