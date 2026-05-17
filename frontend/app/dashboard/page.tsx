@@ -106,7 +106,16 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!token) return;
     fetchNotificationPrefs(token)
-      .then(p => setNotifEnabled(p.enabled))
+      .then(async p => {
+        if (!p.enabled) { setNotifEnabled(false); return; }
+        try {
+          const reg = await navigator.serviceWorker.getRegistration('/');
+          const sub = reg ? await reg.pushManager.getSubscription() : null;
+          setNotifEnabled(!!sub);
+        } catch {
+          setNotifEnabled(false);
+        }
+      })
       .catch(() => {});
   }, [token]);
 
