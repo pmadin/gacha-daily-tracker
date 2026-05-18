@@ -1,3 +1,7 @@
+-- v4.0 3NF normalization:
+-- Dropped from users: first_name, last_name, phone (never used in app features)
+-- Dropped from user_games: is_enabled (always true, never filtered on)
+
 -- Users table
 CREATE TABLE users (
     id              SERIAL PRIMARY KEY,
@@ -5,11 +9,6 @@ CREATE TABLE users (
     email           VARCHAR(255) UNIQUE NOT NULL,
     password_hash   VARCHAR(255) NOT NULL,
     timezone        VARCHAR(50)  DEFAULT 'America/Los_Angeles',
-
-    -- Optional profile fields
-    first_name      VARCHAR(100),
-    last_name       VARCHAR(100),
-    phone           VARCHAR(20),
 
     -- Role system: 1=user, 2=premium, 3=admin, 4=owner
     role            INTEGER NOT NULL DEFAULT 1,
@@ -48,7 +47,6 @@ CREATE TABLE user_games (
     game_id                INTEGER REFERENCES games(id) ON DELETE CASCADE,
     custom_reminder_offset INTEGER DEFAULT 0,  -- minutes before reset (0 = use user default)
     display_order          INTEGER NOT NULL DEFAULT 0,
-    is_enabled             BOOLEAN DEFAULT true,
     created_at             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user_id, game_id)
 );
@@ -80,3 +78,4 @@ CREATE INDEX idx_daily_completions_user   ON daily_completions(user_id, completi
 CREATE INDEX idx_games_active             ON games(is_active) WHERE is_active = true;
 CREATE INDEX idx_users_role               ON users(role);
 CREATE INDEX idx_push_subs_user           ON push_subscriptions(user_id);
+CREATE INDEX IF NOT EXISTS idx_users_streak ON users(streak_count DESC) WHERE streak_count > 0;

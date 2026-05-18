@@ -42,8 +42,6 @@ trackerRouter.use(authenticateToken);
  *                         type: string
  *                       icon_name:
  *                         type: string
- *                       is_enabled:
- *                         type: boolean
  *                       completed_today:
  *                         type: boolean
  *                       added_at:
@@ -61,7 +59,6 @@ trackerRouter.get('/games', async (req, res) => {
         const result = await database.query(`
             SELECT
                 ug.id                     AS user_game_id,
-                ug.is_enabled,
                 ug.created_at             AS added_at,
                 ug.display_order,
                 ug.custom_reminder_offset,

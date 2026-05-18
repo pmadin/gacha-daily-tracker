@@ -36,8 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
-# downloaded game icons (run scripts/download-icons.js locally)
-/public/icons/*.gif
+# Icons are now served from GitHub raw URLs (cicerakes/Game-Time-Master).
+# The local /icons/ folder is no longer needed.
+# /public/icons/*.gif
 
 # typescript
 *.tsbuildinfo

@@ -24,15 +24,6 @@ const profileRoutes: Router = express.Router();
  *               timezone:
  *                 type: string
  *                 example: "Asia/Tokyo"
- *               first_name:
- *                 type: string
- *                 example: "Noah"
- *               last_name:
- *                 type: string
- *                 example: "Nick"
- *               phone:
- *                 type: string
- *                 example: "+1234567890"
  *     responses:
  *       200:
  *         description: Profile updated successfully
@@ -72,8 +63,7 @@ profileRoutes.get('/profile', async (req: Request, res: Response) => {
         ) as any;
 
         const result = await database.query(
-            `SELECT id, username, email, timezone, first_name, last_name, phone, role, created_at
-             FROM users WHERE id = $1`,
+            `SELECT id, username, email, timezone, role, created_at FROM users WHERE id = $1`,
             [decoded.userId]
         );
 
@@ -107,12 +97,11 @@ profileRoutes.put('/profile', async (req: Request, res: Response) => {
             JWT_SECRET
         ) as any;
 
-        const { timezone, first_name, last_name, phone } = req.body;
+        const { timezone } = req.body;
         const updates: string[] = [];
         const values: any[] = [];
         let paramIndex = 1;
 
-        // Handle timezone update
         if (timezone) {
             if (!TimezoneService.isValidTimezone(timezone)) {
                 return res.status(400).json({
@@ -121,34 +110,6 @@ profileRoutes.put('/profile', async (req: Request, res: Response) => {
             }
             updates.push(`timezone = $${paramIndex}`);
             values.push(TimezoneService.normalizeTimezone(timezone));
-            paramIndex++;
-        }
-
-        // Handle optional profile fields
-        if (first_name !== undefined) {
-            if (first_name && first_name.length > 100) {
-                return res.status(400).json({ error: 'First name must be 100 characters or less' });
-            }
-            updates.push(`first_name = $${paramIndex}`);
-            values.push(first_name || null);
-            paramIndex++;
-        }
-
-        if (last_name !== undefined) {
-            if (last_name && last_name.length > 100) {
-                return res.status(400).json({ error: 'Last name must be 100 characters or less' });
-            }
-            updates.push(`last_name = $${paramIndex}`);
-            values.push(last_name || null);
-            paramIndex++;
-        }
-
-        if (phone !== undefined) {
-            if (phone && (phone.length > 20 || !/^[\+]?[1-9][\d\s\-\(\)]{7,18}$/.test(phone))) {
-                return res.status(400).json({ error: 'Invalid phone number format' });
-            }
-            updates.push(`phone = $${paramIndex}`);
-            values.push(phone || null);
             paramIndex++;
         }
 
@@ -166,7 +127,7 @@ profileRoutes.put('/profile', async (req: Request, res: Response) => {
             UPDATE users 
             SET ${updates.join(', ')}
             WHERE id = $${paramIndex}
-            RETURNING id, username, email, timezone, first_name, last_name, phone, role
+            RETURNING id, username, email, timezone, role
         `;
 
         const result = await database.query(query, values);

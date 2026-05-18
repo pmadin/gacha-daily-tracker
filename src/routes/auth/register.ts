@@ -53,25 +53,10 @@ const registerRouter: Router = express.Router();
  *                 type: string
  *                 description: IANA timezone identifier. Auto-detected if not provided.
  *                 example: "America/Los_Angeles"
- *               first_name:
- *                 type: string
- *                 maxLength: 100
- *                 description: Optional first name
- *                 example: "Andy"
- *               last_name:
- *                 type: string
- *                 maxLength: 100
- *                 description: Optional last name
- *                 example: "Ken"
- *               phone:
- *                 type: string
- *                 maxLength: 20
- *                 description: Optional phone number for future SMS features
- *                 example: "+1234567890"
  */
 registerRouter.post('/register', async (req: Request, res: Response) => {
     try {
-        const { username, email, password, confirmPassword, first_name, last_name, phone, registrationToken} = req.body;
+        const { username, email, password, confirmPassword, registrationToken } = req.body;
 
         // Check for registration token first
         const validRegistrationToken = process.env.REGISTRATION_TOKEN || 'your-secret-registration-key';
@@ -141,19 +126,6 @@ registerRouter.post('/register', async (req: Request, res: Response) => {
             });
         }
 
-        // Validate optional fields
-        if (first_name && first_name.length > 100) {
-            return res.status(400).json({ error: 'First name must be 100 characters or less' });
-        }
-
-        if (last_name && last_name.length > 100) {
-            return res.status(400).json({ error: 'Last name must be 100 characters or less' });
-        }
-
-        if (phone && (phone.length > 20 || !/^[+]?[1-9][\d\s\-()]{7,18}$/.test(phone))) {
-            return res.status(400).json({ error: 'Invalid phone number format' });
-        }
-
         // Detect or validate timezone
         let userTimezone = await TimezoneService.detectUserTimezone(req);
         let wasDetected = !req.body.timezone;
@@ -187,12 +159,11 @@ registerRouter.post('/register', async (req: Request, res: Response) => {
         const saltRounds = 12;
         const passwordHash = await bcrypt.hash(pepperedPassword, saltRounds);
 
-        // Create user with optional fields
         const result = await database.query(`
-            INSERT INTO users (username, email, password_hash, timezone, first_name, last_name, phone, role)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, 1)
-                RETURNING id, username, email, timezone, first_name, last_name, phone, role, created_at
-        `, [username, email, passwordHash, userTimezone, first_name || null, last_name || null, phone || null]);
+            INSERT INTO users (username, email, password_hash, timezone, role)
+            VALUES ($1, $2, $3, $4, 1)
+            RETURNING id, username, email, timezone, role, created_at
+        `, [username, email, passwordHash, userTimezone]);
 
         const user = result.rows[0];
 
@@ -205,9 +176,6 @@ registerRouter.post('/register', async (req: Request, res: Response) => {
                 username: user.username,
                 email: user.email,
                 timezone: user.timezone,
-                first_name: user.first_name,
-                last_name: user.last_name,
-                phone: user.phone,
                 role: user.role,
                 created_at: user.created_at,
                 detected_timezone: wasDetected

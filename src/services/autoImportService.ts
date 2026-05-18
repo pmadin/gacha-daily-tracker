@@ -19,7 +19,9 @@ class AutoImportService {
     private backupPath = path.join(process.cwd(), 'data', 'game-data-backup.json');
 
     /**
-     * Check if database needs initial data and import from local backup
+     * Startup auto-import: uses local backup file as primary source.
+     * This avoids blocking server startup on an external HTTP call.
+     * Admins can trigger a live sync anytime via POST /admin/import/games.
      */
     async checkAndImportInitialData(): Promise<void> {
         try {
@@ -75,7 +77,9 @@ class AutoImportService {
                     await database.query(`
             INSERT INTO games (name, server, timezone, daily_reset, icon_name, source, last_verified)
             VALUES ($1, $2, $3, $4, $5, $6, $7)
-            ON CONFLICT (name, server) DO NOTHING
+            ON CONFLICT (name, server) DO UPDATE SET
+              source = EXCLUDED.source,
+              last_verified = EXCLUDED.last_verified
           `, [
                         game.game,
                         game.server,

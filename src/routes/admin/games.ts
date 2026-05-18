@@ -1,7 +1,6 @@
 import express, { Router } from 'express';
 import fs from 'fs';
 import path from 'path';
-import axios from 'axios';
 import multer from 'multer';
 import sizeOf from 'image-size';
 import database from '../../config/database';
@@ -12,9 +11,6 @@ const adminGamesRouter: Router = express.Router();
 
 const ICONS_DIR =
   process.env.ICONS_DIR ?? path.join(process.cwd(), 'frontend', 'public', 'icons');
-
-const ICON_SOURCE_BASE =
-  'https://raw.githubusercontent.com/cicerakes/Game-Time-Master/master/game-icons';
 
 const TIME_RE = /^([01]?\d|2[0-3]):[0-5]\d$/;
 
@@ -92,6 +88,10 @@ adminGamesRouter.get('/games', requireAdmin, async (req, res) => {
       params
     );
 
+    const activeResult = await database.query(
+      `SELECT COUNT(*) FROM games WHERE is_active = true`
+    );
+
     params.push(parseInt(limit as string, 10), parseInt(offset as string, 10));
     const result = await database.query(
       `SELECT g.*, COUNT(ug.id)::int AS tracked_by
@@ -104,9 +104,13 @@ adminGamesRouter.get('/games', requireAdmin, async (req, res) => {
       params
     );
 
+    const syncInfo = gameDataService.getLastSyncInfo();
+
     res.json({
       games: result.rows,
       total: parseInt(countResult.rows[0].count, 10),
+      activeCount: parseInt(activeResult.rows[0].count, 10),
+      last_synced_at: syncInfo.lastFetch?.toISOString() ?? null,
     });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Unknown error';
@@ -411,16 +415,7 @@ adminGamesRouter.delete('/games/:id/hard', requireOwner, async (req, res) => {
  *     tags: [Admin]
  *     security:
  *       - bearerAuth: []
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               forceRefresh:
- *                 type: boolean
- *                 default: false
- *                 description: If true, bypasses cache and fetches directly from source
+ *     description: Always fetches live from the upstream GitHub repo. No request body needed.
  *     responses:
  *       200:
  *         description: Import complete
@@ -433,19 +428,23 @@ adminGamesRouter.delete('/games/:id/hard', requireOwner, async (req, res) => {
  *                   type: string
  *                 total:
  *                   type: integer
+ *                 added:
+ *                   type: integer
+ *                 updated:
+ *                   type: integer
  *                 source:
  *                   type: string
+ *                 last_synced_at:
+ *                   type: string
+ *                   format: date-time
  *       403:
  *         description: Forbidden
  */
 // ─── POST /admin/import/games ─────────────────────────────────────────────────
-// Trigger a full re-sync from the Game-Time-Master source
+// Always fetches live from upstream — no cache, no forceRefresh toggle needed.
 adminGamesRouter.post('/import/games', requireAdmin, async (req, res) => {
   try {
-    const { forceRefresh = false } = req.body;
-    const gameData = forceRefresh
-      ? await gameDataService.refreshFromSource()
-      : await gameDataService.getGameData();
+    const gameData = await gameDataService.fetchLiveFromSource();
 
     const client = await database.getClient();
     let added = 0;
@@ -473,6 +472,7 @@ adminGamesRouter.post('/import/games', requireAdmin, async (req, res) => {
            timezone      = EXCLUDED.timezone,
            daily_reset   = EXCLUDED.daily_reset,
            icon_name     = EXCLUDED.icon_name,
+           source        = EXCLUDED.source,
            is_active     = true,
            last_verified = CURRENT_TIMESTAMP`,
         values
@@ -490,10 +490,19 @@ adminGamesRouter.post('/import/games', requireAdmin, async (req, res) => {
       client.release();
     }
 
+    // Normalize any remaining non-standard source labels on active games
+    await database.query(`
+      UPDATE games SET source = 'game-time-master'
+      WHERE source != 'game-time-master' AND is_active = true
+    `);
+
     res.json({
       message: 'Import complete',
       total: gameData.length,
-      source: forceRefresh ? 'external' : 'cache/backup',
+      added,
+      updated,
+      source: 'upstream (live)',
+      last_synced_at: new Date().toISOString(),
     });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Unknown error';
@@ -506,79 +515,54 @@ adminGamesRouter.post('/import/games', requireAdmin, async (req, res) => {
  * @swagger
  * /gdt/admin/import/icons/patch:
  *   post:
- *     summary: Patch missing game icons (admin)
+ *     summary: Audit games with missing icon_name (admin)
  *     tags: [Admin]
  *     security:
  *       - bearerAuth: []
- *     description: Re-fetches icons from the Game-Time-Master repo for any active game whose icon file is missing locally.
+ *     description: Returns active games that have no icon_name set in the DB. Icons are served from GitHub raw URLs — no local files needed.
  *     responses:
  *       200:
- *         description: Patch complete
+ *         description: Audit complete
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 fetched:
+ *                 message:
+ *                   type: string
+ *                 missing_icon_name_count:
  *                   type: integer
- *                 still_missing:
- *                   type: integer
- *                 still_missing_names:
+ *                 missing_games:
  *                   type: array
  *                   items:
- *                     type: string
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       name:
+ *                         type: string
  *       403:
  *         description: Forbidden
  */
 // ─── POST /admin/import/icons/patch ──────────────────────────────────────────
-// Re-fetch icons for games whose icon file is missing from ICONS_DIR
+// Audit active games with no icon_name set in the DB.
+// Icons are served directly from GitHub raw URLs — no local files needed.
 adminGamesRouter.post('/import/icons/patch', requireAdmin, async (req, res) => {
   try {
     const result = await database.query(
-      `SELECT id, name, icon_name FROM games
-       WHERE is_active = true AND icon_name IS NOT NULL AND icon_name != ''`
-    );
-
-    const missing = result.rows.filter(g => {
-      const file = path.join(ICONS_DIR, `${g.icon_name}.gif`);
-      return !fs.existsSync(file);
-    });
-
-    if (missing.length === 0) {
-      return res.json({ message: 'All icons present', fetched: 0, still_missing: 0 });
-    }
-
-    let fetched = 0;
-    const stillMissing: string[] = [];
-
-    fs.mkdirSync(ICONS_DIR, { recursive: true });
-
-    await Promise.all(
-      missing.map(async (g) => {
-        const url = `${ICON_SOURCE_BASE}/${g.icon_name}.gif`;
-        try {
-          const response = await axios.get<ArrayBuffer>(url, {
-            responseType: 'arraybuffer',
-            timeout: 10_000,
-          });
-          fs.writeFileSync(path.join(ICONS_DIR, `${g.icon_name}.gif`), Buffer.from(response.data));
-          fetched++;
-        } catch {
-          stillMissing.push(g.icon_name);
-        }
-      })
+      `SELECT id, name FROM games
+       WHERE is_active = true AND (icon_name IS NULL OR icon_name = '')`
     );
 
     res.json({
-      message: 'Icon patch complete',
-      fetched,
-      still_missing: stillMissing.length,
-      still_missing_names: stillMissing,
+      message: 'Icon audit complete',
+      missing_icon_name_count: result.rows.length,
+      missing_games: result.rows.map((g: { id: number; name: string }) => ({ id: g.id, name: g.name })),
     });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Admin icon patch error:', msg);
-    res.status(500).json({ error: 'Icon patch failed', details: msg });
+    console.error('Admin icon audit error:', msg);
+    res.status(500).json({ error: 'Icon audit failed', details: msg });
   }
 });
 

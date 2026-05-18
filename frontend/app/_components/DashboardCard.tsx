@@ -67,12 +67,12 @@ export default function DashboardCard({ game, onToggleComplete, onRemove, onUpda
       </button>
 
       <img
-        src={game.icon_name ? `/icons/${game.icon_name}.gif` : '/icons/placeholder.svg'}
+        src={game.icon_name ? `${process.env.NEXT_PUBLIC_ICONS_BASE_URL}/${game.icon_name}.gif` : '/placeholder.svg'}
         alt=""
         width={34}
         height={34}
         className={`shrink-0 rounded-lg object-cover transition-opacity ${game.completed_today ? 'opacity-40' : ''}`}
-        onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/icons/placeholder.svg'; }}
+        onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
       />
 
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">

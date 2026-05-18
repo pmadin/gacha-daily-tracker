@@ -18,7 +18,6 @@ export interface TrackedGame {
   timezone: string;
   daily_reset: string;
   icon_name: string;
-  is_enabled: boolean;
   completed_today: boolean;
   added_at: string;
   display_order: number;
@@ -269,7 +268,7 @@ export interface GamePayload {
 export async function fetchAdminGames(
   token: string,
   params: { search?: string; active?: boolean; limit?: number; offset?: number } = {},
-): Promise<{ games: AdminGame[]; total: number }> {
+): Promise<{ games: AdminGame[]; total: number; activeCount: number; last_synced_at: string | null }> {
   const q = new URLSearchParams();
   if (params.search) q.set('search', params.search);
   if (params.active !== undefined) q.set('active', String(params.active));
@@ -308,18 +307,16 @@ export async function hardDeleteGame(token: string, id: number): Promise<void> {
 
 export async function importGames(
   token: string,
-  forceRefresh = false,
-): Promise<{ message: string; total: number; source: string }> {
+): Promise<{ message: string; total: number; added: number; updated: number; source: string; last_synced_at: string }> {
   return apiFetch('/gdt/admin/import/games', {
     method: 'POST',
     headers: authHeader(token),
-    body: JSON.stringify({ forceRefresh }),
   });
 }
 
 export async function patchIcons(
   token: string,
-): Promise<{ fetched: number; still_missing: number; still_missing_names: string[] }> {
+): Promise<{ message: string; missing_icon_name_count: number; missing_games: { id: number; name: string }[] }> {
   return apiFetch('/gdt/admin/import/icons/patch', {
     method: 'POST',
     headers: authHeader(token),

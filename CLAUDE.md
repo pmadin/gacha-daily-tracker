@@ -174,11 +174,12 @@ export const metadata: Metadata = {
 ## Database Schema (key tables)
 
 ```
-users             — accounts, bcrypt hash, role, profile fields,
+users             — accounts, bcrypt hash, role, timezone,
                     streak_count INTEGER DEFAULT 0, streak_last_date DATE
 games             — name, server, timezone, daily_reset, icon_name, is_active,
                     add_count INTEGER DEFAULT 0
-user_games        — user ↔ game join; is_enabled, display_order INTEGER DEFAULT 0
+user_games        — user ↔ game join; display_order INTEGER DEFAULT 0,
+                    custom_reminder_offset INTEGER DEFAULT 0
 daily_completions — user_id, game_id, completion_date (UNIQUE constraint)
 reminder_settings — user notification preferences
 ```
@@ -191,6 +192,11 @@ ALTER TABLE games ADD COLUMN add_count INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE users ADD COLUMN streak_count INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE users ADD COLUMN streak_last_date DATE;
 ALTER TABLE user_games ADD COLUMN display_order INTEGER NOT NULL DEFAULT 0;
+
+-- v4.0 3NF normalization:
+ALTER TABLE users DROP COLUMN IF EXISTS first_name, DROP COLUMN IF EXISTS last_name, DROP COLUMN IF EXISTS phone;
+ALTER TABLE user_games DROP COLUMN IF EXISTS is_enabled;
+CREATE INDEX IF NOT EXISTS idx_users_streak ON users(streak_count DESC) WHERE streak_count > 0;
 ```
 
 ---
