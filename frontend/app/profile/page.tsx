@@ -108,9 +108,21 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!token || !notifSupported) return;
     fetchNotificationPrefs(token)
-      .then(p => {
-        setNotifEnabled(p.enabled);
+      .then(async p => {
         setNotifOffset(p.default_offset);
+        if (!p.enabled) {
+          setNotifEnabled(false);
+          return;
+        }
+        // Backend may still say enabled after the user disabled — verify
+        // the browser actually holds an active subscription.
+        try {
+          const reg = await navigator.serviceWorker.getRegistration('/');
+          const sub = reg ? await reg.pushManager.getSubscription() : null;
+          setNotifEnabled(!!sub);
+        } catch {
+          setNotifEnabled(false);
+        }
       })
       .catch(() => {});
   }, [token, notifSupported]);

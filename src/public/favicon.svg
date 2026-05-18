@@ -10,8 +10,6 @@
     </linearGradient>
   </defs>
   <rect width="32" height="32" rx="6" fill="url(#bg)"/>
-  <rect width="32" height="32" rx="6" fill="none"
-        stroke="rgba(200,155,60,0.25)" stroke-width="1"/>
-  <text x="16" y="23" font-family="monospace" font-size="20"
+  <text x="16" y="27" font-family="monospace" font-size="36"
         font-weight="700" fill="url(#gld)" text-anchor="middle">G</text>
 </svg>
