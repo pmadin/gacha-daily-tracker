@@ -8,6 +8,18 @@ on:
     branches: [main]
 
 jobs:
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan for secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   test:
     runs-on: ubuntu-latest
 
@@ -99,4 +111,10 @@ jobs:
           newman run "test/postman/Test CI Auth Flow.postman_collection.json" \
             --environment "test/postman/Local-gacha-daily-tracker.postman_environment.json" \
             --env-var "registration_token=$REGISTRATION_TOKEN" \
+            --reporters cli
+
+      - name: "Test: New Features (leaderboard + password reset edge cases)"
+        run: |
+          newman run "test/postman/Test New Features.postman_collection.json" \
+            --environment "test/postman/Local-gacha-daily-tracker.postman_environment.json" \
             --reporters cli
