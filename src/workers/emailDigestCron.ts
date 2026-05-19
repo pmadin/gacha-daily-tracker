@@ -3,8 +3,6 @@ import { Resend } from 'resend';
 import database from '../config/database';
 import { buildDigestEmail, DigestRow } from './emailTemplate';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 const DIGEST_QUERY = `
   SELECT
     u.id          AS user_id,
@@ -45,6 +43,7 @@ async function runEmailDigestJob(): Promise<void> {
     console.warn('Email digest skipped: RESEND_API_KEY not configured');
     return;
   }
+  const resend = new Resend(process.env.RESEND_API_KEY);
 
   let rows: DigestRow[];
   try {

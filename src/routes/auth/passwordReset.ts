@@ -7,7 +7,6 @@ import { addPepper } from '../../utils/crypto';
 import { buildPasswordResetEmail } from '../../workers/emailTemplate';
 
 const passwordResetRouter: Router = express.Router();
-const resend = new Resend(process.env.RESEND_API_KEY);
 const SALT_ROUNDS = 12;
 
 // POST /gdt/auth/forgot-password
@@ -48,6 +47,7 @@ passwordResetRouter.post('/forgot-password', async (req, res) => {
     );
 
     if (process.env.RESEND_API_KEY) {
+      const resend = new Resend(process.env.RESEND_API_KEY);
       const resetUrl = `${process.env.FRONTEND_URL ?? 'https://gachadailytracker.com'}/reset-password?token=${token}`;
       await resend.emails.send({
         from: `GachaDailyTracker <${process.env.RESEND_FROM_EMAIL ?? 'noreply@gachadailytracker.com'}>`,
