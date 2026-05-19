@@ -255,7 +255,18 @@ export default function DashboardPage() {
             <h1 className="text-2xl font-bold text-white">My List</h1>
             {streak > 0 && (
               <span className="flex items-center gap-1 text-sm font-semibold text-orange-400">
-                🔥 {streak}
+                <svg width="13" height="15" viewBox="0 0 13 15" fill="none" className="flex-shrink-0">
+                  <path
+                    d="M6.5 1C4 4 3 7 3.5 9.5C2 8 2 6.5 2.5 5.5C1.5 7 1 9 1 10.5C1 12.7 3.5 14.5 6.5 14.5C9.5 14.5 12 12.7 12 10.5C12 9 11.5 7 10.5 5.5C11 6.5 11 8 9.5 9.5C10 7 9 4 6.5 1Z"
+                    fill="currentColor"
+                  />
+                  <path
+                    d="M6.5 7C5.5 8 5 9.5 5.5 11.5C5 11 4.5 9.5 5 8.5C5.5 8 6 7.5 6.5 7Z"
+                    fill="#fed7aa"
+                    opacity="0.7"
+                  />
+                </svg>
+                {streak}
               </span>
             )}
           </div>

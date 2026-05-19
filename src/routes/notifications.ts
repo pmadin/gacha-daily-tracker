@@ -316,4 +316,62 @@ notificationsRouter.patch('/preferences', async (req, res) => {
   }
 });
 
+// GET /email-preferences
+notificationsRouter.get('/email-preferences', async (req, res) => {
+  const { userId } = req.user!;
+  try {
+    const result = await database.query(
+      `SELECT email_digest_enabled, email_digest_hour FROM users WHERE id = $1`,
+      [userId]
+    );
+    res.json({
+      email_digest_enabled: result.rows[0].email_digest_enabled,
+      email_digest_hour:    result.rows[0].email_digest_hour,
+    });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error fetching email preferences:', msg);
+    res.status(500).json({ error: 'Failed to fetch email preferences' });
+  }
+});
+
+// PATCH /email-preferences
+// Body: { email_digest_enabled?: boolean, email_digest_hour?: number }
+notificationsRouter.patch('/email-preferences', async (req, res) => {
+  const { userId } = req.user!;
+  const { email_digest_enabled, email_digest_hour } = req.body;
+
+  const updates: string[] = [];
+  const values: unknown[] = [];
+  let idx = 1;
+
+  if (email_digest_enabled !== undefined) {
+    updates.push(`email_digest_enabled = $${idx++}`);
+    values.push(Boolean(email_digest_enabled));
+  }
+  if (email_digest_hour !== undefined) {
+    const hour = Math.max(0, Math.min(23, parseInt(email_digest_hour, 10)));
+    if (isNaN(hour)) return res.status(400).json({ error: 'Invalid hour' });
+    updates.push(`email_digest_hour = $${idx++}`);
+    values.push(hour);
+  }
+
+  if (updates.length === 0) {
+    return res.status(400).json({ error: 'Nothing to update' });
+  }
+
+  values.push(userId);
+  try {
+    await database.query(
+      `UPDATE users SET ${updates.join(', ')} WHERE id = $${idx}`,
+      values
+    );
+    res.json({ message: 'Email preferences updated' });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error updating email preferences:', msg);
+    res.status(500).json({ error: 'Failed to update email preferences' });
+  }
+});
+
 export { notificationsRouter };

@@ -140,16 +140,16 @@ daily routine.
                 description: '💚 System health and status checks',
             },
             {
-                name: 'Data Management',
-                description: '🔄 Import and sync game data',
-            },
-            {
                 name: 'Notifications',
                 description: '🔔 Push notification subscriptions and preferences',
             },
             {
                 name: 'Admin',
                 description: '🛡️ Game management, imports, and icon uploads (role 3+)',
+            },
+            {
+                name: 'Leaderboard',
+                description: '🏆 Public streak leaderboard (toggleable by admin)',
             },
         ],
     },

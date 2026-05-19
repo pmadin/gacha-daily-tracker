@@ -14,11 +14,19 @@ CREATE TABLE users (
     role            INTEGER NOT NULL DEFAULT 1,
 
     -- Streak tracking
-    streak_count    INTEGER NOT NULL DEFAULT 0,
-    streak_last_date DATE,
+    streak_count             INTEGER NOT NULL DEFAULT 0,
+    streak_last_date         DATE,
+    streak_last_attempted_at TIMESTAMP,
 
     -- Push notification default offset (minutes before reset)
     notification_offset INTEGER NOT NULL DEFAULT 30,
+
+    -- Leaderboard opt-out (admins/owners can hide themselves)
+    leaderboard_hidden BOOLEAN NOT NULL DEFAULT FALSE,
+
+    -- Email digest opt-in
+    email_digest_enabled BOOLEAN  NOT NULL DEFAULT false,
+    email_digest_hour    SMALLINT NOT NULL DEFAULT 8,
 
     created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -72,10 +80,54 @@ CREATE TABLE push_subscriptions (
     UNIQUE(user_id, endpoint)
 );
 
+-- Game submissions (user-submitted games pending admin review)
+CREATE TABLE game_submissions (
+    id              SERIAL PRIMARY KEY,
+    submitted_by    INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    submitter_role  INTEGER NOT NULL,
+    name            VARCHAR(255) NOT NULL,
+    server          VARCHAR(100) NOT NULL,
+    timezone        VARCHAR(50)  NOT NULL,
+    daily_reset     TIME         NOT NULL,
+    notes           TEXT,
+    status          VARCHAR(20)  NOT NULL DEFAULT 'pending',
+    reviewed_by     INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    review_notes    TEXT,
+    reviewed_at     TIMESTAMP,
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_status CHECK (status IN ('pending', 'approved', 'rejected'))
+);
+
+-- Site-wide settings (generic key-value for admin toggles)
+CREATE TABLE IF NOT EXISTS site_settings (
+    key         VARCHAR(100) PRIMARY KEY,
+    value       TEXT NOT NULL,
+    updated_by  INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO site_settings (key, value)
+VALUES ('leaderboard_enabled', 'false')
+ON CONFLICT (key) DO NOTHING;
+
+-- Password reset tokens (30-minute expiry, single-use)
+CREATE TABLE password_reset_tokens (
+    id          SERIAL PRIMARY KEY,
+    user_id     INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    token       VARCHAR(255) UNIQUE NOT NULL,
+    expires_at  TIMESTAMP NOT NULL,
+    used        BOOLEAN DEFAULT false,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Indexes for performance
 CREATE INDEX idx_user_games_user_id       ON user_games(user_id);
 CREATE INDEX idx_daily_completions_user   ON daily_completions(user_id, completion_date);
 CREATE INDEX idx_games_active             ON games(is_active) WHERE is_active = true;
 CREATE INDEX idx_users_role               ON users(role);
 CREATE INDEX idx_push_subs_user           ON push_subscriptions(user_id);
+CREATE INDEX idx_submissions_status       ON game_submissions(status);
+CREATE INDEX idx_submissions_submitted_by ON game_submissions(submitted_by);
 CREATE INDEX IF NOT EXISTS idx_users_streak ON users(streak_count DESC) WHERE streak_count > 0;
+CREATE INDEX idx_reset_tokens_token   ON password_reset_tokens(token);
+CREATE INDEX idx_reset_tokens_user_id ON password_reset_tokens(user_id);

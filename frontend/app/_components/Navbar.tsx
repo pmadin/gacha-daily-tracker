@@ -141,6 +141,7 @@ export default function Navbar() {
           <nav className="hidden xl:flex items-center gap-4">
             {navLink('/games', 'Games')}
             {navLink('/dashboard', 'My List')}
+            {navLink('/leaderboard', 'Leaderboard')}
             {user && user.role >= 3 && navLink('/admin', 'Admin')}
           </nav>
         </div>
@@ -270,6 +271,7 @@ export default function Navbar() {
           <div style={{ display: 'flex', flexDirection: 'column', padding: '1rem', gap: '1rem' }}>
             {navLink('/games', 'Games')}
             {navLink('/dashboard', 'My List')}
+            {navLink('/leaderboard', 'Leaderboard')}
             {!isLoading && (
               <>
                 <div style={{ height: 1, background: 'var(--border)' }} />

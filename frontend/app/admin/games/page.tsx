@@ -16,6 +16,7 @@ import {
   type AdminGame,
   type GamePayload,
 } from '../../_lib/api';
+import SubmissionsBadge from '../_components/SubmissionsBadge';
 
 const PAGE_SIZE = 50;
 
@@ -23,10 +24,23 @@ type SortCol = 'name' | 'server' | 'timezone' | 'daily_reset' | 'tracked_by' | '
 type SortDir = 'asc' | 'desc';
 
 function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
+  const col = active ? '#e8c86a' : '#4a3d2a';
+  if (!active) {
+    return (
+      <svg width="9" height="12" viewBox="0 0 9 12" fill="none" className="ml-1 inline-block align-middle">
+        <path d="M4.5 1L8 5H1L4.5 1Z" fill={col}/>
+        <path d="M4.5 11L1 7H8L4.5 11Z" fill={col}/>
+      </svg>
+    );
+  }
   return (
-    <span className={`ml-1 text-xs ${active ? 'text-[#e8c86a]' : 'text-[#4a3d2a]'}`}>
-      {active ? (dir === 'asc' ? '↑' : '↓') : '↕'}
-    </span>
+    <svg width="9" height="8" viewBox="0 0 9 8" fill="none" className="ml-1 inline-block align-middle">
+      {dir === 'asc' ? (
+        <path d="M1 6.5L4.5 2L8 6.5" stroke={col} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      ) : (
+        <path d="M1 1.5L4.5 6L8 1.5" stroke={col} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      )}
+    </svg>
   );
 }
 
@@ -387,6 +401,8 @@ export default function AdminGamesPage() {
           + Add game
         </button>
       </div>
+
+      {token && <SubmissionsBadge token={token} />}
 
       {/* Import / icon tools */}
       <div className="mb-6 rounded-xl p-4" style={{ border: '1px solid rgba(200,155,60,0.10)', background: 'var(--bg2)' }}>

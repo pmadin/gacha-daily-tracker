@@ -39,6 +39,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </span>
           {navLink('/admin', 'Overview')}
           {navLink('/admin/games', 'Games')}
+          {navLink('/admin/users', 'Users')}
+          {navLink('/admin/submissions', 'Submissions')}
+          {navLink('/admin/settings', 'Settings')}
         </div>
       </div>
       <div className="mx-auto max-w-7xl px-4 py-8">{children}</div>

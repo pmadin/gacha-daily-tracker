@@ -440,8 +440,6 @@ adminGamesRouter.delete('/games/:id/hard', requireOwner, async (req, res) => {
  *       403:
  *         description: Forbidden
  */
-// ─── POST /admin/import/games ─────────────────────────────────────────────────
-// Always fetches live from upstream — no cache, no forceRefresh toggle needed.
 adminGamesRouter.post('/import/games', requireAdmin, async (req, res) => {
   try {
     const gameData = await gameDataService.fetchLiveFromSource();
@@ -453,7 +451,6 @@ adminGamesRouter.post('/import/games', requireAdmin, async (req, res) => {
     try {
       await client.query('BEGIN');
 
-      // Deactivate all game-time-master games before upsert
       await client.query(`UPDATE games SET is_active = false WHERE source = 'game-time-master'`);
 
       const values: unknown[] = [];
@@ -478,7 +475,6 @@ adminGamesRouter.post('/import/games', requireAdmin, async (req, res) => {
         values
       );
 
-      // xmax = 0 means it was an insert, otherwise an update
       added   = upsertResult.rowCount ?? 0;
       updated = gameData.length - added;
 
@@ -490,7 +486,6 @@ adminGamesRouter.post('/import/games', requireAdmin, async (req, res) => {
       client.release();
     }
 
-    // Normalize any remaining non-standard source labels on active games
     await database.query(`
       UPDATE games SET source = 'game-time-master'
       WHERE source != 'game-time-master' AND is_active = true
@@ -519,7 +514,7 @@ adminGamesRouter.post('/import/games', requireAdmin, async (req, res) => {
  *     tags: [Admin]
  *     security:
  *       - bearerAuth: []
- *     description: Returns active games that have no icon_name set in the DB. Icons are served from GitHub raw URLs — no local files needed.
+ *     description: Returns active games that have no icon_name set in the DB. Icons are served from GitHub raw URLs.
  *     responses:
  *       200:
  *         description: Audit complete
@@ -544,9 +539,6 @@ adminGamesRouter.post('/import/games', requireAdmin, async (req, res) => {
  *       403:
  *         description: Forbidden
  */
-// ─── POST /admin/import/icons/patch ──────────────────────────────────────────
-// Audit active games with no icon_name set in the DB.
-// Icons are served directly from GitHub raw URLs — no local files needed.
 adminGamesRouter.post('/import/icons/patch', requireAdmin, async (req, res) => {
   try {
     const result = await database.query(

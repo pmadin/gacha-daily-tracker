@@ -85,6 +85,17 @@ trackerRouter.get('/games', async (req, res) => {
             ORDER BY ug.display_order ASC, g.name ASC
         `, [userId]);
 
+        // Expire stale streak on read — catches users who return after missing days
+        // without waiting for the nightly audit cron.
+        await database.query(
+            `UPDATE users
+             SET streak_count = 0, streak_last_date = NULL, updated_at = CURRENT_TIMESTAMP
+             WHERE id = $1
+               AND streak_count > 0
+               AND streak_last_date < CURRENT_DATE - 1`,
+            [userId]
+        );
+
         const streakResult = await database.query(
             'SELECT streak_count FROM users WHERE id = $1',
             [userId]
@@ -503,10 +514,14 @@ trackerRouter.delete('/games/:gameId/complete', async (req, res) => {
  *     tags: [Tracker]
  *     security:
  *       - bearerAuth: []
- *     description: Call when all tracked games are marked complete for the day. Idempotent — safe to call multiple times on the same day.
+ *     description: |
+ *       Verifies that ALL of the user's tracked active games have daily_completions rows
+ *       for their current game-local period before incrementing the streak.
+ *       Rate limited to one check per 60 seconds per user.
+ *       Idempotent — safe to call multiple times on the same day.
  *     responses:
  *       200:
- *         description: Current streak count
+ *         description: Streak result
  *         content:
  *           application/json:
  *             schema:
@@ -514,13 +529,102 @@ trackerRouter.delete('/games/:gameId/complete', async (req, res) => {
  *               properties:
  *                 streak:
  *                   type: integer
+ *                 allComplete:
+ *                   type: boolean
+ *                 completed:
+ *                   type: integer
+ *                 total:
+ *                   type: integer
+ *                 message:
+ *                   type: string
  *       401:
  *         description: Authentication required
+ *       429:
+ *         description: Rate limit — try again in a moment
  */
 trackerRouter.post('/streak', async (req, res) => {
     try {
         const { userId } = req.user!;
 
+        // Fetch current streak state + rate limit timestamp in one query
+        const userResult = await database.query(
+            `SELECT streak_count,
+                    streak_last_attempted_at,
+                    (streak_last_date = CURRENT_DATE) AS already_counted_today
+             FROM users WHERE id = $1`,
+            [userId]
+        );
+
+        if (!userResult.rows[0]) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const { streak_count: currentStreak, streak_last_attempted_at: lastAttempt, already_counted_today } = userResult.rows[0];
+
+        // Rate limit: one check per 60 seconds
+        if (lastAttempt) {
+            const secondsSince = (Date.now() - new Date(lastAttempt).getTime()) / 1000;
+            if (secondsSince < 60) {
+                return res.status(429).json({
+                    error: 'Too many streak checks. Try again in a moment.',
+                    retryAfter: Math.ceil(60 - secondsSince),
+                });
+            }
+        }
+
+        await database.query(
+            `UPDATE users SET streak_last_attempted_at = CURRENT_TIMESTAMP WHERE id = $1`,
+            [userId]
+        );
+
+        // Count active tracked games
+        const trackedResult = await database.query(
+            `SELECT COUNT(*) AS tracked_count
+             FROM user_games ug
+             JOIN games g ON g.id = ug.game_id AND g.is_active = true
+             WHERE ug.user_id = $1`,
+            [userId]
+        );
+        const trackedCount = parseInt(trackedResult.rows[0].tracked_count);
+
+        if (trackedCount === 0) {
+            return res.json({ streak: currentStreak, message: 'No games tracked' });
+        }
+
+        // Count completions for each game's current game-local period
+        const completionResult = await database.query(
+            `SELECT COUNT(*) AS completed_count
+             FROM user_games ug
+             JOIN games g ON g.id = ug.game_id
+             WHERE ug.user_id = $1
+               AND g.is_active = true
+               AND EXISTS (
+                 SELECT 1 FROM daily_completions dc
+                 WHERE dc.user_id = ug.user_id
+                   AND dc.game_id = ug.game_id
+                   AND dc.completion_date = (
+                     CASE
+                       WHEN (CURRENT_TIMESTAMP AT TIME ZONE g.timezone)::time >= g.daily_reset
+                       THEN (CURRENT_TIMESTAMP AT TIME ZONE g.timezone)::date
+                       ELSE (CURRENT_TIMESTAMP AT TIME ZONE g.timezone)::date - 1
+                     END
+                   )
+               )`,
+            [userId]
+        );
+        const completedCount = parseInt(completionResult.rows[0].completed_count);
+
+        if (completedCount < trackedCount) {
+            return res.json({
+                streak: currentStreak,
+                allComplete: false,
+                completed: completedCount,
+                total: trackedCount,
+                message: 'Not all games completed for today',
+            });
+        }
+
+        // All games verified complete in DB — run streak increment logic
         const result = await database.query(`
             UPDATE users
             SET
@@ -537,11 +641,15 @@ trackerRouter.post('/streak', async (req, res) => {
             RETURNING streak_count
         `, [userId]);
 
-        if (!result.rows[0]) {
-            return res.status(404).json({ error: 'User not found' });
-        }
+        const newStreak = result.rows[0].streak_count;
 
-        res.json({ streak: result.rows[0].streak_count });
+        res.json({
+            streak: newStreak,
+            allComplete: true,
+            completed: completedCount,
+            total: trackedCount,
+            message: already_counted_today ? 'Streak already counted for today' : 'Streak updated',
+        });
 
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
