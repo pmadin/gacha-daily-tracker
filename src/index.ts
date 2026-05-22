@@ -23,6 +23,7 @@ import { startNotificationCron } from './workers/notificationCron';
 import { startStreakAuditCron } from './workers/streakAuditCron';
 import { startEmailDigestCron } from './workers/emailDigestCron';
 import passwordResetRouter from './routes/auth/passwordReset';
+import scheduleRouter from './routes/schedule';
 
 // Load environment variables - try multiple file names
 dotenv.config({ path: '.env.local' });
@@ -149,6 +150,7 @@ app.use('/gdt/submissions', authenticateToken, submissionsRouter);
 app.use('/gdt/admin', adminSubmissionsRouter);
 app.use('/gdt/leaderboard', leaderboardRouter);
 app.use('/gdt/admin', adminSettingsRouter);
+app.use('/gdt/schedule', authenticateToken, scheduleRouter);
 
 /**
  * @swagger

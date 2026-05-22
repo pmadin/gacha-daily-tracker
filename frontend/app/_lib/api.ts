@@ -535,6 +535,63 @@ export async function updateEmailPreferences(
   });
 }
 
+// ─── Schedule ─────────────────────────────────────────────────────────────────
+
+export interface Schedule {
+  id: number;
+  game_id: number;
+  days_of_week: number[];
+  window_start: string;
+  window_end: string;
+  hook_notifications: boolean;
+  created_at: string;
+  game_name: string;
+  server: string;
+  icon_name: string | null;
+  game_timezone: string;
+  daily_reset: string;
+}
+
+export async function fetchSchedules(token: string): Promise<{ schedules: Schedule[] }> {
+  return apiFetch('/gdt/schedule', { headers: authHeader(token) });
+}
+
+export async function saveSchedule(
+  token: string,
+  data: {
+    game_id: number;
+    days_of_week: number[];
+    window_start: string;
+    window_end: string;
+    hook_notifications: boolean;
+  },
+): Promise<{ message: string }> {
+  return apiFetch('/gdt/schedule', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteSchedule(token: string, gameId: number): Promise<{ message: string }> {
+  return apiFetch(`/gdt/schedule/${gameId}`, {
+    method: 'DELETE',
+    headers: authHeader(token),
+  });
+}
+
+export async function fetchTodaySchedule(
+  token: string,
+): Promise<{ schedules: Schedule[]; day_of_week: number }> {
+  return apiFetch('/gdt/schedule/today', { headers: authHeader(token) });
+}
+
+export async function fetchWeekSchedule(
+  token: string,
+): Promise<{ week: Record<number, Schedule[]> }> {
+  return apiFetch('/gdt/schedule/week', { headers: authHeader(token) });
+}
+
 export async function reviewSubmission(
   token: string,
   id: number,

@@ -168,7 +168,23 @@ export default function GamesClient({ initialGames, initialTotal }: Props) {
       {loading ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {Array.from({ length: 24 }).map((_, i) => (
-            <div key={i} className="h-36 animate-pulse rounded-xl bg-[#18140d]" />
+            <div key={i} className="animate-pulse flex flex-col gap-3 rounded-xl p-4" style={{ background: 'var(--surface)' }}>
+              {/* Icon + name/server */}
+              <div className="flex items-start gap-2">
+                <div className="h-9 w-9 shrink-0 rounded-lg" style={{ background: 'var(--surface2)' }} />
+                <div className="flex flex-1 flex-col gap-1.5 pt-0.5">
+                  <div className="rounded" style={{ height: 12, width: '78%', background: 'var(--surface2)' }} />
+                  <div className="rounded-full" style={{ height: 16, width: 48, background: 'var(--surface2)' }} />
+                </div>
+              </div>
+              {/* Reset time + timezone */}
+              <div className="flex flex-col gap-1">
+                <div className="rounded" style={{ height: 10, width: '55%', background: 'var(--surface2)' }} />
+                <div className="rounded" style={{ height: 10, width: '80%', background: 'var(--surface2)' }} />
+              </div>
+              {/* Add button */}
+              <div className="mt-auto rounded-lg" style={{ height: 28, background: 'var(--surface2)' }} />
+            </div>
           ))}
         </div>
       ) : games.length === 0 ? (

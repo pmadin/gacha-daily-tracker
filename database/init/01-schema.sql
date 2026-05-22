@@ -120,6 +120,20 @@ CREATE TABLE password_reset_tokens (
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Play schedules (personal play windows per game, per user)
+CREATE TABLE play_schedules (
+    id                  SERIAL PRIMARY KEY,
+    user_id             INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    game_id             INTEGER REFERENCES games(id) ON DELETE CASCADE,
+    days_of_week        SMALLINT[] NOT NULL DEFAULT '{0,1,2,3,4,5,6}',
+    window_start        TIME NOT NULL,
+    window_end          TIME NOT NULL,
+    hook_notifications  BOOLEAN NOT NULL DEFAULT false,
+    created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, game_id)
+);
+
 -- Indexes for performance
 CREATE INDEX idx_user_games_user_id       ON user_games(user_id);
 CREATE INDEX idx_daily_completions_user   ON daily_completions(user_id, completion_date);
@@ -129,5 +143,7 @@ CREATE INDEX idx_push_subs_user           ON push_subscriptions(user_id);
 CREATE INDEX idx_submissions_status       ON game_submissions(status);
 CREATE INDEX idx_submissions_submitted_by ON game_submissions(submitted_by);
 CREATE INDEX IF NOT EXISTS idx_users_streak ON users(streak_count DESC) WHERE streak_count > 0;
-CREATE INDEX idx_reset_tokens_token   ON password_reset_tokens(token);
-CREATE INDEX idx_reset_tokens_user_id ON password_reset_tokens(user_id);
+CREATE INDEX idx_reset_tokens_token       ON password_reset_tokens(token);
+CREATE INDEX idx_reset_tokens_user_id     ON password_reset_tokens(user_id);
+CREATE INDEX idx_play_schedules_user_id   ON play_schedules(user_id);
+CREATE INDEX idx_play_schedules_game_id   ON play_schedules(game_id);

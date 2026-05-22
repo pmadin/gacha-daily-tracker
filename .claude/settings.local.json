@@ -30,7 +30,8 @@
       "Bash(Out-Null)",
       "PowerShell(New-Item *)",
       "Bash(grep -rn \"124,58,237\\\\|139,92,246\\\\|7c3aed\\\\|a855f7\\\\|1a1a2e\\\\|0f0f1a\" app --include=\"*.tsx\" --include=\"*.css\")",
-      "Bash(echo \"EXIT:$?\")"
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(npm run *)"
     ],
     "deny": [],
     "ask": []

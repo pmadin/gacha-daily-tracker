@@ -25,6 +25,10 @@ Thumbs.db
 
 # Claude
 .claudeignore
+.claude/skills/
+.claude.json
+skill-*.md
+*-runbook.md
 
 # Logs
 logs/
@@ -41,5 +45,8 @@ coverage/
 *.tmp
 *.temp
 
-# Prompt files
+# Prompt / instruction files (Claude Code — not for repo)
 prompt-*.md
+.env.local
+frontend/.env.local
+frontend/public/icons/

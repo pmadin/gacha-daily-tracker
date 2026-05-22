@@ -9,6 +9,33 @@ import { buildPasswordResetEmail } from '../../workers/emailTemplate';
 const passwordResetRouter: Router = express.Router();
 const SALT_ROUNDS = 12;
 
+/**
+ * @swagger
+ * /gdt/auth/forgot-password:
+ *   post:
+ *     summary: Request a password reset email
+ *     tags: [Auth]
+ *     description: >
+ *       Sends a password reset link to the registered email address.
+ *       Always returns the same success message regardless of whether the email exists,
+ *       to prevent email enumeration.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *     responses:
+ *       200:
+ *         description: Reset link sent (response is identical whether the email exists or not)
+ *       400:
+ *         description: Email is required
+ */
 // POST /gdt/auth/forgot-password
 passwordResetRouter.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
@@ -66,6 +93,29 @@ passwordResetRouter.post('/forgot-password', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /gdt/auth/reset-password/{token}:
+ *   get:
+ *     summary: Validate a password reset token
+ *     tags: [Auth]
+ *     description: Checks that the token is valid, unused, and not expired (30-minute window).
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Token is valid — returns { valid: true }
+ *       404:
+ *         description: Token not found
+ *       410:
+ *         description: Token already used or expired
+ *       500:
+ *         description: Server error
+ */
 // GET /gdt/auth/reset-password/:token
 passwordResetRouter.get('/reset-password/:token', async (req, res) => {
   const { token } = req.params;
@@ -98,6 +148,37 @@ passwordResetRouter.get('/reset-password/:token', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /gdt/auth/reset-password:
+ *   post:
+ *     summary: Reset password using a valid token
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [token, newPassword]
+ *             properties:
+ *               token:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *                 minLength: 8
+ *     responses:
+ *       200:
+ *         description: Password reset successful
+ *       400:
+ *         description: Missing fields or password too short
+ *       404:
+ *         description: Token not found
+ *       410:
+ *         description: Token already used or expired
+ *       500:
+ *         description: Server error
+ */
 // POST /gdt/auth/reset-password
 // Body: { token: string, newPassword: string }
 passwordResetRouter.post('/reset-password', async (req, res) => {

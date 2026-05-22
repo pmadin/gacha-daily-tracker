@@ -164,9 +164,29 @@ export default function HomePage() {
           - auth, no games  → EmptyDashboard
           - auth, has games → GamesTray */}
       {loading ? (
-        <div className="mx-auto max-w-6xl px-4 pt-8 pb-2">
-          <div style={{ minHeight: 220 }}>
-            <div className="h-48 animate-pulse rounded-xl bg-zinc-800" />
+        <div className="mx-auto max-w-6xl px-4 pt-8 pb-2" style={{ minHeight: 220 }}>
+          {/* Progress bar row */}
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <div className="animate-pulse rounded" style={{ width: 110, height: 11, background: 'var(--surface)' }} />
+              <div className="animate-pulse rounded" style={{ width: 56, height: 11, background: 'var(--surface)' }} />
+            </div>
+            <div className="animate-pulse rounded" style={{ height: 4, background: 'var(--surface)' }} />
+          </div>
+          {/* "My Games" header row */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+            <div className="animate-pulse rounded" style={{ width: 84, height: 18, background: 'var(--surface)' }} />
+            <div className="animate-pulse rounded" style={{ width: 50, height: 12, background: 'var(--surface)' }} />
+          </div>
+          {/* Card row */}
+          <div style={{ display: 'flex', gap: 10, overflow: 'hidden' }}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div
+                key={i}
+                className="animate-pulse"
+                style={{ width: 110, minWidth: 110, height: 168, borderRadius: 12, background: 'var(--surface)', flexShrink: 0 }}
+              />
+            ))}
           </div>
         </div>
       ) : hasGames ? (

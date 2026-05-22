@@ -96,13 +96,43 @@ export default function LeaderboardPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-12">
-        <div className="mb-8 flex items-center gap-3">
-          <div className="h-8 w-8 animate-pulse rounded-lg bg-[#18140d]"/>
-          <div className="h-7 w-40 animate-pulse rounded-lg bg-[#18140d]"/>
+        {/* Header */}
+        <div className="mb-6 flex items-center gap-3">
+          <div className="animate-pulse h-9 w-9 shrink-0 rounded-lg" style={{ background: 'var(--surface)' }} />
+          <div className="flex flex-col gap-1.5">
+            <div className="animate-pulse rounded" style={{ width: 120, height: 20, background: 'var(--surface)' }} />
+            <div className="animate-pulse rounded" style={{ width: 210, height: 12, background: 'var(--surface)' }} />
+          </div>
         </div>
-        <div className="space-y-2">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="h-12 animate-pulse rounded-lg bg-[#18140d]"/>
+        {/* Podium */}
+        <div className="mb-8 flex items-end justify-center gap-3">
+          <div className="animate-pulse rounded-xl" style={{ flex: '0 0 28%', height: 100, marginTop: 16, background: 'var(--surface)' }} />
+          <div className="animate-pulse rounded-xl" style={{ flex: '0 0 38%', height: 124, background: 'var(--surface)' }} />
+          <div className="animate-pulse rounded-xl" style={{ flex: '0 0 28%', height: 100, marginTop: 16, background: 'var(--surface)' }} />
+        </div>
+        {/* Table */}
+        <div className="overflow-hidden rounded-xl" style={{ border: '1px solid rgba(200,155,60,0.12)' }}>
+          {/* Header row */}
+          <div className="flex gap-6 px-4 py-3" style={{ background: 'rgba(200,155,60,0.06)', borderBottom: '1px solid rgba(200,155,60,0.10)' }}>
+            <div className="animate-pulse rounded" style={{ width: 32, height: 11, background: 'var(--surface)' }} />
+            <div className="animate-pulse rounded flex-1" style={{ height: 11, background: 'var(--surface)' }} />
+            <div className="animate-pulse rounded" style={{ width: 44, height: 11, background: 'var(--surface)' }} />
+            <div className="animate-pulse rounded" style={{ width: 40, height: 11, background: 'var(--surface)' }} />
+            <div className="animate-pulse rounded" style={{ width: 64, height: 11, background: 'var(--surface)' }} />
+          </div>
+          {/* Data rows */}
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-6 px-4 py-3"
+              style={{ background: 'var(--bg2)', borderBottom: '1px solid rgba(200,155,60,0.06)' }}
+            >
+              <div className="animate-pulse rounded" style={{ width: 28, height: 12, background: 'var(--surface)' }} />
+              <div className="animate-pulse rounded flex-1" style={{ height: 12, background: 'var(--surface)', maxWidth: 160 }} />
+              <div className="animate-pulse rounded" style={{ width: 36, height: 12, background: 'var(--surface)' }} />
+              <div className="animate-pulse rounded" style={{ width: 24, height: 12, background: 'var(--surface)' }} />
+              <div className="animate-pulse rounded" style={{ width: 56, height: 12, background: 'var(--surface)' }} />
+            </div>
           ))}
         </div>
       </div>

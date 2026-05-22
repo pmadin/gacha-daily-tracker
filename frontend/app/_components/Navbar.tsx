@@ -138,17 +138,18 @@ export default function Navbar() {
               <span style={{ color: 'var(--text3)' }}>Tracker</span>
             </span>
           </Link>
-          <nav className="hidden xl:flex items-center gap-4">
+          <nav className="hidden sm:flex items-center gap-3">
             {navLink('/games', 'Games')}
             {navLink('/dashboard', 'My List')}
             {navLink('/leaderboard', 'Leaderboard')}
+            {user && navLink('/schedule', 'Schedule')}
             {user && user.role >= 3 && navLink('/admin', 'Admin')}
           </nav>
         </div>
 
         <div className="flex items-center gap-3">
           {/* Desktop auth — hidden on mobile */}
-          <div className="hidden xl:flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-3">
             {isLoading ? null : user ? (
               <div className="relative" ref={dropdownRef}>
                 <button
@@ -235,7 +236,7 @@ export default function Navbar() {
 
           {/* Hamburger — mobile only */}
           <button
-            className="xl:hidden"
+            className="sm:hidden flex items-center justify-center"
             onClick={() => setMobileMenuOpen(o => !o)}
             aria-label="Toggle menu"
             style={{
@@ -244,9 +245,6 @@ export default function Navbar() {
               cursor: 'pointer',
               padding: 6,
               color: 'var(--text2)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
             }}
           >
             {mobileMenuOpen ? (
@@ -265,13 +263,14 @@ export default function Navbar() {
       {/* Mobile menu dropdown */}
       {mobileMenuOpen && (
         <div
-          className="xl:hidden"
+          className="sm:hidden"
           style={{ borderTop: '1px solid var(--border)', background: 'rgba(13,11,8,0.97)' }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', padding: '1rem', gap: '1rem' }}>
             {navLink('/games', 'Games')}
             {navLink('/dashboard', 'My List')}
             {navLink('/leaderboard', 'Leaderboard')}
+            {user && navLink('/schedule', 'Schedule')}
             {!isLoading && (
               <>
                 <div style={{ height: 1, background: 'var(--border)' }} />

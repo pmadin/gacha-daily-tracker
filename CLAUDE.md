@@ -163,10 +163,12 @@ export const metadata: Metadata = {
 - Auth: `/auth/register`, `/auth/login`, `/auth/profile`, `/auth/update-password`, `/auth/update-email`, `/auth/account` (DELETE), `/auth/forgot-password` (POST), `/auth/reset-password/:token` (GET), `/auth/reset-password` (POST)
 - Tracker (JWT): `/tracker/games` (GET — includes `streak` field), `/tracker/games/bulk` (POST), `/tracker/games/:id` (POST/DELETE), `/tracker/games/:id/complete` (POST/DELETE), `/tracker/streak` (POST — idempotent, atomic CASE update), `/tracker/order` (PUT — saves `display_order` via proper client transaction)
 - Game mgmt (JWT): `/update/games/:id`, `/update/add/game`, `/update/delete/game/:id`, `/update/games/import`
+- Submissions: `/submissions` (POST — create suggestion, JWT), `/admin/submissions` (GET — list, role 3+), `/admin/submissions/:id` (PATCH — approve/reject, role 3+)
 - Admin (role 3+): `/admin/users/role/:username`, `/admin/users`, `/admin/users/search`
 - Leaderboard: `/leaderboard/status` (public), `/leaderboard` (public, paginated), `/leaderboard/visibility` (GET/PATCH, JWT)
 - Notifications (JWT): `/notifications/preferences` (GET/PATCH), `/notifications/email-preferences` (GET/PATCH), `/notifications/subscribe` (POST), `/notifications/unsubscribe` (DELETE), `/notifications/apply-default` (POST)
 - Admin settings (role 3+): `/admin/settings` (GET), `/admin/settings/leaderboard` (PATCH)
+- Schedule (JWT): `/schedule` (GET/POST), `/schedule/:gameId` (DELETE), `/schedule/today` (GET), `/schedule/week` (GET)
 
 **Role system:** 1=User · 2=Premium · 3=Admin · 4=Owner
 
@@ -190,6 +192,8 @@ daily_completions — user_id, game_id, completion_date (UNIQUE constraint)
 push_subscriptions — user_id, endpoint, p256dh, auth
 password_reset_tokens — user_id, token, expires_at, used (30-min expiry, single-use)
 site_settings     — key/value admin toggles (leaderboard_enabled)
+play_schedules    — user_id, game_id, days_of_week SMALLINT[], window_start TIME, window_end TIME,
+                    hook_notifications BOOLEAN (fires push at window_start instead of reset offset)
 ```
 
 Games use **soft-delete** (`is_active = false`). `UNIQUE(name, server)` prevents duplicates. All user FKs have `ON DELETE CASCADE`.
@@ -218,6 +222,11 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS email_digest_hour SMALLINT NOT NULL D
 CREATE TABLE IF NOT EXISTS password_reset_tokens (id SERIAL PRIMARY KEY, user_id INTEGER REFERENCES users(id) ON DELETE CASCADE, token VARCHAR(255) UNIQUE NOT NULL, expires_at TIMESTAMP NOT NULL, used BOOLEAN DEFAULT false, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
 CREATE INDEX IF NOT EXISTS idx_reset_tokens_token ON password_reset_tokens(token);
 CREATE INDEX IF NOT EXISTS idx_reset_tokens_user_id ON password_reset_tokens(user_id);
+
+-- v4.2 play scheduler:
+CREATE TABLE IF NOT EXISTS play_schedules (id SERIAL PRIMARY KEY, user_id INTEGER REFERENCES users(id) ON DELETE CASCADE, game_id INTEGER REFERENCES games(id) ON DELETE CASCADE, days_of_week SMALLINT[] NOT NULL DEFAULT '{0,1,2,3,4,5,6}', window_start TIME NOT NULL, window_end TIME NOT NULL, hook_notifications BOOLEAN NOT NULL DEFAULT false, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, UNIQUE(user_id, game_id));
+CREATE INDEX IF NOT EXISTS idx_play_schedules_user_id ON play_schedules(user_id);
+CREATE INDEX IF NOT EXISTS idx_play_schedules_game_id ON play_schedules(game_id);
 ```
 
 ---
