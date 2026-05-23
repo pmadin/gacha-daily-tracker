@@ -137,6 +137,12 @@ export default function AdminSubmissionsPage() {
   const [reviewTarget, setReviewTarget] = useState<{ sub: GameSubmission; action: 'approve' | 'reject' } | null>(null);
   const [lastActionMsg, setLastActionMsg] = useState('');
   const [lastActionApproved, setLastActionApproved] = useState(false);
+  const [expandedCell, setExpandedCell] = useState<{ id: number; field: 'notes' | 'review' } | null>(null);
+
+  const isExpanded = (id: number, field: 'notes' | 'review') =>
+    expandedCell?.id === id && expandedCell.field === field;
+  const toggleExpand = (id: number, field: 'notes' | 'review') =>
+    setExpandedCell(prev => (prev?.id === id && prev.field === field ? null : { id, field }));
 
   const loadPendingCount = useCallback(async () => {
     if (!token) return;
@@ -291,7 +297,12 @@ export default function AdminSubmissionsPage() {
                       {sub.submitter_role_name}
                     </span>
                   </td>
-                  <td className="hidden max-w-[180px] truncate px-4 py-3 text-xs text-zinc-500 lg:table-cell">
+                  <td
+                    className={`hidden px-4 py-3 text-xs text-zinc-500 lg:table-cell ${sub.notes ? 'cursor-pointer hover:text-zinc-300' : ''}`}
+                    style={isExpanded(sub.id, 'notes') ? { whiteSpace: 'normal', maxWidth: 280 } : { maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                    onClick={() => sub.notes && toggleExpand(sub.id, 'notes')}
+                    title={!isExpanded(sub.id, 'notes') && sub.notes ? sub.notes : undefined}
+                  >
                     {sub.notes ?? <span className="text-zinc-700">—</span>}
                   </td>
                   <td className="px-4 py-3 text-xs text-zinc-500">
@@ -316,10 +327,17 @@ export default function AdminSubmissionsPage() {
                     ) : (
                       <div className="text-xs text-zinc-600">
                         {sub.review_notes && (
-                          <span className="text-zinc-500" title={sub.review_notes}>
-                            {sub.review_notes.length > 30
-                              ? sub.review_notes.slice(0, 30) + '…'
-                              : sub.review_notes}
+                          <span
+                            className="cursor-pointer text-zinc-500 hover:text-zinc-300"
+                            style={isExpanded(sub.id, 'review') ? { whiteSpace: 'normal', display: 'block', maxWidth: 200 } : undefined}
+                            title={!isExpanded(sub.id, 'review') ? sub.review_notes : undefined}
+                            onClick={() => toggleExpand(sub.id, 'review')}
+                          >
+                            {isExpanded(sub.id, 'review')
+                              ? sub.review_notes
+                              : sub.review_notes.length > 30
+                                ? sub.review_notes.slice(0, 30) + '…'
+                                : sub.review_notes}
                           </span>
                         )}
                       </div>

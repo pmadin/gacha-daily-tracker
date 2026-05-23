@@ -66,7 +66,7 @@ export default function RegisterPage() {
           backgroundImage: "url('/kintsugi-veins-login-reg.svg')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          transform: 'scaleY(-1)',
+          transform: 'rotate(-17deg) scale(1.5)',
           maskImage: 'radial-gradient(ellipse 60% 55% at 50% 50%, transparent 0%, rgba(0,0,0,0.6) 45%, black 75%)',
           WebkitMaskImage: 'radial-gradient(ellipse 60% 55% at 50% 50%, transparent 0%, rgba(0,0,0,0.6) 45%, black 75%)',
           opacity: 0.25,

@@ -178,6 +178,40 @@ body {
   100% { opacity: 0; }
 }
 
+/* ── Hero entrance animations ── */
+@keyframes hero-fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes hero-panel-in {
+  from { opacity: 0; transform: translateX(8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.hero-anim   { animation: hero-fade-up 400ms ease-out both; }
+.hero-anim-d1 { animation-delay: 80ms; }
+.hero-anim-d2 { animation-delay: 160ms; }
+.hero-anim-d3 { animation-delay: 240ms; }
+.hero-panel  { animation: hero-panel-in 500ms ease-out both; animation-delay: 150ms; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-anim, .hero-panel { animation: none; }
+}
+
+/* ── Bento feature cells ── */
+.bento-cell { transition: background 0.2s, transform 0.15s; }
+.bento-cell:hover { background: var(--bg3) !important; transform: translateY(-1px); }
+.bento-cell-01 { position: relative; overflow: hidden; }
+.bento-cell-01::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 32px; height: 32px;
+  border-left: 1px solid rgba(200,145,60,0.2);
+  border-bottom: 1px solid rgba(200,145,60,0.2);
+  border-bottom-left-radius: 6px;
+  pointer-events: none;
+  z-index: 1;
+}
+
 /* Catch-light flash on the dividing edges */
 .nav-edge-flash {
   opacity: 0;

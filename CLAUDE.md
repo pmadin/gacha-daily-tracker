@@ -2,7 +2,7 @@
 
 Daily-reset tracker for 330+ gacha games. Users browse a game list, add games to a personal list, and mark daily completions. Anonymous use via localStorage; optional account creation syncs data to the DB.
 
-**Current state:** V3.5. Backend on Heroku, frontend deployed to Vercel on `main`. V3.5 was a full visual redesign pass (Kintsugi gold theme) — no new features or API changes from V3.0.
+**Current state:** V4. Backend on Heroku, frontend deployed to Vercel on `main`. V4 added a full feature platform on top of the V3.5 Kintsugi visual system: leaderboard with opt-in visibility, email digest, password reset (Resend), streak hardening, play scheduler, game submission flow, admin settings, 3NF schema cleanup, and icon CDN migration. V4 frontend redesign replaced the centered MarketingHero with a split two-column layout (animated hero copy + live game-preview panel) and rebuilt FeaturesSection as an asymmetric bento grid. Login/register page backgrounds now use distinct non-mirror rotations.
 
 ---
 

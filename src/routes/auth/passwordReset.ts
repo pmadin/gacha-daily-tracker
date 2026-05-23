@@ -108,7 +108,7 @@ passwordResetRouter.post('/forgot-password', async (req, res) => {
  *           type: string
  *     responses:
  *       200:
- *         description: Token is valid — returns { valid: true }
+ *         description: "Token is valid - returns { valid: true }"
  *       404:
  *         description: Token not found
  *       410:
