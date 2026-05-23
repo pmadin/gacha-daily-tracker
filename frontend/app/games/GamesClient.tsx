@@ -8,6 +8,7 @@ import { useAuth } from '../_context/AuthContext';
 import GameCard from '../_components/GameCard';
 import Pagination from '../_components/Pagination';
 import { SERVER_GROUPS, groupToRawServers } from '../_lib/servers';
+import SubmitGameModal from './SubmitGameModal';
 
 const PAGE_SIZE = 48;
 
@@ -17,7 +18,8 @@ interface Props {
 }
 
 export default function GamesClient({ initialGames, initialTotal }: Props) {
-  const { token, isLoading: authLoading } = useAuth();
+  const { token, user, isLoading: authLoading } = useAuth();
+  const [submitModalOpen, setSubmitModalOpen] = useState(false);
   const [games, setGames] = useState<Game[]>(initialGames);
   const [total, setTotal] = useState(initialTotal);
   const [page, setPage] = useState(0);
@@ -111,11 +113,21 @@ export default function GamesClient({ initialGames, initialTotal }: Props) {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white">Games</h1>
-        <p className="mt-1 text-sm text-zinc-400">
-          {total > 0 ? `${total} games` : loading ? 'Loading…' : 'No games found'}
-        </p>
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Games</h1>
+          <p className="mt-1 text-sm text-zinc-400">
+            {total > 0 ? `${total} games` : loading ? 'Loading…' : 'No games found'}
+          </p>
+        </div>
+        {user && (
+          <button
+            onClick={() => setSubmitModalOpen(true)}
+            className="rounded-lg border border-[rgba(200,155,60,0.20)] px-3 py-1.5 text-sm text-zinc-400 transition-colors hover:border-[rgba(200,155,60,0.45)] hover:text-white"
+          >
+            + Submit a Game
+          </button>
+        )}
       </div>
 
       <form onSubmit={handleSearch} className="mb-6 flex flex-col gap-2 sm:flex-row">
@@ -156,7 +168,23 @@ export default function GamesClient({ initialGames, initialTotal }: Props) {
       {loading ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {Array.from({ length: 24 }).map((_, i) => (
-            <div key={i} className="h-36 animate-pulse rounded-xl bg-[#18140d]" />
+            <div key={i} className="animate-pulse flex flex-col gap-3 rounded-xl p-4" style={{ background: 'var(--surface)' }}>
+              {/* Icon + name/server */}
+              <div className="flex items-start gap-2">
+                <div className="h-9 w-9 shrink-0 rounded-lg" style={{ background: 'var(--surface2)' }} />
+                <div className="flex flex-1 flex-col gap-1.5 pt-0.5">
+                  <div className="rounded" style={{ height: 12, width: '78%', background: 'var(--surface2)' }} />
+                  <div className="rounded-full" style={{ height: 16, width: 48, background: 'var(--surface2)' }} />
+                </div>
+              </div>
+              {/* Reset time + timezone */}
+              <div className="flex flex-col gap-1">
+                <div className="rounded" style={{ height: 10, width: '55%', background: 'var(--surface2)' }} />
+                <div className="rounded" style={{ height: 10, width: '80%', background: 'var(--surface2)' }} />
+              </div>
+              {/* Add button */}
+              <div className="mt-auto rounded-lg" style={{ height: 28, background: 'var(--surface2)' }} />
+            </div>
           ))}
         </div>
       ) : games.length === 0 ? (
@@ -177,6 +205,10 @@ export default function GamesClient({ initialGames, initialTotal }: Props) {
       )}
 
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+
+      {submitModalOpen && token && (
+        <SubmitGameModal token={token} onClose={() => setSubmitModalOpen(false)} />
+      )}
     </div>
   );
 }

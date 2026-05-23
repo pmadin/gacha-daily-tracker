@@ -18,7 +18,6 @@ export interface TrackedGame {
   timezone: string;
   daily_reset: string;
   icon_name: string;
-  is_enabled: boolean;
   completed_today: boolean;
   added_at: string;
   display_order: number;
@@ -108,7 +107,7 @@ export async function fetchTrackerGames(token: string): Promise<{ games: Tracked
   return apiFetch('/gdt/tracker/games', { headers: authHeader(token) });
 }
 
-export async function checkStreak(token: string): Promise<{ streak: number }> {
+export async function checkStreak(token: string): Promise<{ streak: number; allComplete?: boolean; completed?: number; total?: number; message?: string }> {
   return apiFetch('/gdt/tracker/streak', { method: 'POST', headers: authHeader(token) });
 }
 
@@ -269,7 +268,7 @@ export interface GamePayload {
 export async function fetchAdminGames(
   token: string,
   params: { search?: string; active?: boolean; limit?: number; offset?: number } = {},
-): Promise<{ games: AdminGame[]; total: number }> {
+): Promise<{ games: AdminGame[]; total: number; activeCount: number; last_synced_at: string | null }> {
   const q = new URLSearchParams();
   if (params.search) q.set('search', params.search);
   if (params.active !== undefined) q.set('active', String(params.active));
@@ -308,21 +307,65 @@ export async function hardDeleteGame(token: string, id: number): Promise<void> {
 
 export async function importGames(
   token: string,
-  forceRefresh = false,
-): Promise<{ message: string; total: number; source: string }> {
+): Promise<{ message: string; total: number; added: number; updated: number; source: string; last_synced_at: string }> {
   return apiFetch('/gdt/admin/import/games', {
     method: 'POST',
     headers: authHeader(token),
-    body: JSON.stringify({ forceRefresh }),
   });
 }
 
 export async function patchIcons(
   token: string,
-): Promise<{ fetched: number; still_missing: number; still_missing_names: string[] }> {
+): Promise<{ message: string; missing_icon_name_count: number; missing_games: { id: number; name: string }[] }> {
   return apiFetch('/gdt/admin/import/icons/patch', {
     method: 'POST',
     headers: authHeader(token),
+  });
+}
+
+export interface AdminUser {
+  id: number;
+  username: string;
+  email: string;
+  role: number;
+  roleName: string;
+  timezone: string;
+  streak_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function fetchAdminUsers(
+  token: string,
+  params: { limit?: number; offset?: number; role?: number } = {},
+): Promise<{ users: AdminUser[]; total: number }> {
+  const q = new URLSearchParams();
+  if (params.limit != null) q.set('limit', String(params.limit));
+  if (params.offset != null) q.set('offset', String(params.offset));
+  if (params.role != null) q.set('role', String(params.role));
+  return apiFetch(`/gdt/admin/users?${q}`, { headers: authHeader(token) });
+}
+
+export async function searchAdminUsers(
+  token: string,
+  query: string,
+): Promise<{ users: AdminUser[]; total: number }> {
+  return apiFetch(
+    `/gdt/admin/users/search?q=${encodeURIComponent(query)}`,
+    { headers: authHeader(token) },
+  );
+}
+
+export async function updateUserRole(
+  token: string,
+  username: string,
+  newRole: number,
+  reason: string,
+): Promise<void> {
+  await apiFetch(`/gdt/admin/users/role/${encodeURIComponent(username)}`, {
+    method: 'PATCH',
+    headers: authHeader(token),
+    body: JSON.stringify({ newRole, reason }),
   });
 }
 
@@ -339,4 +382,225 @@ export async function uploadGameIcon(token: string, gameId: number, file: File):
     throw Object.assign(new Error(body.error ?? res.statusText), { status: res.status });
   }
   return res.json();
+}
+
+// ─── Submissions ──────────────────────────────────────────────────────────────
+
+export interface TimezoneEntry {
+  timezone: string;
+  offset: string;
+  label: string;
+}
+
+export async function fetchTimezones(): Promise<Record<string, TimezoneEntry[]>> {
+  const res = await apiFetch<{ timezones: Record<string, TimezoneEntry[]> }>('/gdt/timezones');
+  return res.timezones;
+}
+
+export interface GameSubmission {
+  id: number;
+  name: string;
+  server: string;
+  timezone: string;
+  daily_reset: string;
+  notes: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  submitter_role: number;
+  submitter_role_name: string;
+  reviewed_by_role: number | null;
+  reviewed_by_role_name: string | null;
+  review_notes: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+}
+
+export async function submitGame(
+  token: string,
+  data: { name: string; server: string; timezone: string; daily_reset: string; notes?: string },
+): Promise<{ message: string; submission: { id: number; name: string; server: string; status: string } }> {
+  return apiFetch('/gdt/submissions', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(data),
+  });
+}
+
+export async function fetchAdminSubmissions(
+  token: string,
+  params: { status?: string; limit?: number; offset?: number } = {},
+): Promise<{ submissions: GameSubmission[]; total: number; status_filter: string }> {
+  const q = new URLSearchParams();
+  if (params.status) q.set('status', params.status);
+  if (params.limit != null) q.set('limit', String(params.limit));
+  if (params.offset != null) q.set('offset', String(params.offset));
+  return apiFetch(`/gdt/admin/submissions?${q}`, { headers: authHeader(token) });
+}
+
+// ─── Leaderboard ─────────────────────────────────────────────────────────────
+
+export interface LeaderboardEntry {
+  rank: number;
+  username: string;
+  streak: number;
+  games_tracked: number;
+  last_active: string;
+}
+
+export async function fetchLeaderboard(
+  params: { limit?: number; offset?: number } = {},
+): Promise<{ enabled: boolean; leaderboard: LeaderboardEntry[]; total: number }> {
+  const q = new URLSearchParams();
+  if (params.limit != null) q.set('limit', String(params.limit));
+  if (params.offset != null) q.set('offset', String(params.offset));
+  return apiFetch(`/gdt/leaderboard?${q}`);
+}
+
+export async function fetchLeaderboardStatus(): Promise<{ enabled: boolean }> {
+  return apiFetch('/gdt/leaderboard/status');
+}
+
+export async function fetchLeaderboardVisibility(token: string): Promise<{ hidden: boolean }> {
+  return apiFetch('/gdt/leaderboard/visibility', { headers: authHeader(token) });
+}
+
+export async function updateLeaderboardVisibility(
+  token: string,
+  hidden: boolean,
+): Promise<{ message: string; hidden: boolean }> {
+  return apiFetch('/gdt/leaderboard/visibility', {
+    method: 'PATCH',
+    headers: authHeader(token),
+    body: JSON.stringify({ hidden }),
+  });
+}
+
+// ─── Admin Settings ───────────────────────────────────────────────────────────
+
+export async function fetchAdminSettings(
+  token: string,
+): Promise<{ settings: Record<string, string> }> {
+  return apiFetch('/gdt/admin/settings', { headers: authHeader(token) });
+}
+
+export async function updateLeaderboardEnabled(
+  token: string,
+  enabled: boolean,
+): Promise<{ message: string; leaderboard_enabled: boolean }> {
+  return apiFetch('/gdt/admin/settings/leaderboard', {
+    method: 'PATCH',
+    headers: authHeader(token),
+    body: JSON.stringify({ enabled }),
+  });
+}
+
+// ─── Password Reset ───────────────────────────────────────────────────────────
+
+export async function forgotPassword(email: string): Promise<{ message: string }> {
+  return apiFetch('/gdt/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function validateResetToken(token: string): Promise<{ valid: boolean; error?: string }> {
+  return apiFetch(`/gdt/auth/reset-password/${encodeURIComponent(token)}`);
+}
+
+export async function resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+  return apiFetch('/gdt/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({ token, newPassword }),
+  });
+}
+
+// ─── Email Preferences ────────────────────────────────────────────────────────
+
+export interface EmailPreferences {
+  email_digest_enabled: boolean;
+  email_digest_hour: number;
+}
+
+export async function fetchEmailPreferences(token: string): Promise<EmailPreferences> {
+  return apiFetch('/gdt/notifications/email-preferences', { headers: authHeader(token) });
+}
+
+export async function updateEmailPreferences(
+  token: string,
+  data: Partial<{ email_digest_enabled: boolean; email_digest_hour: number }>,
+): Promise<{ message: string }> {
+  return apiFetch('/gdt/notifications/email-preferences', {
+    method: 'PATCH',
+    headers: authHeader(token),
+    body: JSON.stringify(data),
+  });
+}
+
+// ─── Schedule ─────────────────────────────────────────────────────────────────
+
+export interface Schedule {
+  id: number;
+  game_id: number;
+  days_of_week: number[];
+  window_start: string;
+  window_end: string;
+  hook_notifications: boolean;
+  created_at: string;
+  game_name: string;
+  server: string;
+  icon_name: string | null;
+  game_timezone: string;
+  daily_reset: string;
+}
+
+export async function fetchSchedules(token: string): Promise<{ schedules: Schedule[] }> {
+  return apiFetch('/gdt/schedule', { headers: authHeader(token) });
+}
+
+export async function saveSchedule(
+  token: string,
+  data: {
+    game_id: number;
+    days_of_week: number[];
+    window_start: string;
+    window_end: string;
+    hook_notifications: boolean;
+  },
+): Promise<{ message: string }> {
+  return apiFetch('/gdt/schedule', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteSchedule(token: string, gameId: number): Promise<{ message: string }> {
+  return apiFetch(`/gdt/schedule/${gameId}`, {
+    method: 'DELETE',
+    headers: authHeader(token),
+  });
+}
+
+export async function fetchTodaySchedule(
+  token: string,
+): Promise<{ schedules: Schedule[]; day_of_week: number }> {
+  return apiFetch('/gdt/schedule/today', { headers: authHeader(token) });
+}
+
+export async function fetchWeekSchedule(
+  token: string,
+): Promise<{ week: Record<number, Schedule[]> }> {
+  return apiFetch('/gdt/schedule/week', { headers: authHeader(token) });
+}
+
+export async function reviewSubmission(
+  token: string,
+  id: number,
+  action: 'approve' | 'reject',
+  review_notes?: string,
+): Promise<{ message: string }> {
+  return apiFetch(`/gdt/admin/submissions/${id}`, {
+    method: 'PATCH',
+    headers: authHeader(token),
+    body: JSON.stringify({ action, review_notes }),
+  });
 }

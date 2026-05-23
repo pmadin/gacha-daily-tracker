@@ -16,6 +16,7 @@ import {
   type AdminGame,
   type GamePayload,
 } from '../../_lib/api';
+import SubmissionsBadge from '../_components/SubmissionsBadge';
 
 const PAGE_SIZE = 50;
 
@@ -23,10 +24,23 @@ type SortCol = 'name' | 'server' | 'timezone' | 'daily_reset' | 'tracked_by' | '
 type SortDir = 'asc' | 'desc';
 
 function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
+  const col = active ? '#e8c86a' : '#4a3d2a';
+  if (!active) {
+    return (
+      <svg width="9" height="12" viewBox="0 0 9 12" fill="none" className="ml-1 inline-block align-middle">
+        <path d="M4.5 1L8 5H1L4.5 1Z" fill={col}/>
+        <path d="M4.5 11L1 7H8L4.5 11Z" fill={col}/>
+      </svg>
+    );
+  }
   return (
-    <span className={`ml-1 text-xs ${active ? 'text-[#e8c86a]' : 'text-[#4a3d2a]'}`}>
-      {active ? (dir === 'asc' ? '↑' : '↓') : '↕'}
-    </span>
+    <svg width="9" height="8" viewBox="0 0 9 8" fill="none" className="ml-1 inline-block align-middle">
+      {dir === 'asc' ? (
+        <path d="M1 6.5L4.5 2L8 6.5" stroke={col} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      ) : (
+        <path d="M1 1.5L4.5 6L8 1.5" stroke={col} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      )}
+    </svg>
   );
 }
 
@@ -192,6 +206,7 @@ export default function AdminGamesPage() {
 
   const [games, setGames] = useState<AdminGame[]>([]);
   const [total, setTotal] = useState(0);
+  const [activeCount, setActiveCount] = useState(0);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
   const [submittedSearch, setSubmittedSearch] = useState('');
@@ -206,6 +221,7 @@ export default function AdminGamesPage() {
 
   const [importLoading, setImportLoading] = useState(false);
   const [importResult, setImportResult] = useState('');
+  const [lastSynced, setLastSynced] = useState<string | null>(null);
   const [patchLoading, setPatchLoading] = useState(false);
   const [patchResult, setPatchResult] = useState('');
 
@@ -249,6 +265,10 @@ export default function AdminGamesPage() {
       });
       setGames(res.games);
       setTotal(res.total);
+      setActiveCount(res.activeCount);
+      if (res.last_synced_at) {
+        setLastSynced(new Date(res.last_synced_at).toLocaleString());
+      }
     } catch (err: unknown) {
       setListError(err instanceof Error ? err.message : 'Failed to load games');
     } finally {
@@ -306,13 +326,14 @@ export default function AdminGamesPage() {
     await load();
   };
 
-  const handleImport = async (forceRefresh: boolean) => {
+  const handleImport = async () => {
     if (!token) return;
     setImportLoading(true);
     setImportResult('');
     try {
-      const res = await importGames(token, forceRefresh);
-      setImportResult(`${res.total} games synced from ${res.source}`);
+      const res = await importGames(token);
+      setImportResult(`${res.total} games synced · ${res.added} added · ${res.updated} updated`);
+      setLastSynced(new Date(res.last_synced_at).toLocaleString());
       await load();
     } catch (err: unknown) {
       setImportResult(`Error: ${err instanceof Error ? err.message : 'Import failed'}`);
@@ -327,9 +348,13 @@ export default function AdminGamesPage() {
     setPatchResult('');
     try {
       const res = await patchIcons(token);
-      setPatchResult(`Fetched ${res.fetched} icons · ${res.still_missing} still missing`);
+      setPatchResult(
+        res.missing_icon_name_count === 0
+          ? 'All active games have icon names set.'
+          : `${res.missing_icon_name_count} game(s) missing icon_name: ${res.missing_games.map(g => g.name).join(', ')}`
+      );
     } catch (err: unknown) {
-      setPatchResult(`Error: ${err instanceof Error ? err.message : 'Patch failed'}`);
+      setPatchResult(`Error: ${err instanceof Error ? err.message : 'Audit failed'}`);
     } finally {
       setPatchLoading(false);
     }
@@ -366,7 +391,7 @@ export default function AdminGamesPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-white">Games</h1>
-          <p className="text-sm text-zinc-500">{total} total</p>
+          <p className="text-sm text-zinc-500">{activeCount} active · {total} total</p>
         </div>
         <button
           onClick={() => setAddingGame(true)}
@@ -377,6 +402,8 @@ export default function AdminGamesPage() {
         </button>
       </div>
 
+      {token && <SubmissionsBadge token={token} />}
+
       {/* Import / icon tools */}
       <div className="mb-6 rounded-xl p-4" style={{ border: '1px solid rgba(200,155,60,0.10)', background: 'var(--bg2)' }}>
         <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">
@@ -384,29 +411,30 @@ export default function AdminGamesPage() {
         </p>
         <div className="flex flex-wrap gap-2">
           <button
-            onClick={() => handleImport(false)}
+            onClick={handleImport}
             disabled={importLoading || patchLoading}
             className="rounded-lg border border-[rgba(200,155,60,0.15)] px-3 py-1.5 text-sm text-[#9a8570] transition-colors hover:border-[rgba(200,155,60,0.3)] hover:text-[#f0ede8] disabled:opacity-40"
           >
-            {importLoading ? 'Syncing…' : 'Sync from cache'}
-          </button>
-          <button
-            onClick={() => handleImport(true)}
-            disabled={importLoading || patchLoading}
-            className="rounded-lg border border-[rgba(200,155,60,0.15)] px-3 py-1.5 text-sm text-[#9a8570] transition-colors hover:border-[rgba(200,155,60,0.3)] hover:text-[#f0ede8] disabled:opacity-40"
-          >
-            {importLoading ? 'Syncing…' : 'Force refresh from source'}
+            {importLoading ? 'Syncing…' : 'Sync from upstream'}
           </button>
           <button
             onClick={handlePatchIcons}
             disabled={patchLoading || importLoading}
             className="rounded-lg border border-[rgba(200,155,60,0.15)] px-3 py-1.5 text-sm text-[#9a8570] transition-colors hover:border-[rgba(200,155,60,0.3)] hover:text-[#f0ede8] disabled:opacity-40"
           >
-            {patchLoading ? 'Patching…' : 'Patch missing icons'}
+            {patchLoading ? 'Auditing…' : 'Verify Icons'}
           </button>
         </div>
+        <p className="mt-2 text-xs text-zinc-600">
+          Icons are served directly from the Game-Time-Master repository. Use &quot;Verify Icons&quot; to check which games are missing icon references in the database.
+        </p>
         {importResult && (
           <p className="mt-2 text-xs text-zinc-400">{importResult}</p>
+        )}
+        {lastSynced && (
+          <p className="mt-1 text-xs text-zinc-500">
+            Last synced from upstream: <span className="text-zinc-400">{lastSynced}</span>
+          </p>
         )}
         {patchResult && (
           <p className={`mt-1 text-xs ${patchResult.startsWith('Error') ? 'text-red-400' : 'text-zinc-400'}`}>

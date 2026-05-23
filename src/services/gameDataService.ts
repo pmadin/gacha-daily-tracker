@@ -52,15 +52,42 @@ class GameDataService {
   }
 
   /**
-   * Force refresh from primary source
+   * Always fetches live from upstream — no cache check.
+   * Use this for admin-triggered imports. Saves result as backup.
    */
-  async refreshFromSource(): Promise<GameData[]> {
-    this.lastFetch = null; // Force refresh
-    return await this.getGameData();
+  async fetchLiveFromSource(): Promise<GameData[]> {
+    const response = await axios.get(this.sourceUrl, {
+      timeout: 10000,
+      headers: { 'User-Agent': 'Gacha-Daily-Tracker/1.0' },
+    });
+    const gameData = this.parseGameDataFile(response.data);
+    this.lastFetch = new Date();
+    await this.saveBackup(gameData);
+    console.log(`✅ Live fetch: ${gameData.length} games from upstream`);
+    return gameData;
   }
 
   /**
-   * Fetch game data from GitHub
+   * Force refresh from primary source
+   */
+  async refreshFromSource(): Promise<GameData[]> {
+    return await this.fetchLiveFromSource();
+  }
+
+  /**
+   * Returns last-fetch timestamp and cache expiry for the GET /admin/games response.
+   */
+  getLastSyncInfo(): { lastFetch: Date | null; cacheExpiresAt: Date | null } {
+    return {
+      lastFetch: this.lastFetch,
+      cacheExpiresAt: this.lastFetch
+        ? new Date(this.lastFetch.getTime() + this.cacheTimeout)
+        : null,
+    };
+  }
+
+  /**
+   * Fetch game data from GitHub (cache-gated — used only by startup auto-import)
    */
   private async fetchFromSource(): Promise<GameData[]> {
     if (!this.shouldFetch()) {
@@ -68,13 +95,10 @@ class GameDataService {
     }
 
     const response = await axios.get(this.sourceUrl, {
-      timeout: 10000, // 10 second timeout
-      headers: {
-        'User-Agent': 'Gacha-Daily-Tracker/1.0'
-      }
+      timeout: 10000,
+      headers: { 'User-Agent': 'Gacha-Daily-Tracker/1.0' },
     });
 
-    // Parse the JavaScript file content
     const gameData = this.parseGameDataFile(response.data);
     this.lastFetch = new Date();
 

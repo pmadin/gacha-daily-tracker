@@ -1,0 +1,259 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "Test New Features",
+    "description": "Tests for leaderboard public routes and password reset edge cases",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Leaderboard",
+      "item": [
+        {
+          "name": "Test Leaderboard Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Should return 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has enabled field\", () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.have.property('enabled');",
+                  "    pm.expect(body.enabled).to.be.a('boolean');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/gdt/leaderboard/status",
+              "host": ["{{base_url}}"],
+              "path": ["gdt", "leaderboard", "status"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Leaderboard List",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Should return 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has expected shape\", () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.have.property('enabled');",
+                  "    pm.expect(body).to.have.property('leaderboard');",
+                  "    pm.expect(body).to.have.property('total');",
+                  "    pm.expect(body.leaderboard).to.be.an('array');",
+                  "    pm.expect(body.total).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/gdt/leaderboard",
+              "host": ["{{base_url}}"],
+              "path": ["gdt", "leaderboard"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Password Reset",
+      "item": [
+        {
+          "name": "Forgot Password - Missing Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Should return 400 when email is missing\", () => {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has error field\", () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.have.property('error');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/auth/forgot-password",
+              "host": ["{{base_url}}"],
+              "path": ["gdt", "auth", "forgot-password"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Forgot Password - Unknown Email (Enumeration Prevention)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Should return 200 even for unknown email\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has generic message\", () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.have.property('message');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"definitelynotreal@nowhere.invalid\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/auth/forgot-password",
+              "host": ["{{base_url}}"],
+              "path": ["gdt", "auth", "forgot-password"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validate Token - Invalid Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Should return 404 for fake token\", () => {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test(\"valid field is false\", () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.valid).to.equal(false);",
+                  "    pm.expect(body).to.have.property('error');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/gdt/auth/reset-password/thisisafaketokenthatshouldnotexist",
+              "host": ["{{base_url}}"],
+              "path": ["gdt", "auth", "reset-password", "thisisafaketokenthatshouldnotexist"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password - Missing Fields",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Should return 400 when fields are missing\", () => {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has error field\", () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.have.property('error');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/auth/reset-password",
+              "host": ["{{base_url}}"],
+              "path": ["gdt", "auth", "reset-password"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password - Invalid Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Should return 404 for fake token\", () => {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has error field\", () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.have.property('error');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"token\": \"thisisafaketokenthatshouldnotexist\", \"newPassword\": \"TestPassword123!\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/gdt/auth/reset-password",
+              "host": ["{{base_url}}"],
+              "path": ["gdt", "auth", "reset-password"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

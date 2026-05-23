@@ -274,12 +274,12 @@ function GameCard({
       {/* Icon with done badge */}
       <div style={{ position: 'relative', width: 56, height: 56, flexShrink: 0 }}>
         <img
-          src={game.icon_name ? `/icons/${game.icon_name}.gif` : '/icons/placeholder.svg'}
+          src={game.icon_name ? `${process.env.NEXT_PUBLIC_ICONS_BASE_URL}/${game.icon_name}.gif` : '/placeholder.svg'}
           alt=""
           width={56}
           height={56}
           style={{ borderRadius: 10, objectFit: 'cover', display: 'block', aspectRatio: '1 / 1' }}
-          onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/icons/placeholder.svg'; }}
+          onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
         />
         {game.done && (
           <span

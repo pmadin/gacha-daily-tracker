@@ -18,12 +18,37 @@ and you lose that day's rewards permanently. GachaDailyTracker lets you:
 - Track reset countdowns across 330+ games in real time
 - Support for 20+ server regions with full timezone awareness
 - Mark games done each day, track streaks, celebrate completions
+- Schedule play windows per game — set the days of the week and time range you actually play,
+  and get a push notification at the start of your window instead of at the raw reset time
 - Use anonymously (no account required) or sign up to sync across devices
 - Browse and search the full game catalog with server filtering
 
 ---
 
 ## Version history
+
+### V4 — Feature Platform + Frontend Redesign (May 2026)
+Major feature expansion and frontend overhaul built on the V3.5 Kintsugi design system.
+
+**Backend features**
+- **Leaderboard** — public streak leaderboard with per-user opt-in visibility toggle
+- **Email digest** — daily reset reminder emails via Resend, configurable send hour
+- **Password reset** — tokenised forgot-password flow (30-min expiry, single-use)
+- **Play scheduler** — per-game weekly schedule windows with optional push hook at window start
+- **Game submissions** — users can suggest new games; admin approval/reject queue
+- **Admin settings** — site-wide leaderboard enable/disable toggle via `site_settings` table
+- **Streak hardening** — atomic CASE update, rate-limited to once per 60 s via `streak_last_attempted_at`
+- **3NF schema cleanup** — dropped unused columns (`first_name`, `last_name`, `phone`, `is_enabled`); added indexes
+- **Icon CDN migration** — icons served from CDN; `download-icons.js` script updated
+
+**Frontend redesign**
+- **Split hero layout** — `MarketingHero` replaced centered column with a two-column grid: animated
+  staggered copy on the left, live game-preview panel on the right (7 randomised games from a 28-game
+  pool, real GIF icons, completion progress bar)
+- **Bento features section** — `FeaturesSection` rebuilt as an asymmetric bento grid (2-col, 1 px gap
+  border trick) with numbered cells, tag pills, stats row, and a separated CTA callout strip
+- **Auth page backgrounds** — login/register kintsugi vein SVGs now use distinct non-mirror rotations
+  (`rotate(142deg)` vs `rotate(-17deg)`) so the pages look different when switching
 
 ### V3.5 — Kintsugi Design System (May 2026)
 Major frontend visual redesign. No breaking changes to API or data.
@@ -76,7 +101,7 @@ Major frontend visual redesign. No breaking changes to API or data.
 ## Tech stack
 
 **Frontend**
-- Next.js 15 (App Router, hybrid SSR)
+- Next.js 16 (App Router, hybrid SSR)
 - TypeScript
 - Tailwind CSS v4
 - @dnd-kit (drag and drop)
@@ -122,8 +147,11 @@ node scripts/download-icons.js
 ```
 DATABASE_URL=
 JWT_SECRET=
-JWT_PEPPER=
+PASSWORD_PEPPER=
 REGISTRATION_TOKEN=
+FRONTEND_URL=
+RESEND_API_KEY=
+RESEND_FROM_EMAIL=
 PORT=4000
 ```
 

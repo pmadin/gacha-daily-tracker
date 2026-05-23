@@ -174,10 +174,6 @@ roleRouter.patch('/users/role/:username', requireAdmin, async (req: Request, res
  *                         type: integer
  *                       roleName:
  *                         type: string
- *                       first_name:
- *                         type: string
- *                       last_name:
- *                         type: string
  *                       created_at:
  *                         type: string
  *                 total:
@@ -190,9 +186,8 @@ roleRouter.get('/users', requireAdmin, async (req: Request, res: Response) => {
         const { role, search } = req.query;
 
         let query = `
-            SELECT id, username, email, role, first_name, last_name, 
-                   timezone, created_at, updated_at
-            FROM users 
+            SELECT id, username, email, role, timezone, created_at, updated_at
+            FROM users
             WHERE 1=1
         `;
 
@@ -280,11 +275,11 @@ roleRouter.get('/users/search', requireAdmin, async (req: Request, res: Response
 
 
         const searchResult = await database.query(`
-            SELECT id, username, email, role, first_name, last_name, created_at
-            FROM users 
-            WHERE username ILIKE $1 OR email ILIKE $1 OR (role = $2)
-            ORDER BY 
-                CASE WHEN username = $2 THEN 1 ELSE 2 END,
+            SELECT id, username, email, role, timezone, streak_count, created_at, updated_at
+            FROM users
+            WHERE username ILIKE $1 OR email ILIKE $1
+            ORDER BY
+                CASE WHEN LOWER(username) = LOWER($2) THEN 1 ELSE 2 END,
                 username
             LIMIT 20
         `, [`%${q}%`, q]);

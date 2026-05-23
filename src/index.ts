@@ -14,8 +14,16 @@ import autoImportService from './services/autoImportService';
 import { specs, swaggerUi, swaggerOptions } from './config/swagger';
 import { notificationsRouter } from './routes/notifications';
 import { adminGamesRouter } from './routes/admin/games';
+import { submissionsRouter, adminSubmissionsRouter } from './routes/submissions';
+import leaderboardRouter from './routes/leaderboard';
+import adminSettingsRouter from './routes/admin/settings';
+import { authenticateToken } from './middleware/auth';
 import { initWebPush } from './config/webpush';
 import { startNotificationCron } from './workers/notificationCron';
+import { startStreakAuditCron } from './workers/streakAuditCron';
+import { startEmailDigestCron } from './workers/emailDigestCron';
+import passwordResetRouter from './routes/auth/passwordReset';
+import scheduleRouter from './routes/schedule';
 
 // Load environment variables - try multiple file names
 dotenv.config({ path: '.env.local' });
@@ -132,11 +140,17 @@ app.use('/gdt/api-docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions)
 app.use('/gdt/games', gameRoutes);
 app.use('/gdt/timezones', timezoneRoutes);
 app.use('/gdt/auth', authRoutes);
+app.use('/gdt/auth', passwordResetRouter);
 app.use('/gdt/admin', roleRouter);
 app.use('/gdt/admin', adminGamesRouter);
 app.use('/gdt/update', updateRouter);
 app.use('/gdt/tracker', trackerRouter);
 app.use('/gdt/notifications', notificationsRouter);
+app.use('/gdt/submissions', authenticateToken, submissionsRouter);
+app.use('/gdt/admin', adminSubmissionsRouter);
+app.use('/gdt/leaderboard', leaderboardRouter);
+app.use('/gdt/admin', adminSettingsRouter);
+app.use('/gdt/schedule', authenticateToken, scheduleRouter);
 
 /**
  * @swagger
@@ -434,6 +448,8 @@ async function initializeApp() {
         // Initialize web push and start notification cron
         initWebPush();
         startNotificationCron();
+        startStreakAuditCron();
+        startEmailDigestCron();
 
         // Start server
         app.listen(PORT, () => {

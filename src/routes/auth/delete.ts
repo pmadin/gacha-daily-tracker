@@ -59,21 +59,12 @@ const deleteRouter: Router = express.Router();
  *                         account_id:
  *                           type: number
  *                           example: 123
- *                         firstname:
- *                           type: string
- *                           example: "John"
- *                         lastname:
- *                           type: string
- *                           example: "Doe"
  *                         username:
  *                           type: string
  *                           example: "gacha_master_2025"
  *                         email:
  *                           type: string
  *                           example: "user@example.com"
- *                         phone:
- *                           type: string
- *                           example: "+1234567890"
  *                         role:
  *                           type: number
  *                           example: 1
@@ -154,11 +145,7 @@ deleteRouter.delete('/account', async (req: Request, res: Response) => {
 
         // Get user details before deletion - verify both JWT user ID and provided identifier match
         const userResult = await client.query(
-            `SELECT id, username, email, password_hash, timezone, created_at,
-                    COALESCE(first_name, '') as firstname,
-                    COALESCE(last_name, '') as lastname,
-                    COALESCE(phone, '') as phone,
-                    COALESCE(role, 1) as role
+            `SELECT id, username, email, password_hash, COALESCE(role, 1) as role
              FROM users
              WHERE id = $1 AND (username = $2 OR email = $2)`,
             [decoded.userId, identifier]
@@ -209,11 +196,8 @@ deleteRouter.delete('/account', async (req: Request, res: Response) => {
             details: {
                 account: {
                     account_id: user.id,
-                    firstname: user.firstname,
-                    lastname: user.lastname,
                     username: user.username,
                     email: user.email,
-                    phone: user.phone,
                     role: user.role
                 }
             }

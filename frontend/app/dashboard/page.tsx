@@ -16,7 +16,11 @@ import {
   checkStreak,
   updateGameReminderOffset,
   fetchNotificationPrefs,
+  fetchSchedules,
 } from '../_lib/api';
+import type { Schedule } from '../_lib/api';
+import ScheduleModal from '../_components/ScheduleModal';
+import type { ScheduleFormData } from '../_components/ScheduleModal';
 import {
   getAnonGames,
   getAnonGameIds,
@@ -41,6 +45,8 @@ export default function DashboardPage() {
   const [sortBy, setSortBy] = useState<'reset' | 'alpha' | 'custom'>('reset');
   const [customOrder, setCustomOrder] = useState<number[]>([]);
   const [notifEnabled, setNotifEnabled] = useState(false);
+  const [scheduleMap, setScheduleMap] = useState<Map<number, ScheduleFormData>>(new Map());
+  const [scheduleModalGame, setScheduleModalGame] = useState<DashboardGame | null>(null);
 
   useEffect(() => {
     try {
@@ -101,6 +107,24 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
+  }, [token]);
+
+  useEffect(() => {
+    if (!token) return;
+    fetchSchedules(token)
+      .then(r => {
+        const map = new Map<number, ScheduleFormData>();
+        r.schedules.forEach((s: Schedule) => {
+          map.set(s.game_id, {
+            days_of_week: s.days_of_week,
+            window_start: s.window_start,
+            window_end: s.window_end,
+            hook_notifications: s.hook_notifications,
+          });
+        });
+        setScheduleMap(map);
+      })
+      .catch(() => {});
   }, [token]);
 
   useEffect(() => {
@@ -186,6 +210,35 @@ export default function DashboardPage() {
     }
   };
 
+  const handleSchedule = useCallback((game: DashboardGame) => {
+    setScheduleModalGame(game);
+  }, []);
+
+  const handleScheduleSave = useCallback((data: ScheduleFormData & { game_id: number }) => {
+    setScheduleMap(prev => {
+      const next = new Map(prev);
+      next.set(data.game_id, {
+        days_of_week: data.days_of_week,
+        window_start: data.window_start,
+        window_end: data.window_end,
+        hook_notifications: data.hook_notifications,
+      });
+      return next;
+    });
+    setScheduleModalGame(null);
+  }, []);
+
+  const handleScheduleDelete = useCallback(() => {
+    if (scheduleModalGame) {
+      setScheduleMap(prev => {
+        const next = new Map(prev);
+        next.delete(scheduleModalGame.game_id);
+        return next;
+      });
+    }
+    setScheduleModalGame(null);
+  }, [scheduleModalGame]);
+
   const handleUpdateOffset = useCallback(async (gameId: number, offset: number) => {
     setGames(prev => prev.map(g => g.game_id === gameId ? { ...g, custom_reminder_offset: offset } : g));
     if (token) {
@@ -237,10 +290,41 @@ export default function DashboardPage() {
   if (authLoading || loading) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-8">
-        <div className="mb-6 h-8 w-32 animate-pulse rounded bg-[#18140d]" />
+        {/* Header: title + button stubs */}
+        <div className="mb-4 flex items-center justify-between">
+          <div className="animate-pulse rounded" style={{ width: 96, height: 28, background: 'var(--surface)' }} />
+          <div className="flex gap-2">
+            <div className="animate-pulse rounded-lg" style={{ width: 76, height: 32, background: 'var(--surface)' }} />
+            <div className="animate-pulse rounded-lg" style={{ width: 100, height: 32, background: 'var(--surface)' }} />
+          </div>
+        </div>
+        {/* Sort tabs */}
+        <div className="mb-5 flex gap-2">
+          <div className="animate-pulse rounded-lg" style={{ width: 84, height: 28, background: 'var(--surface)' }} />
+          <div className="animate-pulse rounded-lg" style={{ width: 48, height: 28, background: 'var(--surface)' }} />
+          <div className="animate-pulse rounded-lg" style={{ width: 64, height: 28, background: 'var(--surface)' }} />
+        </div>
+        {/* Progress bar */}
+        <div className="animate-pulse mb-5 rounded-xl" style={{ height: 32, background: 'var(--surface)' }} />
+        {/* Game card rows */}
         <div className="flex flex-col gap-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-16 animate-pulse rounded-xl bg-[#18140d]" />
+            <div
+              key={i}
+              className="animate-pulse flex items-center gap-3 rounded-xl px-3 py-3"
+              style={{ background: 'var(--surface)' }}
+            >
+              <div className="h-6 w-6 shrink-0 rounded-full" style={{ background: 'var(--surface2)' }} />
+              <div className="h-9 w-9 shrink-0 rounded-lg" style={{ background: 'var(--surface2)' }} />
+              <div className="flex flex-1 flex-col gap-1.5">
+                <div className="rounded" style={{ width: '52%', height: 12, background: 'var(--surface2)' }} />
+                <div className="rounded" style={{ width: '32%', height: 10, background: 'var(--surface2)' }} />
+              </div>
+              <div className="flex flex-col items-end gap-1.5">
+                <div className="rounded" style={{ width: 58, height: 12, background: 'var(--surface2)' }} />
+                <div className="rounded" style={{ width: 70, height: 10, background: 'var(--surface2)' }} />
+              </div>
+            </div>
           ))}
         </div>
       </div>
@@ -248,6 +332,7 @@ export default function DashboardPage() {
   }
 
   return (
+    <>
     <div className="mx-auto max-w-2xl px-4 py-8">
       <div className="mb-6 flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -255,7 +340,18 @@ export default function DashboardPage() {
             <h1 className="text-2xl font-bold text-white">My List</h1>
             {streak > 0 && (
               <span className="flex items-center gap-1 text-sm font-semibold text-orange-400">
-                🔥 {streak}
+                <svg width="13" height="15" viewBox="0 0 13 15" fill="none" className="flex-shrink-0">
+                  <path
+                    d="M6.5 1C4 4 3 7 3.5 9.5C2 8 2 6.5 2.5 5.5C1.5 7 1 9 1 10.5C1 12.7 3.5 14.5 6.5 14.5C9.5 14.5 12 12.7 12 10.5C12 9 11.5 7 10.5 5.5C11 6.5 11 8 9.5 9.5C10 7 9 4 6.5 1Z"
+                    fill="currentColor"
+                  />
+                  <path
+                    d="M6.5 7C5.5 8 5 9.5 5.5 11.5C5 11 4.5 9.5 5 8.5C5.5 8 6 7.5 6.5 7Z"
+                    fill="#fed7aa"
+                    opacity="0.7"
+                  />
+                </svg>
+                {streak}
               </span>
             )}
           </div>
@@ -357,6 +453,9 @@ export default function DashboardPage() {
                       onToggleComplete={handleToggleComplete}
                       onRemove={handleRemove}
                       onUpdateOffset={notifEnabled ? handleUpdateOffset : undefined}
+                      onSchedule={token ? handleSchedule : undefined}
+                      hasSchedule={scheduleMap.has(game.game_id)}
+                      hookNotificationsActive={scheduleMap.get(game.game_id)?.hook_notifications === true}
                     />
                   ))}
                 </div>
@@ -371,6 +470,9 @@ export default function DashboardPage() {
                   onToggleComplete={handleToggleComplete}
                   onRemove={handleRemove}
                   onUpdateOffset={notifEnabled ? handleUpdateOffset : undefined}
+                  onSchedule={token ? handleSchedule : undefined}
+                  hasSchedule={scheduleMap.has(game.game_id)}
+                  hookNotificationsActive={scheduleMap.get(game.game_id)?.hook_notifications === true}
                 />
               ))}
             </div>
@@ -378,5 +480,21 @@ export default function DashboardPage() {
         </>
       )}
     </div>
+
+    {scheduleModalGame && token && (
+      <ScheduleModal
+        game={{
+          game_id: scheduleModalGame.game_id,
+          game_name: scheduleModalGame.name,
+          server: scheduleModalGame.server,
+        }}
+        existingSchedule={scheduleMap.get(scheduleModalGame.game_id) ?? null}
+        token={token}
+        onSave={handleScheduleSave}
+        onDelete={handleScheduleDelete}
+        onClose={() => setScheduleModalGame(null)}
+      />
+    )}
+    </>
   );
 }

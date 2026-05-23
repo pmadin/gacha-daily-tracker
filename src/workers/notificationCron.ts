@@ -13,6 +13,17 @@ interface PendingNotification {
   offset_minutes: number;
 }
 
+interface ScheduleHookNotification {
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  user_id: number;
+  game_id: number;
+  game_name: string;
+  icon_name: string | null;
+  minutes_until_window: number;
+}
+
 // Find every (user, game) pair where the push should fire this minute.
 // Conditions:
 //   - User has a push subscription
@@ -69,9 +80,48 @@ async function removeExpiredSubscription(endpoint: string): Promise<void> {
   }
 }
 
+const SCHEDULE_HOOK_QUERY = `
+  WITH candidates AS (
+    SELECT
+      ps_sub.endpoint,
+      ps_sub.p256dh,
+      ps_sub.auth,
+      ps_sub.user_id,
+      g.id       AS game_id,
+      g.name     AS game_name,
+      g.icon_name,
+      EXTRACT(EPOCH FROM (
+        (CURRENT_DATE + sch.window_start) AT TIME ZONE u.timezone
+        - CURRENT_TIMESTAMP
+      )) / 60.0  AS minutes_until_window
+    FROM play_schedules sch
+    JOIN users u            ON u.id  = sch.user_id
+    JOIN push_subscriptions ps_sub ON ps_sub.user_id = sch.user_id
+    JOIN games g            ON g.id  = sch.game_id AND g.is_active = true
+    LEFT JOIN daily_completions dc
+           ON dc.user_id = sch.user_id
+          AND dc.game_id = sch.game_id
+          AND dc.completion_date = (
+                CASE
+                  WHEN (CURRENT_TIMESTAMP AT TIME ZONE g.timezone)::time >= g.daily_reset
+                  THEN (CURRENT_TIMESTAMP AT TIME ZONE g.timezone)::date
+                  ELSE (CURRENT_TIMESTAMP AT TIME ZONE g.timezone)::date - 1
+                END
+              )
+    WHERE sch.hook_notifications = true
+      AND dc.id IS NULL
+      AND ($1 = ANY(sch.days_of_week) OR sch.days_of_week = '{}')
+  )
+  SELECT * FROM candidates
+  WHERE minutes_until_window BETWEEN -0.5 AND 0.5
+`;
+
 async function runNotificationJob(): Promise<void> {
   if (!isWebPushConfigured()) return;
 
+  const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
+
+  // Reset-based notifications
   let rows: PendingNotification[];
   try {
     const result = await database.query(QUERY);
@@ -82,50 +132,94 @@ async function runNotificationJob(): Promise<void> {
     return;
   }
 
-  if (rows.length === 0) return;
+  if (rows.length > 0) {
+    console.log(`🔔 Sending ${rows.length} reset push notification(s)`);
+    await Promise.all(
+      rows.map(async (row) => {
+        const m = row.offset_minutes;
+        const timeLabel = m < 60
+          ? `${m} minute${m === 1 ? '' : 's'}`
+          : `${m / 60} hour${m / 60 === 1 ? '' : 's'}`;
 
-  console.log(`🔔 Sending ${rows.length} push notification(s)`);
+        const icon = row.icon_name
+          ? `${frontendUrl}/icons/${row.icon_name}.gif`
+          : `${frontendUrl}/icons/placeholder.svg`;
 
-  const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
+        const payload = JSON.stringify({
+          title: 'GachaDaily',
+          body: `${row.game_name} resets in ${timeLabel}`,
+          icon,
+          tag: `gachadaily-reset-${row.game_id}`,
+          data: { url: '/dashboard' },
+        });
 
-  await Promise.all(
-    rows.map(async (row) => {
-      const m = row.offset_minutes;
-      const timeLabel = m < 60
-        ? `${m} minute${m === 1 ? '' : 's'}`
-        : `${m / 60} hour${m / 60 === 1 ? '' : 's'}`;
+        const subscription = {
+          endpoint: row.endpoint,
+          keys: { p256dh: row.p256dh, auth: row.auth },
+        };
 
-      const icon = row.icon_name
-        ? `${frontendUrl}/icons/${row.icon_name}.gif`
-        : `${frontendUrl}/icons/placeholder.svg`;
-
-      const payload = JSON.stringify({
-        title: 'GachaDaily',
-        body: `${row.game_name} resets in ${timeLabel}`,
-        icon,
-        tag: `gachadaily-${row.game_id}`,
-        data: { url: '/dashboard' },
-      });
-
-      const subscription = {
-        endpoint: row.endpoint,
-        keys: { p256dh: row.p256dh, auth: row.auth },
-      };
-
-      try {
-        await webpush.sendNotification(subscription, payload);
-      } catch (error: unknown) {
-        const status = (error as { statusCode?: number }).statusCode;
-        if (status === 410 || status === 404) {
-          // Subscription is expired or invalid — remove it
-          await removeExpiredSubscription(row.endpoint);
-        } else {
-          const msg = error instanceof Error ? error.message : String(error);
-          console.error(`Push failed for user ${row.user_id} / game ${row.game_id}:`, msg);
+        try {
+          await webpush.sendNotification(subscription, payload);
+        } catch (error: unknown) {
+          const status = (error as { statusCode?: number }).statusCode;
+          if (status === 410 || status === 404) {
+            await removeExpiredSubscription(row.endpoint);
+          } else {
+            const msg = error instanceof Error ? error.message : String(error);
+            console.error(`Push failed for user ${row.user_id} / game ${row.game_id}:`, msg);
+          }
         }
-      }
-    })
-  );
+      })
+    );
+  }
+
+  // Schedule hook notifications (fires at window_start for hooked schedules)
+  const currentDow = new Date().getDay();
+  let hookRows: ScheduleHookNotification[];
+  try {
+    const hookResult = await database.query(SCHEDULE_HOOK_QUERY, [currentDow]);
+    hookRows = hookResult.rows;
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Schedule hook cron query failed:', msg);
+    return;
+  }
+
+  if (hookRows.length > 0) {
+    console.log(`🔔 Sending ${hookRows.length} schedule hook notification(s)`);
+    await Promise.all(
+      hookRows.map(async (row) => {
+        const icon = row.icon_name
+          ? `${frontendUrl}/icons/${row.icon_name}.gif`
+          : `${frontendUrl}/icons/placeholder.svg`;
+
+        const payload = JSON.stringify({
+          title: 'GachaDailyTracker',
+          body: `Time to play ${row.game_name}! Your play window is starting.`,
+          icon,
+          tag: `gachadaily-window-${row.game_id}`,
+          data: { url: '/schedule' },
+        });
+
+        const subscription = {
+          endpoint: row.endpoint,
+          keys: { p256dh: row.p256dh, auth: row.auth },
+        };
+
+        try {
+          await webpush.sendNotification(subscription, payload);
+        } catch (error: unknown) {
+          const status = (error as { statusCode?: number }).statusCode;
+          if (status === 410 || status === 404) {
+            await removeExpiredSubscription(row.endpoint);
+          } else {
+            const msg = error instanceof Error ? error.message : String(error);
+            console.error(`Schedule push failed for user ${row.user_id} / game ${row.game_id}:`, msg);
+          }
+        }
+      })
+    );
+  }
 }
 
 export function startNotificationCron(): void {

@@ -13,6 +13,8 @@ import {
   applyDefaultReminder,
   updatePassword,
   updateEmail,
+  fetchEmailPreferences,
+  updateEmailPreferences,
 } from '../_lib/api';
 
 const ROLE_LABELS: Record<number, string> = {
@@ -78,6 +80,11 @@ export default function ProfilePage() {
   const [pwError, setPwError] = useState('');
   const [pwSuccess, setPwSuccess] = useState('');
 
+  // Email digest state
+  const [emailDigestEnabled, setEmailDigestEnabled] = useState(false);
+  const [emailDigestHour, setEmailDigestHour] = useState(8);
+  const [emailSaving, setEmailSaving] = useState(false);
+
   // Change email state
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [newEmail, setNewEmail] = useState('');
@@ -104,6 +111,16 @@ export default function ProfilePage() {
     setIsIOS(/iPad|iPhone|iPod/.test(navigator.userAgent));
     setIsStandalone(window.matchMedia('(display-mode: standalone)').matches);
   }, []);
+
+  useEffect(() => {
+    if (!token) return;
+    fetchEmailPreferences(token)
+      .then(prefs => {
+        setEmailDigestEnabled(prefs.email_digest_enabled);
+        setEmailDigestHour(prefs.email_digest_hour);
+      })
+      .catch(() => {});
+  }, [token]);
 
   useEffect(() => {
     if (!token || !notifSupported) return;
@@ -193,6 +210,23 @@ export default function ProfilePage() {
       setApplyLoading(false);
     }
   }, [token]);
+
+  const handleEmailToggle = useCallback(async (enabled: boolean) => {
+    setEmailSaving(true);
+    setEmailDigestEnabled(enabled);
+    try {
+      await updateEmailPreferences(token!, { email_digest_enabled: enabled });
+    } catch {
+      setEmailDigestEnabled(!enabled);
+    } finally {
+      setEmailSaving(false);
+    }
+  }, [token]);
+
+  const handleEmailHourSave = useCallback(async () => {
+    if (!token) return;
+    updateEmailPreferences(token, { email_digest_hour: emailDigestHour }).catch(() => {});
+  }, [token, emailDigestHour]);
 
   const handlePasswordChange = async (e: FormEvent) => {
     e.preventDefault();
@@ -528,6 +562,61 @@ export default function ProfilePage() {
                 On iPhone, add GachaDaily to your Home Screen first — iOS requires it for push notifications to work.
               </p>
             )}
+          </div>
+        )}
+      </div>
+
+      {/* Email Digest */}
+      <div className="kintsugi-card mb-6 rounded-xl p-6" style={{ border: '1px solid rgba(200,155,60,0.12)', background: 'var(--bg2)' }}>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-base font-semibold text-white">Daily Email Digest</h2>
+            <p className="mt-0.5 text-sm text-zinc-500">
+              Get a daily summary of your upcoming game resets.
+            </p>
+          </div>
+          {/* Toggle switch */}
+          <button
+            onClick={() => handleEmailToggle(!emailDigestEnabled)}
+            disabled={emailSaving}
+            aria-checked={emailDigestEnabled}
+            role="switch"
+            className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200 disabled:opacity-50"
+            style={{ background: emailDigestEnabled ? 'linear-gradient(135deg, #c8913c, #e8c86a)' : '#3f3f46' }}
+          >
+            <span
+              className="pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transition-transform duration-200"
+              style={{ transform: emailDigestEnabled ? 'translateX(1.375rem)' : 'translateX(0.25rem)' }}
+            />
+          </button>
+        </div>
+
+        {emailDigestEnabled && (
+          <div className="border-t pt-4" style={{ borderColor: 'rgba(200,155,60,0.12)' }}>
+            <label className="block text-sm text-zinc-400 mb-2">
+              Send digest at (your local time)
+            </label>
+            <select
+              value={emailDigestHour}
+              onChange={e => setEmailDigestHour(Number(e.target.value))}
+              onBlur={handleEmailHourSave}
+              className="rounded-lg px-3 py-2 text-sm text-white outline-none"
+              style={{ border: '1px solid rgba(200,155,60,0.15)', background: 'var(--surface)' }}
+              onFocus={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.55)')}
+            >
+              {Array.from({ length: 24 }, (_, i) => (
+                <option key={i} value={i}>
+                  {i === 0 ? '12:00 AM' : i < 12
+                    ? `${i}:00 AM`
+                    : i === 12
+                      ? '12:00 PM'
+                      : `${i - 12}:00 PM`}
+                </option>
+              ))}
+            </select>
+            <p className="mt-2 text-xs text-zinc-600">
+              Based on your account timezone: {user.timezone ?? 'America/Los_Angeles'}
+            </p>
           </div>
         )}
       </div>

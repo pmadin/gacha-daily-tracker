@@ -25,6 +25,10 @@ Thumbs.db
 
 # Claude
 .claudeignore
+.claude/skills/
+.claude.json
+skill-*.md
+*-runbook.md
 
 # Logs
 logs/
@@ -40,3 +44,13 @@ coverage/
 # Temporary files
 *.tmp
 *.temp
+
+# Prompt / instruction files (Claude Code — not for repo)
+prompt-*.md
+prompt-v4-hero-features-redesign.md
+.env.local
+frontend/.env.local
+frontend/public/icons/
+
+#MCP Servers
+.mcp.json

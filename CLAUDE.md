@@ -2,7 +2,7 @@
 
 Daily-reset tracker for 330+ gacha games. Users browse a game list, add games to a personal list, and mark daily completions. Anonymous use via localStorage; optional account creation syncs data to the DB.
 
-**Current state:** V3.5. Backend on Heroku, frontend deployed to Vercel on `main`. V3.5 was a full visual redesign pass (Kintsugi gold theme) — no new features or API changes from V3.0.
+**Current state:** V4. Backend on Heroku, frontend deployed to Vercel on `main`. V4 added a full feature platform on top of the V3.5 Kintsugi visual system: leaderboard with opt-in visibility, email digest, password reset (Resend), streak hardening, play scheduler, game submission flow, admin settings, 3NF schema cleanup, and icon CDN migration. V4 frontend redesign replaced the centered MarketingHero with a split two-column layout (animated hero copy + live game-preview panel) and rebuilt FeaturesSection as an asymmetric bento grid. Login/register page backgrounds now use distinct non-mirror rotations.
 
 ---
 
@@ -156,14 +156,19 @@ export const metadata: Metadata = {
 
 ## Backend — key notes
 
-**Env vars:** `DATABASE_URL`, `JWT_SECRET`, `PASSWORD_PEPPER`, `REGISTRATION_TOKEN`, `FRONTEND_URL`
+**Env vars:** `DATABASE_URL`, `JWT_SECRET`, `PASSWORD_PEPPER`, `REGISTRATION_TOKEN`, `FRONTEND_URL`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`
 
 **Routes** (all under `/gdt`):
 - Public: `/games`, `/games/servers/list`, `/games/popular?limit=N`, `/timezones`, `/health`, `/status`
-- Auth: `/auth/register`, `/auth/login`, `/auth/profile`, `/auth/update-password`, `/auth/update-email`, `/auth/account` (DELETE)
+- Auth: `/auth/register`, `/auth/login`, `/auth/profile`, `/auth/update-password`, `/auth/update-email`, `/auth/account` (DELETE), `/auth/forgot-password` (POST), `/auth/reset-password/:token` (GET), `/auth/reset-password` (POST)
 - Tracker (JWT): `/tracker/games` (GET — includes `streak` field), `/tracker/games/bulk` (POST), `/tracker/games/:id` (POST/DELETE), `/tracker/games/:id/complete` (POST/DELETE), `/tracker/streak` (POST — idempotent, atomic CASE update), `/tracker/order` (PUT — saves `display_order` via proper client transaction)
 - Game mgmt (JWT): `/update/games/:id`, `/update/add/game`, `/update/delete/game/:id`, `/update/games/import`
+- Submissions: `/submissions` (POST — create suggestion, JWT), `/admin/submissions` (GET — list, role 3+), `/admin/submissions/:id` (PATCH — approve/reject, role 3+)
 - Admin (role 3+): `/admin/users/role/:username`, `/admin/users`, `/admin/users/search`
+- Leaderboard: `/leaderboard/status` (public), `/leaderboard` (public, paginated), `/leaderboard/visibility` (GET/PATCH, JWT)
+- Notifications (JWT): `/notifications/preferences` (GET/PATCH), `/notifications/email-preferences` (GET/PATCH), `/notifications/subscribe` (POST), `/notifications/unsubscribe` (DELETE), `/notifications/apply-default` (POST)
+- Admin settings (role 3+): `/admin/settings` (GET), `/admin/settings/leaderboard` (PATCH)
+- Schedule (JWT): `/schedule` (GET/POST), `/schedule/:gameId` (DELETE), `/schedule/today` (GET), `/schedule/week` (GET)
 
 **Role system:** 1=User · 2=Premium · 3=Admin · 4=Owner
 
@@ -174,13 +179,21 @@ export const metadata: Metadata = {
 ## Database Schema (key tables)
 
 ```
-users             — accounts, bcrypt hash, role, profile fields,
-                    streak_count INTEGER DEFAULT 0, streak_last_date DATE
+users             — accounts, bcrypt hash, role, timezone,
+                    streak_count INTEGER DEFAULT 0, streak_last_date DATE,
+                    leaderboard_hidden BOOLEAN DEFAULT FALSE,
+                    email_digest_enabled BOOLEAN DEFAULT false,
+                    email_digest_hour SMALLINT DEFAULT 8
 games             — name, server, timezone, daily_reset, icon_name, is_active,
                     add_count INTEGER DEFAULT 0
-user_games        — user ↔ game join; is_enabled, display_order INTEGER DEFAULT 0
+user_games        — user ↔ game join; display_order INTEGER DEFAULT 0,
+                    custom_reminder_offset INTEGER DEFAULT 0
 daily_completions — user_id, game_id, completion_date (UNIQUE constraint)
-reminder_settings — user notification preferences
+push_subscriptions — user_id, endpoint, p256dh, auth
+password_reset_tokens — user_id, token, expires_at, used (30-min expiry, single-use)
+site_settings     — key/value admin toggles (leaderboard_enabled)
+play_schedules    — user_id, game_id, days_of_week SMALLINT[], window_start TIME, window_end TIME,
+                    hook_notifications BOOLEAN (fires push at window_start instead of reset offset)
 ```
 
 Games use **soft-delete** (`is_active = false`). `UNIQUE(name, server)` prevents duplicates. All user FKs have `ON DELETE CASCADE`.
@@ -191,6 +204,29 @@ ALTER TABLE games ADD COLUMN add_count INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE users ADD COLUMN streak_count INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE users ADD COLUMN streak_last_date DATE;
 ALTER TABLE user_games ADD COLUMN display_order INTEGER NOT NULL DEFAULT 0;
+
+-- v4.0 3NF normalization:
+ALTER TABLE users DROP COLUMN IF EXISTS first_name, DROP COLUMN IF EXISTS last_name, DROP COLUMN IF EXISTS phone;
+ALTER TABLE user_games DROP COLUMN IF EXISTS is_enabled;
+CREATE INDEX IF NOT EXISTS idx_users_streak ON users(streak_count DESC) WHERE streak_count > 0;
+
+-- v4.0 streak hardening:
+ALTER TABLE users ADD COLUMN IF NOT EXISTS streak_last_attempted_at TIMESTAMP;
+
+-- v4.1 leaderboard + email digest + password reset:
+CREATE TABLE IF NOT EXISTS site_settings (key VARCHAR(100) PRIMARY KEY, value TEXT NOT NULL, updated_by INTEGER REFERENCES users(id) ON DELETE SET NULL, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+INSERT INTO site_settings (key, value) VALUES ('leaderboard_enabled', 'false') ON CONFLICT DO NOTHING;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS leaderboard_hidden BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email_digest_enabled BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email_digest_hour SMALLINT NOT NULL DEFAULT 8;
+CREATE TABLE IF NOT EXISTS password_reset_tokens (id SERIAL PRIMARY KEY, user_id INTEGER REFERENCES users(id) ON DELETE CASCADE, token VARCHAR(255) UNIQUE NOT NULL, expires_at TIMESTAMP NOT NULL, used BOOLEAN DEFAULT false, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX IF NOT EXISTS idx_reset_tokens_token ON password_reset_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_reset_tokens_user_id ON password_reset_tokens(user_id);
+
+-- v4.2 play scheduler:
+CREATE TABLE IF NOT EXISTS play_schedules (id SERIAL PRIMARY KEY, user_id INTEGER REFERENCES users(id) ON DELETE CASCADE, game_id INTEGER REFERENCES games(id) ON DELETE CASCADE, days_of_week SMALLINT[] NOT NULL DEFAULT '{0,1,2,3,4,5,6}', window_start TIME NOT NULL, window_end TIME NOT NULL, hook_notifications BOOLEAN NOT NULL DEFAULT false, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, UNIQUE(user_id, game_id));
+CREATE INDEX IF NOT EXISTS idx_play_schedules_user_id ON play_schedules(user_id);
+CREATE INDEX IF NOT EXISTS idx_play_schedules_game_id ON play_schedules(game_id);
 ```
 
 ---
@@ -220,6 +256,7 @@ heroku pg:psql -a gachadailytracker
 - **`AuthContext.isLoading`** flag prevents race conditions on mount; always gate effects on `!authLoading`.
 - **`apiFetch` header order matters** — `...init` must spread BEFORE `headers: { 'Content-Type', ...init?.headers }` so Content-Type is never overwritten by the caller's auth header object.
 - **Streak update happens in both `handleToggleComplete` (dashboard) and `handleToggle` (home page)**, not a `useEffect` — avoids false triggers on load. Both pages call `checkStreak`/`updateAnonStreak` and fire confetti when the last game is marked done.
+- **Streak verification**: `POST /tracker/streak` verifies all tracked active games have `daily_completions` rows for their current game-local period before incrementing. Rate limited to once per 60 seconds per user via `streak_last_attempted_at`. Returns `allComplete`, `completed`, `total` so the frontend can trigger confetti/done-state without a separate fetch.
 - **Confetti deduplication** uses `localStorage('gdt_confetti_date')` (not a ref) so it survives page refreshes.
 - **Register proxy** (`frontend/app/api/register/route.ts`): backend register returns `{ message, user }` with no JWT, so the proxy calls login automatically and also bulk-syncs anon games server-to-server (bypasses CORS). Client clears anon games only if `synced === true`.
 - **`PUT /tracker/order` uses `database.getClient()`** for the transaction loop — `database.query()` gets a different connection per call, so BEGIN/COMMIT/ROLLBACK would be on separate connections and have no effect.

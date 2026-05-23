@@ -20,6 +20,9 @@ interface Props {
   onToggleComplete: (gameId: number, completed: boolean) => void;
   onRemove: (gameId: number) => void;
   onUpdateOffset?: (gameId: number, offset: number) => void;
+  onSchedule?: (game: DashboardGame) => void;
+  hasSchedule?: boolean;
+  hookNotificationsActive?: boolean;
   dragHandle?: React.ReactNode;
 }
 
@@ -40,7 +43,7 @@ const OFFSET_OPTIONS = [
   { value: 720, label: '12 hr' },
 ];
 
-export default function DashboardCard({ game, onToggleComplete, onRemove, onUpdateOffset, dragHandle }: Props) {
+export default function DashboardCard({ game, onToggleComplete, onRemove, onUpdateOffset, onSchedule, hasSchedule, hookNotificationsActive, dragHandle }: Props) {
   const resetAt = game.completed_today ? null : getLocalResetTime(game.timezone, game.daily_reset);
 
   return (
@@ -67,12 +70,12 @@ export default function DashboardCard({ game, onToggleComplete, onRemove, onUpda
       </button>
 
       <img
-        src={game.icon_name ? `/icons/${game.icon_name}.gif` : '/icons/placeholder.svg'}
+        src={game.icon_name ? `${process.env.NEXT_PUBLIC_ICONS_BASE_URL}/${game.icon_name}.gif` : '/placeholder.svg'}
         alt=""
         width={34}
         height={34}
         className={`shrink-0 rounded-lg object-cover transition-opacity ${game.completed_today ? 'opacity-40' : ''}`}
-        onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/icons/placeholder.svg'; }}
+        onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
       />
 
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -86,9 +89,17 @@ export default function DashboardCard({ game, onToggleComplete, onRemove, onUpda
               value={game.custom_reminder_offset ?? 0}
               onChange={e => onUpdateOffset(game.game_id, parseInt(e.target.value, 10))}
               onClick={e => e.stopPropagation()}
+              disabled={hookNotificationsActive}
+              title={hookNotificationsActive ? 'Reminder overridden by play window notification' : undefined}
               className="rounded px-1 py-px text-xs outline-none"
-              style={{ border: '1px solid rgba(200,155,60,0.15)', background: 'var(--surface)', color: 'var(--text2)' }}
-              onFocus={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.55)')}
+              style={{
+                border: '1px solid rgba(200,155,60,0.15)',
+                background: 'var(--surface)',
+                color: hookNotificationsActive ? 'var(--text3)' : 'var(--text2)',
+                opacity: hookNotificationsActive ? 0.45 : 1,
+                cursor: hookNotificationsActive ? 'not-allowed' : 'default',
+              }}
+              onFocus={e => { if (!hookNotificationsActive) e.currentTarget.style.borderColor = 'rgba(200,155,60,0.55)'; }}
               onBlur={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.15)')}
             >
               {OFFSET_OPTIONS.map(o => (
@@ -109,6 +120,30 @@ export default function DashboardCard({ game, onToggleComplete, onRemove, onUpda
           </>
         )}
       </div>
+
+      {onSchedule && (
+        <button
+          onClick={() => onSchedule(game)}
+          title={hasSchedule ? 'Edit play schedule' : 'Set play schedule'}
+          className="relative shrink-0 rounded p-1 transition-colors"
+          style={{ color: hasSchedule ? 'var(--gold-dim)' : 'var(--text3)' }}
+          aria-label="Schedule game"
+        >
+          <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="none">
+            <rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
+            <path d="M5 1v3M11 1v3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+            <path d="M2 7h12" stroke="currentColor" strokeWidth="1.4" />
+            <rect x="4.5" y="9" width="2" height="2" rx="0.4" fill="currentColor" />
+            <rect x="9.5" y="9" width="2" height="2" rx="0.4" fill={hasSchedule ? '#c8913c' : 'currentColor'} />
+          </svg>
+          {hasSchedule && (
+            <span
+              className="absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full"
+              style={{ background: 'var(--gold)' }}
+            />
+          )}
+        </button>
+      )}
 
       <button
         onClick={() => onRemove(game.game_id)}

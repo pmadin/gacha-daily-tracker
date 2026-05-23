@@ -24,7 +24,7 @@ export default function GameCard({ game, isTracked, onAdd, onRemove, priority }:
       <div className="flex items-start gap-2">
         <div style={{ width: 36, height: 36, flexShrink: 0, display: 'block' }}>
           <img
-            src={game.icon_name ? `/icons/${game.icon_name}.gif` : '/icons/placeholder.svg'}
+            src={game.icon_name ? `${process.env.NEXT_PUBLIC_ICONS_BASE_URL}/${game.icon_name}.gif` : '/placeholder.svg'}
             alt=""
             width={36}
             height={36}
@@ -32,7 +32,7 @@ export default function GameCard({ game, isTracked, onAdd, onRemove, priority }:
             className="rounded-lg object-cover"
             loading={priority ? 'eager' : undefined}
             fetchPriority={priority ? 'high' : undefined}
-            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/icons/placeholder.svg'; }}
+            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
           />
         </div>
         <div className="min-w-0 flex-1">

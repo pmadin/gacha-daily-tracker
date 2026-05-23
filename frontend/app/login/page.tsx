@@ -40,7 +40,7 @@ export default function LoginPage() {
           backgroundImage: "url('/kintsugi-veins-login-reg.svg')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          transform: 'scaleX(-1)',
+          transform: 'rotate(142deg) scale(1.5)',
           maskImage: 'radial-gradient(ellipse 60% 55% at 50% 50%, transparent 0%, rgba(0,0,0,0.6) 45%, black 75%)',
           WebkitMaskImage: 'radial-gradient(ellipse 60% 55% at 50% 50%, transparent 0%, rgba(0,0,0,0.6) 45%, black 75%)',
           opacity: 0.25,
@@ -79,6 +79,14 @@ export default function LoginPage() {
               onBlur={e => (e.currentTarget.style.borderColor = 'rgba(200,155,60,0.18)')}
               placeholder="••••••••"
             />
+            <div className="mt-1 text-right">
+              <Link href="/forgot-password" className="text-xs transition-colors" style={{ color: 'var(--text3)' }}
+                onMouseEnter={e => (e.currentTarget.style.color = 'var(--text2)')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'var(--text3)')}
+              >
+                Forgot password?
+              </Link>
+            </div>
           </div>
 
           {error && (
