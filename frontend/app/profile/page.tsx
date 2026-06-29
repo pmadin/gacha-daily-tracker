@@ -13,9 +13,50 @@ import {
   applyDefaultReminder,
   updatePassword,
   updateEmail,
+  updateTimezone,
   fetchEmailPreferences,
   updateEmailPreferences,
 } from '../_lib/api';
+
+const TIMEZONE_OPTIONS = [
+  // Popular
+  { group: 'Popular', timezone: 'America/Los_Angeles', label: 'Pacific Time (US) — UTC-8' },
+  { group: 'Popular', timezone: 'America/New_York',    label: 'Eastern Time (US) — UTC-5' },
+  { group: 'Popular', timezone: 'America/Chicago',     label: 'Central Time (US) — UTC-6' },
+  { group: 'Popular', timezone: 'America/Santiago',    label: 'Chile Time — UTC-4' },
+  { group: 'Popular', timezone: 'America/Sao_Paulo',   label: 'Brazil Time — UTC-3' },
+  { group: 'Popular', timezone: 'Europe/London',       label: 'British Time — UTC+0' },
+  { group: 'Popular', timezone: 'Europe/Paris',        label: 'Central European Time — UTC+1' },
+  { group: 'Popular', timezone: 'Asia/Tokyo',          label: 'Japan Time — UTC+9' },
+  { group: 'Popular', timezone: 'Asia/Seoul',          label: 'Korea Time — UTC+9' },
+  { group: 'Popular', timezone: 'Asia/Shanghai',       label: 'China Time — UTC+8' },
+  { group: 'Popular', timezone: 'Asia/Singapore',      label: 'Singapore Time — UTC+8' },
+  { group: 'Popular', timezone: 'Australia/Sydney',    label: 'Sydney Time — UTC+11' },
+  // Americas
+  { group: 'Americas', timezone: 'America/Vancouver',              label: 'Canada Pacific Time — UTC-8' },
+  { group: 'Americas', timezone: 'America/Denver',                 label: 'Mountain Time (US) — UTC-7' },
+  { group: 'Americas', timezone: 'America/Toronto',                label: 'Canada Eastern Time — UTC-5' },
+  { group: 'Americas', timezone: 'America/Mexico_City',            label: 'Mexico Time — UTC-6' },
+  { group: 'Americas', timezone: 'America/Bogota',                 label: 'Colombia Time — UTC-5' },
+  { group: 'Americas', timezone: 'America/Lima',                   label: 'Peru Time — UTC-5' },
+  { group: 'Americas', timezone: 'America/Argentina/Buenos_Aires', label: 'Argentina Time — UTC-3' },
+  // Europe
+  { group: 'Europe', timezone: 'Europe/Berlin', label: 'Germany Time — UTC+1' },
+  { group: 'Europe', timezone: 'Europe/Moscow', label: 'Moscow Time — UTC+3' },
+  // Asia
+  { group: 'Asia', timezone: 'Asia/Hong_Kong', label: 'Hong Kong Time — UTC+8' },
+  { group: 'Asia', timezone: 'Asia/Manila',    label: 'Philippines Time — UTC+8' },
+  { group: 'Asia', timezone: 'Asia/Bangkok',   label: 'Thailand Time — UTC+7' },
+  { group: 'Asia', timezone: 'Asia/Jakarta',   label: 'Indonesia Time — UTC+7' },
+  { group: 'Asia', timezone: 'Asia/Kolkata',   label: 'India Time — UTC+5:30' },
+  { group: 'Asia', timezone: 'Asia/Dubai',     label: 'UAE Time — UTC+4' },
+  // Oceania
+  { group: 'Oceania', timezone: 'Australia/Melbourne', label: 'Melbourne Time — UTC+11' },
+  { group: 'Oceania', timezone: 'Australia/Perth',     label: 'Perth Time — UTC+8' },
+  { group: 'Oceania', timezone: 'Pacific/Auckland',    label: 'New Zealand Time — UTC+13' },
+];
+
+const TIMEZONE_GROUPS = ['Popular', 'Americas', 'Europe', 'Asia', 'Oceania'];
 
 const ROLE_LABELS: Record<number, string> = {
   1: 'User',
@@ -85,6 +126,12 @@ export default function ProfilePage() {
   const [emailDigestHour, setEmailDigestHour] = useState(8);
   const [emailSaving, setEmailSaving] = useState(false);
 
+  // Timezone state
+  const [timezone, setTimezone]   = useState<string>('');
+  const [tzSuccess, setTzSuccess] = useState('');
+  const [tzError, setTzError]     = useState('');
+  const [tzLoading, setTzLoading] = useState(false);
+
   // Change email state
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [newEmail, setNewEmail] = useState('');
@@ -98,7 +145,10 @@ export default function ProfilePage() {
   }, [isLoading, user, router]);
 
   useEffect(() => {
-    if (user) setIdentifier(user.username);
+    if (user) {
+      setIdentifier(user.username);
+      if (user.timezone) setTimezone(user.timezone);
+    }
   }, [user]);
 
   useEffect(() => {
@@ -282,6 +332,22 @@ export default function ProfilePage() {
     }
   };
 
+  const handleTimezoneChange = async () => {
+    setTzError('');
+    setTzSuccess('');
+    if (!timezone) return;
+    setTzLoading(true);
+    try {
+      const res = await updateTimezone(token!, timezone);
+      login(token!, { ...user!, timezone: res.user.timezone });
+      setTzSuccess('Timezone updated successfully.');
+    } catch (err: unknown) {
+      setTzError(err instanceof Error ? err.message : 'Failed to update timezone');
+    } finally {
+      setTzLoading(false);
+    }
+  };
+
   if (isLoading || !user) return null;
 
   const handleDelete = async (e: FormEvent) => {
@@ -323,6 +389,18 @@ export default function ProfilePage() {
   };
 
   const roleLabel = ROLE_LABELS[user.role] ?? 'User';
+
+  const timezoneDropdownOptions = user?.timezone &&
+    !TIMEZONE_OPTIONS.find(t => t.timezone === user.timezone)
+    ? [
+        { group: 'Current', timezone: user.timezone, label: `${user.timezone} — your current timezone` },
+        ...TIMEZONE_OPTIONS,
+      ]
+    : TIMEZONE_OPTIONS;
+
+  const dropdownGroups = ['Current', ...TIMEZONE_GROUPS].filter(group =>
+    timezoneDropdownOptions.some(t => t.group === group)
+  );
 
   return (
     <div className="mx-auto max-w-lg px-4 py-12">
@@ -619,6 +697,72 @@ export default function ProfilePage() {
             </p>
           </div>
         )}
+      </div>
+
+      {/* Timezone */}
+      <div className="kintsugi-card mb-6 rounded-xl p-6" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+        <h2 className="mb-1 text-base font-semibold" style={{ color: 'var(--text)' }}>Timezone</h2>
+        <p className="mb-5 text-sm" style={{ color: 'var(--text2)' }}>
+          Controls when your daily reset timers count down. Set this to wherever you actually play.
+        </p>
+
+        <div className="flex gap-2">
+          <select
+            value={timezone}
+            onChange={e => {
+              setTimezone(e.target.value);
+              setTzSuccess('');
+              setTzError('');
+            }}
+            className="flex-1 rounded-lg px-3 py-2 text-sm outline-none"
+            style={{ background: 'var(--bg2)', border: '1px solid var(--border)', color: 'var(--text)' }}
+          >
+            {dropdownGroups.map(group => (
+              <optgroup key={group} label={group}>
+                {timezoneDropdownOptions.filter(tz => tz.group === group).map(tz => (
+                  <option key={tz.timezone} value={tz.timezone}>{tz.label}</option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+
+          <button
+            onClick={() => {
+              const detected = typeof window !== 'undefined'
+                ? Intl.DateTimeFormat().resolvedOptions().timeZone
+                : '';
+              if (detected) {
+                setTimezone(detected);
+                setTzSuccess('');
+                setTzError('');
+              }
+            }}
+            className="rounded-lg px-3 py-2 text-xs font-medium transition-opacity hover:opacity-80"
+            style={{ background: 'var(--surface)', border: '1px solid var(--border2)', color: 'var(--gold)', whiteSpace: 'nowrap' }}
+          >
+            Detect
+          </button>
+        </div>
+
+        {tzSuccess && (
+          <p className="mt-3 rounded-lg px-4 py-2.5 text-sm text-green-400" style={{ background: 'rgba(34,197,94,0.08)' }}>
+            {tzSuccess}
+          </p>
+        )}
+        {tzError && (
+          <p className="mt-3 rounded-lg px-4 py-2.5 text-sm text-red-400" style={{ background: 'rgba(239,68,68,0.08)' }}>
+            {tzError}
+          </p>
+        )}
+
+        <button
+          onClick={handleTimezoneChange}
+          disabled={tzLoading || timezone === user?.timezone}
+          className="mt-4 rounded-lg px-4 py-2 text-sm font-medium transition-opacity hover:opacity-80 disabled:opacity-40"
+          style={{ background: 'linear-gradient(135deg, #c8913c, #e8c86a)', color: '#0a0808' }}
+        >
+          {tzLoading ? 'Saving…' : 'Save timezone'}
+        </button>
       </div>
 
       {/* Danger zone */}

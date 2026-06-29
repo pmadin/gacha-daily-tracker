@@ -17,6 +17,12 @@ class TimezoneService {
     { timezone: 'America/New_York', offset: 'UTC-5', label: 'Eastern Time (US)', region: 'Americas' },
     { timezone: 'America/Sao_Paulo', offset: 'UTC-3', label: 'Brazil Time', region: 'Americas' },
     { timezone: 'America/Argentina/Buenos_Aires', offset: 'UTC-3', label: 'Argentina Time', region: 'Americas' },
+    { timezone: 'America/Santiago', offset: 'UTC-4', label: 'Chile Time', region: 'Americas' },
+    { timezone: 'America/Bogota', offset: 'UTC-5', label: 'Colombia Time', region: 'Americas' },
+    { timezone: 'America/Lima', offset: 'UTC-5', label: 'Peru Time', region: 'Americas' },
+    { timezone: 'America/Mexico_City', offset: 'UTC-6', label: 'Mexico Time', region: 'Americas' },
+    { timezone: 'America/Toronto', offset: 'UTC-5', label: 'Canada Eastern Time', region: 'Americas' },
+    { timezone: 'America/Vancouver', offset: 'UTC-8', label: 'Canada Pacific Time', region: 'Americas' },
     
     // Europe
     { timezone: 'Europe/London', offset: 'UTC+0', label: 'British Time', region: 'Europe' },
@@ -66,6 +72,8 @@ class TimezoneService {
     'IST': 'Asia/Kolkata',
     'AEST': 'Australia/Sydney',
     'AEDT': 'Australia/Sydney',
+    'CLT': 'America/Santiago',
+    'COT': 'America/Bogota',
   };
 
   /**
@@ -93,32 +101,44 @@ class TimezoneService {
   }
 
   /**
+   * Check if a string is a valid IANA timezone using the runtime's built-in database.
+   * Accepts any legitimate timezone without needing it to be in COMMON_TIMEZONES.
+   */
+  static isValidIANATimezone(timezone: string): boolean {
+    if (!timezone || typeof timezone !== 'string') return false;
+    try {
+      Intl.DateTimeFormat(undefined, { timeZone: timezone });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Validate if a timezone is supported
    */
   static isValidTimezone(timezone: string): boolean {
-    const normalizedTz = this.normalizeTimezone(timezone);
-    return this.COMMON_TIMEZONES.some(tz => tz.timezone === normalizedTz);
+    return this.isValidIANATimezone(timezone);
   }
 
   /**
    * Normalize timezone input (handle aliases and common mistakes)
    */
   static normalizeTimezone(input: string): string {
-    // if timezone is invalid, default to American PST
     if (!input) return 'America/Los_Angeles';
 
-    // Check if it's already a valid IANA timezone
-    if (this.COMMON_TIMEZONES.some(tz => tz.timezone === input)) {
+    // Step 1 — Accept any valid IANA timezone directly
+    if (this.isValidIANATimezone(input)) {
       return input;
     }
 
-    // Check aliases
+    // Step 2 — Check aliases (PST, JST, CLT, etc.)
     const upperInput = input.toUpperCase();
     if (this.TIMEZONE_ALIASES[upperInput]) {
       return this.TIMEZONE_ALIASES[upperInput];
     }
 
-    // Try to match by offset (e.g., "UTC-8" -> "America/Los_Angeles")
+    // Step 3 — Try to match by UTC offset string (e.g. "UTC-8")
     const offsetMatch = input.match(/UTC([+-]\d+)/i);
     if (offsetMatch) {
       const offset = `UTC${offsetMatch[1]}`;
@@ -126,7 +146,7 @@ class TimezoneService {
       if (matchingTz) return matchingTz.timezone;
     }
 
-    // Default fallback
+    // Step 4 — Final fallback
     return 'America/Los_Angeles';
   }
 

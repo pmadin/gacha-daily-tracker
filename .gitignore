@@ -47,7 +47,7 @@ coverage/
 
 # Prompt / instruction files (Claude Code — not for repo)
 prompt-*.md
-prompt-v4-hero-features-redesign.md
+gdt-*.md
 .env.local
 frontend/.env.local
 frontend/public/icons/

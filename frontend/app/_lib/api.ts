@@ -153,6 +153,17 @@ export async function updatePassword(
   });
 }
 
+export async function updateTimezone(
+  token: string,
+  timezone: string,
+): Promise<{ message: string; user: AuthUser }> {
+  return apiFetch('/gdt/auth/profile', {
+    method: 'PUT',
+    headers: authHeader(token),
+    body: JSON.stringify({ timezone }),
+  });
+}
+
 export async function updateEmail(
   token: string,
   newEmail: string,
